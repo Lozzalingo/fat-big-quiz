@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.962.0",
+    "@aws-sdk/client-s3": "^3.964.0",
     "@prisma/client": "^5.12.1",
     "axios": "^1.13.2",
     "bcryptjs": "^2.4.3",
@@ -22,6 +22,7 @@
     "mysql": "^2.18.1",
     "nanoid": "^5.0.6",
     "prisma": "^5.12.1",
+    "request-ip": "^3.3.0",
     "socket.io": "^4.8.3"
   }
 }
