@@ -13,11 +13,57 @@ import { FaCheck, FaDownload, FaCalendar, FaPlay, FaRocket, FaBook, FaArrowRight
 import ProductPageClient from "./ProductPageClient";
 import ProductImageGallery from "./ProductImageGallery";
 import { getProductImageUrl } from "@/utils/cdn";
+import { Metadata } from "next";
 
 interface SingleProductPageProps {
   params: Promise<{
     productSlug: string;
   }>;
+}
+
+// Generate metadata for social sharing (WhatsApp, Facebook, Twitter, etc.)
+export async function generateMetadata({ params }: SingleProductPageProps): Promise<Metadata> {
+  const { productSlug } = await params;
+
+  const data = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/slugs/${productSlug}`,
+    { cache: "no-store" }
+  );
+  const product = await data.json();
+
+  if (!product || product.error) {
+    return { title: "Product Not Found" };
+  }
+
+  const imageUrl = getProductImageUrl(product.mainImage);
+  const productUrl = `https://fatbigquiz.com/product/${productSlug}`;
+
+  return {
+    title: `${product.title} | Fat Big Quiz`,
+    description: product.description?.slice(0, 160) || `Get ${product.title} from Fat Big Quiz`,
+    openGraph: {
+      title: product.title,
+      description: product.description?.slice(0, 160) || `Get ${product.title} from Fat Big Quiz`,
+      url: productUrl,
+      siteName: "Fat Big Quiz",
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: product.title,
+        },
+      ],
+      locale: "en_GB",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: product.title,
+      description: product.description?.slice(0, 160) || `Get ${product.title} from Fat Big Quiz`,
+      images: [imageUrl],
+    },
+  };
 }
 
 // Parse features from JSON or newline-separated string

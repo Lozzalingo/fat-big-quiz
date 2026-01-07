@@ -25,10 +25,24 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Fat Big Quiz",
-  description: "The ultimate quiz experience",
+  title: "Fat Big Quiz - Pub Quiz Packs & Quiz Downloads",
+  description: "Download ready-to-use pub quiz packs, music rounds, and picture quizzes. Perfect for quiz nights, pubs, and events.",
   icons: {
     icon: "/favicon.ico",
+  },
+  metadataBase: new URL("https://fatbigquiz.com"),
+  openGraph: {
+    title: "Fat Big Quiz - Pub Quiz Packs & Quiz Downloads",
+    description: "Download ready-to-use pub quiz packs, music rounds, and picture quizzes. Perfect for quiz nights, pubs, and events.",
+    url: "https://fatbigquiz.com",
+    siteName: "Fat Big Quiz",
+    locale: "en_GB",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Fat Big Quiz - Pub Quiz Packs & Quiz Downloads",
+    description: "Download ready-to-use pub quiz packs, music rounds, and picture quizzes.",
   },
 };
 
