@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Block download pages from crawlers
+Disallow: /download/

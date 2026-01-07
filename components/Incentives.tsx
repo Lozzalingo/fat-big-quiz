@@ -1,13 +1,3 @@
-// *********************
-// Role of the component: Incentives on home page like Free Shipping, 24/7 Customer Support, Fast Shopping Cart...
-// Name of the component: Incentives.tsx
-// Developer: Aleksandar Kuzmanovic
-// Version: 1.0
-// Component call: <Incentives />
-// Input parameters: no input parameters
-// Output: Incentives section
-// *********************
-
 import { incentives } from '@/lib/utils'
 import Image from 'next/image'
 import React from 'react'

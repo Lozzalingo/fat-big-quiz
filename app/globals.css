@@ -1,25 +1,152 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-
-.range{
-    --range-shdw: #3B82F6;
+/* Fat Big Quiz Design System */
+:root {
+  --primary: #673ab7;
+  --primary-dark: #512da8;
+  --primary-light: #9c27b0;
+  --background: #f0ebf8;
+  --surface: #ffffff;
+  --text-primary: #202124;
+  --text-secondary: #5f6368;
+  --border: #dadce0;
+  --success: #4caf50;
+  --error: #d32f2f;
+  --warning: #ff9800;
+  --gold: #ffd700;
 }
 
-.checkbox:checked, .checkbox[checked="true"], .checkbox[aria-checked="true"] {
-    background-repeat: no-repeat;
-    animation: checkmark var(--animation-input, 0.2s) ease-out;
-    background-color: #3B82F6;
-    background-image: linear-gradient(-45deg, transparent 65%, #3B82F6 65.99%),
-      linear-gradient(45deg, transparent 75%, #3B82F6 75.99%),
-      linear-gradient(-45deg, #3B82F6 40%, transparent 40.99%),
-      linear-gradient(
-        45deg,
-        #3B82F6 30%,
-        white 30.99%,
-        white 40%,
-        transparent 40.99%
-      ),
-      linear-gradient(-45deg, white 50%, #3B82F6 50.99%);
+body {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--background);
+  color: var(--text-primary);
+}
+
+/* Card Styles */
+.card {
+  @apply bg-white rounded-xl shadow-sm border border-border p-6 transition-all duration-200;
+}
+
+.card:hover {
+  @apply shadow-md;
+}
+
+.card-hover {
+  @apply hover:shadow-lg hover:-translate-y-1 hover:border-primary;
+}
+
+/* Button Styles */
+.btn-primary {
+  @apply bg-primary text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200;
+  @apply hover:bg-primary-dark hover:shadow-lg;
+}
+
+.btn-secondary {
+  @apply bg-white text-primary font-semibold px-6 py-3 rounded-lg border-2 border-primary transition-all duration-200;
+  @apply hover:bg-primary hover:text-white;
+}
+
+.btn-success {
+  @apply bg-success text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200;
+  @apply hover:bg-success-dark hover:shadow-lg;
+}
+
+/* Gradient Background */
+.gradient-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+}
+
+.gradient-hero {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+}
+
+/* Badge Styles */
+.badge {
+  @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide;
+}
+
+.badge-primary {
+  @apply bg-primary/10 text-primary;
+}
+
+.badge-success {
+  @apply bg-success/10 text-success-dark;
+}
+
+.badge-warning {
+  @apply bg-warning/10 text-warning;
+}
+
+.badge-gold {
+  @apply bg-gold/20 text-amber-700;
+}
+
+/* Section Styles */
+.section {
+  @apply py-16 md:py-24;
+}
+
+.section-title {
+  @apply text-3xl md:text-4xl font-bold text-text-primary mb-4;
+}
+
+.section-subtitle {
+  @apply text-lg text-text-secondary max-w-2xl;
+}
+
+/* Input Styles */
+input:focus, textarea:focus, select:focus {
+  @apply outline-none ring-2 ring-primary/50 border-primary;
+}
+
+/* Navigation Active State */
+.nav-link {
+  @apply text-white/80 hover:text-white transition-colors duration-200 font-medium;
+}
+
+.nav-link-active {
+  @apply text-white font-semibold;
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* DaisyUI Overrides */
+.range {
+  --range-shdw: #673ab7;
+}
+
+.checkbox:checked,
+.checkbox[checked="true"],
+.checkbox[aria-checked="true"] {
+  background-color: #673ab7;
+  background-image: linear-gradient(-45deg, transparent 65%, #673ab7 65.99%),
+    linear-gradient(45deg, transparent 75%, #673ab7 75.99%),
+    linear-gradient(-45deg, #673ab7 40%, transparent 40.99%),
+    linear-gradient(45deg, #673ab7 30%, white 30.99%, white 40%, transparent 40.99%),
+    linear-gradient(-45deg, white 50%, #673ab7 50.99%);
+}
+
+/* Legacy Button Classes */
+.btn-delete {
+  @apply uppercase bg-error px-3 py-1 text-[10px] border border-gray-300 font-semibold text-white shadow-sm hover:bg-red-500 rounded transition duration-200;
+}
+
+.btn-save {
+  @apply uppercase bg-primary px-3 py-1 text-[10px] border border-gray-300 font-semibold text-white shadow-sm hover:bg-primary-dark rounded transition duration-200;
+}
+
+.btn-edit {
+  @apply uppercase bg-success px-3 py-1 text-[10px] border border-gray-300 font-semibold text-white shadow-sm hover:bg-success-dark rounded transition duration-200;
 }

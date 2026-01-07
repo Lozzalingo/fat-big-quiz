@@ -9,7 +9,7 @@ export default async function Layout({
   children: React.ReactNode;
 }>) {
   const session: {
-    user: { name: string; email: string; image: string };
+    user: { firstName: string; email: string; image: string };
   } | null = await getServerSession();
 
   if (!session) {
@@ -18,7 +18,7 @@ export default async function Layout({
 
   let email: string = await session?.user?.email;
   
-  const res = await fetch(`http://localhost:3001/api/users/email/${email}`);
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/email/${email}`);
   const data = await res.json();
   // redirecting user to the home page if not admin
   if (data.role === "user") {

@@ -1,82 +1,24 @@
-interface Product {
-  id: string;
-  slug: string;
-  title: string;
-  price: number;
-  rating: number;
-  description: string;
-  mainImage: string;
-  manufacturer: string;
-  categoryId: string;
-  category: {name: string}?;
-  inStock: number;
-}
+// Global type declarations
+// For new code, import from @/types instead
 
-interface SingleProductPageProps {
-  params: {
-    productSlug: string;
-  };
-}
+// Re-export types for backwards compatibility
+import type {
+  Product,
+  SingleProductPageProps,
+  ProductInWishlist,
+  OtherImages,
+  SingleProductBtnProps,
+  WishListItem,
+} from "@/types/products";
 
-type ProductInWishlist = {
-  id: string;
-  title: string;
-  price: number;
-  image: string;
-  slug: string;
-  stockAvailabillity: number;
-};
+import type { Category } from "@/types/categories";
+import type { User } from "@/types/user";
+import type { Order, OrderProduct } from "@/types/orders";
 
-interface OtherImages {
-  imageID: number;
-  productID: number;
-  image: string;
-}
-
-interface Category {
-  id: string;
-  name: string;
-}
-
-interface User {
-  id: string;
-  email: string;
-  password: string | null;
-  role: string;
-}
-
-interface Order {
-  id: string;
-  adress: string;
-  apartment: string;
-  company: string;
-  dateTime: string;
-  email: string;
-  lastname: string;
-  name: string;
-  phone: string;
-  postalCode: string;
-  status: "processing" | "canceled" | "delivered";
-  city: string;
-  country: string;
-  orderNotice: string?;
-  total: number;
-}
-
-interface SingleProductBtnProps {
-  product: Product;
-  quantityCount: number;
-}
-
-
-interface Category {
-  id: string;
-  name: string;
-}
-
-interface WishListItem {
-  id: string;
-  userId: string;
-  productId: string;
-  product: Product;
+// Make types globally available
+declare global {
+  interface Product extends import("@/types/products").Product {}
+  interface Category extends import("@/types/categories").Category {}
+  interface User extends import("@/types/user").User {}
+  interface Order extends import("@/types/orders").Order {}
 }

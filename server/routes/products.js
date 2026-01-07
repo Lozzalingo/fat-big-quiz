@@ -8,10 +8,12 @@ const {
   deleteProduct,
   searchProducts,
   getProductById,
+  duplicateProduct,
 } = require("../controllers/products");
 
 router.route("/").get(getAllProducts).post(createProduct);
 
+router.route("/:id/duplicate").post(duplicateProduct);
 
 router
   .route("/:id")

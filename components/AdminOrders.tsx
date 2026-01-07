@@ -1,35 +1,61 @@
 "use client";
 
-// *********************
-// Role of the component: Component that displays all orders on admin dashboard page
-// Name of the component: AdminOrders.tsx
-// Developer: Aleksandar Kuzmanovic
-// Version: 1.0
-// Component call: <AdminOrders />
-// Input parameters: No input parameters
-// Output: Table with all orders
-// *********************
-
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 
 const AdminOrders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchOrders = async () => {
-      const response = await fetch("http://localhost:3001/api/orders");
-      const data = await response.json();
-      setOrders(data);
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/orders`);
+        const data = await response.json();
+
+        // Handle error response from API
+        if (data.error) {
+          setError(data.error);
+          setOrders([]);
+        } else if (Array.isArray(data)) {
+          setOrders(data);
+        } else {
+          setOrders([]);
+        }
+      } catch (err) {
+        setError("Failed to fetch orders");
+        setOrders([]);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchOrders();
   }, []);
 
+  if (loading) {
+    return (
+      <div className="bg-white rounded-lg border p-6">
+        <h1 className="text-2xl font-semibold mb-6">All Orders</h1>
+        <p className="text-center text-gray-500">Loading orders...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white rounded-lg border p-6">
+        <h1 className="text-2xl font-semibold mb-6">All Orders</h1>
+        <p className="text-center text-red-500">{error}</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="xl:ml-5 w-full max-xl:mt-5 ">
-      <h1 className="text-3xl font-semibold text-center mb-5">All orders</h1>
+    <div className="bg-white rounded-lg border p-6">
+      <h1 className="text-2xl font-semibold mb-6">All Orders</h1>
       <div className="overflow-x-auto">
-        <table className="table table-md table-pin-cols">
+        <table className="table table-md table-pin-cols w-full">
           {/* head */}
           <thead>
             <tr>
@@ -79,7 +105,7 @@ const AdminOrders = () => {
                   </td>
 
                   <td>
-                    <p>${order?.total}</p>
+                    <p>£{order?.total}</p>
                   </td>
 
                   <td>{ new Date(Date.parse(order?.dateTime)).toDateString() }</td>

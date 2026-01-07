@@ -1,68 +1,68 @@
-// *********************
-// Role of the component: Product item component 
-// Name of the component: ProductItem.tsx
-// Developer: Aleksandar Kuzmanovic
-// Version: 1.0
-// Component call: <ProductItem product={product} color={color} />
-// Input parameters: { product: Product; color: string; }
-// Output: Product item component that contains product image, title, link to the single product page, price, button...
-// *********************
-
-import Image from "next/image";
 import React from "react";
 import Link from "next/link";
 import ProductItemRating from "./ProductItemRating";
+import { getProductImageUrl } from "@/utils/cdn";
 
-const ProductItem = ({
-  product,
-  color,
-}: {
-  product: Product;
-  color: string;
-}) => {
+interface QuizFormat {
+  id: string;
+  name: string;
+  displayName: string;
+}
+
+interface Product {
+  slug: string;
+  title: string;
+  price: number;
+  rating?: number;
+  mainImage?: string;
+  quizFormat?: QuizFormat;
+}
+
+const ProductItem = ({ product, color }: { product: Product; color: string }) => {
   return (
-    <div className="flex flex-col items-center gap-y-2">
-      <Link href={`/product/${product.slug}`}>
-        <Image
-          src={
-            product.mainImage
-              ? `/${product.mainImage}`
-              : "/product_placeholder.jpg"
-          }
-          width="0"
-          height="0"
-          sizes="100vw"
-          className="w-auto h-[300px]"
-          alt={product?.title}
-        />
+    <div className="bg-white border border-gray-200 overflow-hidden transition-all duration-150 hover:border-primary group">
+      {/* Image Container */}
+      <Link href={`/product/${product.slug}`} className="block relative overflow-hidden">
+        <div className="bg-gray-50">
+          <img
+            src={getProductImageUrl(product.mainImage)}
+            className="w-full h-auto transition-transform duration-300 group-hover:scale-102"
+            alt={product.title || "Quiz pack"}
+          />
+        </div>
+        {/* Quiz Format Badge */}
+        {product.quizFormat?.displayName && (
+          <div className="absolute top-2 left-2">
+            <span className="bg-primary text-white text-[10px] font-medium tracking-wide uppercase px-2 py-1">
+              {product.quizFormat.displayName}
+            </span>
+          </div>
+        )}
       </Link>
-      <Link
-        href={`/product/${product.slug}`}
-        className={
-          color === "black"
-            ? `text-xl text-black font-normal mt-2 uppercase`
-            : `text-xl text-white font-normal mt-2 uppercase`
-        }
-      >
-        {product.title}
-      </Link>
-      <p
-        className={
-          color === "black"
-            ? "text-lg text-black font-semibold"
-            : "text-lg text-white font-semibold"
-        }
-      >
-        ${product.price}
-      </p>
 
-      <ProductItemRating productRating={product?.rating} />
-      <Link
-        href={`/product/${product?.slug}`}
-        className="block flex justify-center items-center w-full uppercase bg-white px-0 py-2 text-base border border-black border-gray-300 font-bold text-blue-600 shadow-sm hover:bg-black hover:bg-gray-100 focus:outline-none focus:ring-2"
-      >
-        <p>View product</p>
-      </Link>
+      {/* Content */}
+      <div className="p-3">
+        <Link href={`/product/${product.slug}`}>
+          <h3 className="font-medium text-gray-900 text-sm leading-tight mb-2 line-clamp-2 hover:text-primary transition-colors tracking-tight">
+            {product.title}
+          </h3>
+        </Link>
+
+        <div className="flex items-center justify-between mb-3">
+          <ProductItemRating productRating={product.rating ?? 0} />
+          <p className="text-sm font-semibold text-gray-900 tracking-tight">
+            £{product.price.toFixed(2)}
+          </p>
+        </div>
+
+        <Link
+          href={`/product/${product.slug}`}
+          className="block w-full bg-primary text-white text-xs font-medium tracking-wide uppercase text-center py-2.5 transition-all hover:bg-primary-dark"
+          aria-label={`View ${product.title}`}
+        >
+          View
+        </Link>
+      </div>
     </div>
   );
 };

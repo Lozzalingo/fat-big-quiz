@@ -1,13 +1,3 @@
-// *********************
-// Role of the component: Component that displays current page location in the application 
-// Name of the component: Breadcrumb.tsx
-// Developer: Aleksandar Kuzmanovic
-// Version: 1.0
-// Component call: <Breadcrumb />
-// Input parameters: No input parameters
-// Output: Page location in the application
-// *********************
-
 import Link from "next/link";
 import React from "react";
 import { FaHouse } from "react-icons/fa6";

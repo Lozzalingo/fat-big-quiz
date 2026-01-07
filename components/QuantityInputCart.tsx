@@ -1,15 +1,5 @@
-// *********************
-// Role of the component: Quantity input for incrementing and decrementing product quantity on the cart page
-// Name of the component: QuantityInputCart.tsx
-// Developer: Aleksandar Kuzmanovic
-// Version: 1.0
-// Component call: <QuantityInputCart product={product} />
-// Input parameters: { product: ProductInCart }
-// Output: one number input and two buttons
-// *********************
-
 "use client";
-import { ProductInCart, useProductStore } from "@/app/_zustand/store";
+import { ProductInCart, useProductStore } from "@/app/store/store";
 import React, { useState } from "react";
 import { FaPlus } from "react-icons/fa6";
 import { FaMinus } from "react-icons/fa6";

@@ -9,7 +9,7 @@ async function createCustomerOrder(request, response) {
       phone,
       email,
       company,
-      adress,
+      address,
       apartment,
       postalCode,
       status,
@@ -25,7 +25,7 @@ async function createCustomerOrder(request, response) {
         phone,
         email,
         company,
-        adress,
+        address,
         apartment,
         postalCode,
         status,
@@ -51,7 +51,7 @@ async function updateCustomerOrder(request, response) {
       phone,
       email,
       company,
-      adress,
+      address,
       apartment,
       postalCode,
       dateTime,
@@ -82,7 +82,7 @@ async function updateCustomerOrder(request, response) {
         phone,
         email,
         company,
-        adress,
+        address,
         apartment,
         postalCode,
         dateTime,
@@ -129,11 +129,15 @@ async function getCustomerOrder(request, response) {
 
 async function getAllOrders(request, response) {
   try {
-    const orders = await prisma.customer_order.findMany({});
+    const orders = await prisma.customer_order.findMany({
+      orderBy: {
+        dateTime: 'desc'
+      }
+    });
     return response.json(orders);
   } catch (error) {
-    console.log(error);
-    return response.status(500).json({ error: "Error fetching orders" });
+    console.error("Error fetching orders:", error);
+    return response.status(500).json({ error: "Error fetching orders", details: error.message });
   }
 }
 

@@ -1,11 +1,12 @@
 "use client";
 import { SectionTitle } from "@/components";
-import { useProductStore } from "../_zustand/store";
+import { useProductStore } from "../store/store";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { isValidCardNumber, isValidCreditCardCVVOrCVC, isValidCreditCardExpirationDate, isValidEmailAddressFormat, isValidNameOrLastname } from "@/lib/utils";
+import { getProductImageUrl } from "@/utils/cdn";
 
 const CheckoutPage = () => {
   const [checkoutForm, setCheckoutForm] = useState({
@@ -18,7 +19,7 @@ const CheckoutPage = () => {
     expirationDate: "",
     cvc: "",
     company: "",
-    adress: "",
+    address: "",
     apartment: "",
     city: "",
     country: "",
@@ -38,7 +39,7 @@ const CheckoutPage = () => {
       checkoutForm.expirationDate.length > 0 &&
       checkoutForm.cvc.length > 0 &&
       checkoutForm.company.length > 0 &&
-      checkoutForm.adress.length > 0 &&
+      checkoutForm.address.length > 0 &&
       checkoutForm.apartment.length > 0 &&
       checkoutForm.city.length > 0 &&
       checkoutForm.country.length > 0 &&
@@ -82,7 +83,7 @@ const CheckoutPage = () => {
       }
 
       // sending API request for creating a order
-      const response = fetch("http://localhost:3001/api/orders", {
+      const response = fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/orders`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -93,7 +94,7 @@ const CheckoutPage = () => {
           phone: checkoutForm.phone,
           email: checkoutForm.email,
           company: checkoutForm.company,
-          adress: checkoutForm.adress,
+          address: checkoutForm.address,
           apartment: checkoutForm.apartment,
           postalCode: checkoutForm.postalCode,
           status: "processing",
@@ -123,7 +124,7 @@ const CheckoutPage = () => {
             expirationDate: "",
             cvc: "",
             company: "",
-            adress: "",
+            address: "",
             apartment: "",
             city: "",
             country: "",
@@ -147,7 +148,7 @@ const CheckoutPage = () => {
     productQuantity: number
   ) => {
     // sending API POST request for the table customer_order_product that does many to many relatioship for order and product
-    const response = await fetch("http://localhost:3001/api/order-product", {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/order-product`, {
       method: "POST", // or 'PUT'
       headers: {
         "Content-Type": "application/json",
@@ -160,6 +161,10 @@ const CheckoutPage = () => {
     });
   };
 
+    // Function to get the image source with the correct path
+    const getImageSrc = (imageName: string | undefined) => {
+      return getProductImageUrl(imageName);
+    };
   
 
   useEffect(() => {
@@ -206,19 +211,17 @@ const CheckoutPage = () => {
                   key={product?.id}
                   className="flex items-start space-x-4 py-6"
                 >
-                  <Image
-                    src={product?.image ? `/${product?.image}` : "/product_placeholder.jpg"}
+                  <img
+                    src={getImageSrc(product.image)}
                     alt={product?.title}
-                    width={80}
-                    height={80}
-                    className="h-20 w-20 flex-none rounded-md object-cover object-center"
+                    style={{ width: "80px", height: "80px", objectFit: "cover" }}
                   />
                   <div className="flex-auto space-y-1">
                     <h3>{product?.title}</h3>
                     <p className="text-gray-500">x{product?.amount}</p>
                   </div>
                   <p className="flex-none text-base font-medium">
-                    ${product?.price}
+                    £{product?.price}
                   </p>
                   <p></p>
                 </li>
@@ -228,23 +231,23 @@ const CheckoutPage = () => {
             <dl className="hidden space-y-6 border-t border-gray-200 pt-6 text-sm font-medium text-gray-900 lg:block">
               <div className="flex items-center justify-between">
                 <dt className="text-gray-600">Subtotal</dt>
-                <dd>${total}</dd>
+                <dd>£{total}</dd>
               </div>
 
               <div className="flex items-center justify-between">
                 <dt className="text-gray-600">Shipping</dt>
-                <dd>$5</dd>
+                <dd>£5</dd>
               </div>
 
               <div className="flex items-center justify-between">
                 <dt className="text-gray-600">Taxes</dt>
-                <dd>${total / 5}</dd>
+                <dd>£{total / 5}</dd>
               </div>
 
               <div className="flex items-center justify-between border-t border-gray-200 pt-6">
                 <dt className="text-base">Total</dt>
                 <dd className="text-base">
-                  ${total === 0 ? 0 : Math.round(total + total / 5 + 5)}
+                  £{total === 0 ? 0 : Math.round(total + total / 5 + 5)}
                 </dd>
               </div>
             </dl>
@@ -520,11 +523,11 @@ const CheckoutPage = () => {
                       name="address"
                       autoComplete="street-address"
                       className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                      value={checkoutForm.adress}
+                      value={checkoutForm.address}
                       onChange={(e) =>
                         setCheckoutForm({
                           ...checkoutForm,
-                          adress: e.target.value,
+                          address: e.target.value,
                         })
                       }
                     />
@@ -660,7 +663,8 @@ const CheckoutPage = () => {
               <button
                 type="button"
                 onClick={makePurchase}
-                className="w-full rounded-md border border-transparent bg-blue-500 px-20 py-2 text-lg font-medium text-white shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 focus:ring-offset-gray-50 sm:order-last"
+                className="w-full mb-6 rounded-md border border-transparent bg-blue-500 px-20 py-2 text-lg font-medium text-white shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 focus:ring-offset-gray-50 sm:order-last"
+                      
               >
                 Pay Now
               </button>

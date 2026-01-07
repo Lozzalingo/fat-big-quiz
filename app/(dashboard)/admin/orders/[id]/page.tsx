@@ -30,7 +30,7 @@ const AdminSingleOrder = () => {
   const [orderProducts, setOrderProducts] = useState<OrderProduct[]>();
   const [order, setOrder] = useState<Order>({
     id: "",
-    adress: "",
+    address: "",
     apartment: "",
     company: "",
     dateTime: "",
@@ -52,7 +52,7 @@ const AdminSingleOrder = () => {
   useEffect(() => {
     const fetchOrderData = async () => {
       const response = await fetch(
-        `http://localhost:3001/api/orders/${params?.id}`
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/orders/${params?.id}`
       );
       const data: Order = await response.json();
       setOrder(data);
@@ -60,7 +60,7 @@ const AdminSingleOrder = () => {
 
     const fetchOrderProducts = async () => {
       const response = await fetch(
-        `http://localhost:3001/api/order-product/${params?.id}`
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/order-product/${params?.id}`
       );
       const data: OrderProduct[] = await response.json();
       setOrderProducts(data);
@@ -77,7 +77,7 @@ const AdminSingleOrder = () => {
       order?.phone.length > 0 &&
       order?.email.length > 0 &&
       order?.company.length > 0 &&
-      order?.adress.length > 0 &&
+      order?.address.length > 0 &&
       order?.apartment.length > 0 &&
       order?.city.length > 0 &&
       order?.country.length > 0 &&
@@ -98,7 +98,7 @@ const AdminSingleOrder = () => {
         return;
       }
 
-      fetch(`http://localhost:3001/api/orders/${order?.id}`, {
+      fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/orders/${order?.id}`, {
         method: "PUT", // or 'PUT'
         headers: {
           "Content-Type": "application/json",
@@ -126,11 +126,11 @@ const AdminSingleOrder = () => {
     };
 
     fetch(
-      `http://localhost:3001/api/order-product/${order?.id}`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/order-product/${order?.id}`,
       requestOptions
     ).then((response) => {
       fetch(
-        `http://localhost:3001/api/orders/${order?.id}`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/orders/${order?.id}`,
         requestOptions
       ).then((response) => {
         toast.success("Order deleted successfully");
@@ -140,9 +140,9 @@ const AdminSingleOrder = () => {
   };
 
   return (
-    <div className="bg-white flex justify-start max-w-screen-2xl mx-auto xl:h-full max-xl:flex-col max-xl:gap-y-5">
+    <div className="bg-white flex min-h-screen">
       <DashboardSidebar />
-      <div className="flex flex-col gap-y-7 xl:ml-5 w-full max-xl:px-5">
+      <div className="flex-1 min-w-0 p-4 overflow-auto flex flex-col gap-y-7">
         <h1 className="text-3xl font-semibold">Order details</h1>
         <div className="mt-5">
           <label className="w-full">
@@ -200,7 +200,7 @@ const AdminSingleOrder = () => {
         <div>
           <label className="form-control w-full max-w-xs">
             <div className="label">
-              <span className="label-text">Email adress:</span>
+              <span className="label-text">Email address:</span>
             </div>
             <input
               type="email"
@@ -234,8 +234,8 @@ const AdminSingleOrder = () => {
               <input
                 type="text"
                 className="input input-bordered w-full max-w-xs"
-                value={order?.adress}
-                onChange={(e) => setOrder({ ...order, adress: e.target.value })}
+                value={order?.address}
+                onChange={(e) => setOrder({ ...order, address: e.target.value })}
               />
             </label>
           </div>
@@ -358,17 +358,17 @@ const AdminSingleOrder = () => {
                   {product?.product?.title}
                 </Link>
                 <p>
-                  ${product?.product?.price} * {product?.quantity} items
+                  £{product?.product?.price} * {product?.quantity} items
                 </p>
               </div>
             </div>
           ))}
           <div className="flex flex-col gap-y-2 mt-10">
-            <p className="text-2xl">Subtotal: ${order?.total}</p>
-            <p className="text-2xl">Tax 20%: ${order?.total / 5}</p>
-            <p className="text-2xl">Shipping: $5</p>
+            <p className="text-2xl">Subtotal: £{order?.total}</p>
+            <p className="text-2xl">Tax 20%: £{order?.total / 5}</p>
+            <p className="text-2xl">Shipping: £5</p>
             <p className="text-3xl font-semibold">
-              Total: ${order?.total + order?.total / 5 + 5}
+              Total: £{order?.total + order?.total / 5 + 5}
             </p>
           </div>
           <div className="flex gap-x-2 max-sm:flex-col mt-5">

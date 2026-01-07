@@ -18,7 +18,6 @@ export const authOptions: any = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials: any) {
-
         try {
           const user = await prisma.user.findFirst({
             where: {
@@ -34,6 +33,7 @@ export const authOptions: any = {
               return user;
             }
           }
+          return null;
         } catch (err: any) {
           throw new Error(err);
         }
@@ -50,7 +50,7 @@ export const authOptions: any = {
     // ...add more providers here if you want. You can find them on nextauth website.
   ],
   callbacks: {
-    async signIn({ user, account }: { user: AuthUser; account: Account }) {
+    async signIn({ account }: { user: AuthUser; account: Account }) {
       if (account?.provider == "credentials") {
         return true;
       }

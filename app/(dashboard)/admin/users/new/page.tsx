@@ -1,7 +1,8 @@
 "use client";
 import { DashboardSidebar } from "@/components";
+import { UserProfileForm } from "@/app/(dashboard)/admin/users/UserComponents";
 import { isValidEmailAddressFormat } from "@/lib/utils";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import toast from "react-hot-toast";
 
 const DashboardCreateNewUser = () => {
@@ -9,9 +10,13 @@ const DashboardCreateNewUser = () => {
     email: "",
     password: "",
     role: "user",
+    firstName: "",
+    lastName: "",
+    bio: ""
   });
+  const [isLoading, setIsLoading] = useState(false);
 
-  const addNewUser = () => {
+  const addNewUser = async () => {
     if (
       userInput.email.length > 3 &&
       userInput.role.length > 0 &&
@@ -23,102 +28,78 @@ const DashboardCreateNewUser = () => {
       }
 
       if (userInput.password.length > 7) {
-        const requestOptions: any = {
-          method: "post",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(userInput),
-        };
-        fetch(`http://localhost:3001/api/users`, requestOptions)
-          .then((response) => {
-            if(response.status === 201){
-              return response.json();
-
-            }else{
-              
-              throw Error("Error while creating user");
-            }
-          })
-          .then((data) => {
+        setIsLoading(true);
+        try {
+          const requestOptions = {
+            method: "post",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(userInput),
+          };
+          
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users`, 
+            requestOptions
+          );
+            
+          if (response.status === 201) {
+            await response.json();
             toast.success("User added successfully");
             setUserInput({
               email: "",
               password: "",
               role: "user",
+              firstName: "",
+              lastName: "",
+              bio: ""
             });
-          }).catch(error => {
-            toast.error("Error while creating user");
-          });
+          } else {
+            throw Error("Error while creating user");
+          }
+        } catch (error) {
+          console.error("Error creating user:", error);
+          toast.error("Error while creating user");
+        } finally {
+          setIsLoading(false);
+        }
       } else {
         toast.error("Password must be longer than 7 characters");
       }
     } else {
-      toast.error("You must enter all input values to add a user");
+      toast.error("You must enter all required values to add a user");
     }
   };
 
   return (
-    <div className="bg-white flex justify-start max-w-screen-2xl mx-auto xl:h-full max-xl:flex-col max-xl:gap-y-5">
+    <div className="bg-white flex min-h-screen">
       <DashboardSidebar />
-      <div className="flex flex-col gap-y-7 xl:pl-5 max-xl:px-5 w-full">
-        <h1 className="text-3xl font-semibold">Add new user</h1>
-        <div>
-          <label className="form-control w-full max-w-xs">
-            <div className="label">
-              <span className="label-text">Email:</span>
-            </div>
-            <input
-              type="email"
-              className="input input-bordered w-full max-w-xs"
-              value={userInput.email}
-              onChange={(e) =>
-                setUserInput({ ...userInput, email: e.target.value })
-              }
-            />
-          </label>
-        </div>
-
-        <div>
-          <label className="form-control w-full max-w-xs">
-            <div className="label">
-              <span className="label-text">Password:</span>
-            </div>
-            <input
-              type="password"
-              className="input input-bordered w-full max-w-xs"
-              value={userInput.password}
-              onChange={(e) =>
-                setUserInput({ ...userInput, password: e.target.value })
-              }
-            />
-          </label>
-        </div>
-
-        <div>
-          <label className="form-control w-full max-w-xs">
-            <div className="label">
-              <span className="label-text">User role: </span>
-            </div>
-            <select
-              className="select select-bordered"
-              defaultValue={userInput.role}
-              onChange={(e) =>
-                setUserInput({ ...userInput, role: e.target.value })
-              }
+      <div className="flex-1 min-w-0 p-4 overflow-auto flex flex-col gap-y-7">
+        <h1 className="text-3xl font-semibold">Add New User</h1>
+        
+        <div className="max-w-md">
+          <UserProfileForm 
+            userInput={userInput} 
+            setUserInput={(input) => setUserInput((prev) => ({ ...prev, ...input }))} 
+            isAdmin={true} 
+            isNewUser={true}
+          />
+          
+          <div className="flex gap-x-2 mt-6">
+            <button
+              type="button"
+              className="uppercase bg-blue-500 px-10 py-3 text-lg border-gray-300 font-bold text-white shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 rounded-lg disabled:opacity-70 disabled:cursor-not-allowed"
+              onClick={addNewUser}
+              disabled={isLoading}
             >
-              <option value="admin">admin</option>
-              <option value="user">user</option>
-            </select>
-          </label>
-        </div>
-
-        <div className="flex gap-x-2">
-          <button
-            type="button"
-            className="uppercase bg-blue-500 px-10 py-5 text-lg border border-black border-gray-300 font-bold text-white shadow-sm hover:bg-blue-600 hover:text-white focus:outline-none focus:ring-2"
-            onClick={addNewUser}
-          >
-            Create user
-          </button>
+              {isLoading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                  Creating...
+                </span>
+              ) : (
+                "Create User"
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>

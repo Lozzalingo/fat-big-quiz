@@ -1,17 +1,15 @@
 "use client";
 
 import {
-  CustomButton,
-  QuantityInput,
+  Breadcrumb,
   QuantityInputCart,
-  SectionTitle,
 } from "@/components";
-import Image from "next/image";
 import React from "react";
-import { FaCheck, FaClock, FaCircleQuestion, FaXmark } from "react-icons/fa6";
-import { useProductStore } from "../_zustand/store";
+import { FaXmark } from "react-icons/fa6";
+import { useProductStore } from "../store/store";
 import Link from "next/link";
 import toast from "react-hot-toast";
+import { getProductImageUrl } from "@/utils/cdn";
 
 const CartPage = () => {
   const { products, removeFromCart, calculateTotals, total } =
@@ -23,175 +21,116 @@ const CartPage = () => {
     toast.success("Product removed from the cart");
   };
 
-  return (
-    <div className="bg-white">
-      <SectionTitle title="Cart Page" path="Home | Cart" />
-      <div className="bg-white">
-        <div className="mx-auto max-w-2xl px-4 pb-24 pt-16 sm:px-6 lg:max-w-7xl lg:px-8">
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-            Shopping Cart
-          </h1>
-          <form className="mt-12 lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-12 xl:gap-x-16">
-            <section aria-labelledby="cart-heading" className="lg:col-span-7">
-              <h2 id="cart-heading" className="sr-only">
-                Items in your shopping cart
-              </h2>
+  const getImageSrc = (imageName: string | undefined) => {
+    return getProductImageUrl(imageName);
+  };
 
-              <ul
-                role="list"
-                className="divide-y divide-gray-200 border-b border-t border-gray-200"
-              >
+  return (
+    <div className="text-black bg-white">
+      <div className="max-w-screen-2xl mx-auto px-10 max-sm:px-5">
+        <Breadcrumb />
+        <h2 className="text-2xl font-bold max-sm:text-xl max-[400px]:text-lg uppercase">
+          Cart
+        </h2>
+        <div className="divider"></div>
+
+        {products.length === 0 ? (
+          <div className="py-16 text-center">
+            <p className="text-gray-500 mb-4">Your cart is empty</p>
+            <Link
+              href="/shop"
+              className="text-sm uppercase tracking-wide hover:underline"
+            >
+              Continue Shopping
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-12 gap-y-8">
+            {/* Cart Items */}
+            <div className="lg:col-span-7">
+              <ul className="divide-y divide-gray-200">
                 {products.map((product) => (
-                  <li key={product.id} className="flex py-6 sm:py-10">
+                  <li key={product.id} className="flex py-6 gap-4 sm:gap-6">
                     <div className="flex-shrink-0">
-                      <Image
-                        width={192}
-                        height={192}
-                        src={product?.image ? `/${product.image}` : "/product_placeholder.jpg"}
-                        alt="laptop image"
-                        className="h-24 w-24 rounded-md object-cover object-center sm:h-48 sm:w-48"
+                      <img
+                        src={getImageSrc(product.image)}
+                        alt={product.title}
+                        className="w-24 h-24 sm:w-32 sm:h-32 object-cover"
                       />
                     </div>
 
-                    <div className="ml-4 flex flex-1 flex-col justify-between sm:ml-6">
-                      <div className="relative pr-9 sm:grid sm:grid-cols-2 sm:gap-x-6 sm:pr-0">
+                    <div className="flex flex-1 flex-col justify-between">
+                      <div className="flex justify-between">
                         <div>
-                          <div className="flex justify-between">
-                            <h3 className="text-sm">
-                              <Link
-                                href={`#`}
-                                className="font-medium text-gray-700 hover:text-gray-800"
-                              >
-                                {product.title}
-                              </Link>
-                            </h3>
-                          </div>
-                          {/* <div className="mt-1 flex text-sm">
-                        <p className="text-gray-500">{product.color}</p>
-                        {product.size ? (
-                          <p className="ml-4 border-l border-gray-200 pl-4 text-gray-500">{product.size}</p>
-                        ) : null}
-                      </div> */}
-                          <p className="mt-1 text-sm font-medium text-gray-900">
-                            ${product.price}
+                          <h3 className="text-sm font-medium">
+                            <Link
+                              href={`/product/${product.slug || product.id}`}
+                              className="hover:underline"
+                            >
+                              {product.title}
+                            </Link>
+                          </h3>
+                          <p className="mt-1 text-sm font-medium">
+                            £{product.price}
                           </p>
                         </div>
-
-                        <div className="mt-4 sm:mt-0 sm:pr-9">
-                          <QuantityInputCart product={product} />
-                          <div className="absolute right-0 top-0">
-                            <button
-                              onClick={() => handleRemoveItem(product.id)}
-                              type="button"
-                              className="-m-2 inline-flex p-2 text-gray-400 hover:text-gray-500"
-                            >
-                              <span className="sr-only">Remove</span>
-                              <FaXmark className="h-5 w-5" aria-hidden="true" />
-                            </button>
-                          </div>
-                        </div>
+                        <button
+                          onClick={() => handleRemoveItem(product.id)}
+                          type="button"
+                          className="text-gray-400 hover:text-gray-600"
+                        >
+                          <span className="sr-only">Remove</span>
+                          <FaXmark className="h-5 w-5" />
+                        </button>
                       </div>
 
-                      <p className="mt-4 flex space-x-2 text-sm text-gray-700">
-                        {1 ? (
-                          <FaCheck
-                            className="h-5 w-5 flex-shrink-0 text-green-500"
-                            aria-hidden="true"
-                          />
-                        ) : (
-                          <FaClock
-                            className="h-5 w-5 flex-shrink-0 text-gray-300"
-                            aria-hidden="true"
-                          />
-                        )}
-
-                        <span>{1 ? "In stock" : `Ships in 3 days`}</span>
-                      </p>
+                      <div className="mt-4">
+                        <QuantityInputCart product={product} />
+                      </div>
                     </div>
                   </li>
                 ))}
               </ul>
-            </section>
+            </div>
 
-            {/* Order summary */}
-            <section
-              aria-labelledby="summary-heading"
-              className="mt-16 rounded-lg bg-gray-50 px-4 py-6 sm:p-6 lg:col-span-5 lg:mt-0 lg:p-8"
-            >
-              <h2
-                id="summary-heading"
-                className="text-lg font-medium text-gray-900"
-              >
-                Order summary
-              </h2>
+            {/* Order Summary */}
+            <div className="lg:col-span-5">
+              <div className="border border-gray-200 p-6">
+                <h3 className="text-sm font-medium uppercase tracking-wide mb-4">
+                  Order Summary
+                </h3>
 
-              <dl className="mt-6 space-y-4">
-                <div className="flex items-center justify-between">
-                  <dt className="text-sm text-gray-600">Subtotal</dt>
-                  <dd className="text-sm font-medium text-gray-900">
-                    ${total}
-                  </dd>
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Subtotal</span>
+                    <span className="font-medium">£{total.toFixed(2)}</span>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between border-t border-gray-200 pt-4">
-                  <dt className="flex items-center text-sm text-gray-600">
-                    <span>Shipping estimate</span>
-                    <a
-                      href="#"
-                      className="ml-2 flex-shrink-0 text-gray-400 hover:text-gray-500"
-                    >
-                      <span className="sr-only">
-                        Learn more about how shipping is calculated
-                      </span>
-                      <FaCircleQuestion
-                        className="h-5 w-5"
-                        aria-hidden="true"
-                      />
-                    </a>
-                  </dt>
-                  <dd className="text-sm font-medium text-gray-900">$5.00</dd>
+
+                <div className="border-t border-gray-200 mt-4 pt-4">
+                  <div className="flex justify-between text-sm font-medium">
+                    <span>Total</span>
+                    <span>£{total.toFixed(2)}</span>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between border-t border-gray-200 pt-4">
-                  <dt className="flex text-sm text-gray-600">
-                    <span>Tax estimate</span>
-                    <a
-                      href="#"
-                      className="ml-2 flex-shrink-0 text-gray-400 hover:text-gray-500"
-                    >
-                      <span className="sr-only">
-                        Learn more about how tax is calculated
-                      </span>
-                      <FaCircleQuestion
-                        className="h-5 w-5"
-                        aria-hidden="true"
-                      />
-                    </a>
-                  </dt>
-                  <dd className="text-sm font-medium text-gray-900">
-                    ${total / 5}
-                  </dd>
-                </div>
-                <div className="flex items-center justify-between border-t border-gray-200 pt-4">
-                  <dt className="text-base font-medium text-gray-900">
-                    Order total
-                  </dt>
-                  <dd className="text-base font-medium text-gray-900">
-                    ${total === 0 ? 0 : Math.round(total + total / 5 + 5)}
-                  </dd>
-                </div>
-              </dl>
-              {products.length > 0 && (
-                <div className="mt-6">
-                  <Link
-                    href="/checkout"
-                    className="block flex justify-center items-center w-full uppercase bg-white px-4 py-3 text-base border border-black border-gray-300 font-bold text-blue-600 shadow-sm hover:bg-black hover:bg-gray-100 focus:outline-none focus:ring-2"
-                  >
-                    <span>Checkout</span>
-                  </Link>
-                </div>
-              )}
-            </section>
-          </form>
-        </div>
+
+                <Link
+                  href="/checkout"
+                  className="mt-6 block w-full bg-black text-white text-center text-xs font-medium uppercase tracking-wide py-3 hover:bg-gray-800 transition-colors"
+                >
+                  Checkout
+                </Link>
+
+                <Link
+                  href="/shop"
+                  className="mt-3 block w-full text-center text-xs uppercase tracking-wide py-2 hover:underline"
+                >
+                  Continue Shopping
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

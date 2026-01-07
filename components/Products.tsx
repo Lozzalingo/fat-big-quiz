@@ -1,13 +1,3 @@
-// *********************
-// Role of the component: Showing products on the shop page with applied filter and sort
-// Name of the component: Products.tsx
-// Developer: Aleksandar Kuzmanovic
-// Version: 1.0
-// Component call: <Products slug={slug} />
-// Input parameters: { slug }: any
-// Output: products grid
-// *********************
-
 import React from "react";
 import ProductItem from "./ProductItem";
 
@@ -37,17 +27,26 @@ const Products = async ({ slug }: any) => {
     stockMode = "gt";
   }
 
+  // Extract quiz format and category filters from URL params
+  const quizFormatFilter = slug?.searchParams?.quizFormat || "";
+  const categoryFilter = slug?.searchParams?.category || slug?.params?.slug || "";
+
+  // Build query string for quiz format and category filters
+  let extraFilters = "";
+  if (quizFormatFilter) {
+    extraFilters += `filters[quizFormat][$equals]=${quizFormatFilter}&`;
+  }
+  if (categoryFilter) {
+    extraFilters += `filters[category][$equals]=${categoryFilter}&`;
+  }
+
   // sending API request with filtering, sorting and pagination for getting all products
   const data = await fetch(
-    `http://localhost:3001/api/products?filters[price][$lte]=${
+   `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products?filters[price][$lte]=${
       slug?.searchParams?.price || 3000
     }&filters[rating][$gte]=${
       Number(slug?.searchParams?.rating) || 0
-    }&filters[inStock][$${stockMode}]=1&${
-      slug?.params?.slug?.length > 0
-        ? `filters[category][$equals]=${slug?.params?.slug}&`
-        : ""
-    }sort=${slug?.searchParams?.sort}&page=${page}`
+    }&filters[inStock][$${stockMode}]=1&${extraFilters}sort=${slug?.searchParams?.sort}&page=${page}`
   );
 
   const products = await data.json();
@@ -63,7 +62,7 @@ const Products = async ({ slug }: any) => {
   const products = await req.json();
   */
   return (
-    <div className="grid grid-cols-3 justify-items-center gap-x-2 gap-y-5 max-[1300px]:grid-cols-3 max-lg:grid-cols-2 max-[500px]:grid-cols-1">
+    <div className="grid grid-cols-3 justify-items-center gap-x-2 gap-y-5 max-[1300px]:grid-cols-3 max-lg:grid-cols-2">
       {products.length > 0 ? (
         products.map((product: Product) => (
           <ProductItem key={product.id} product={product} color="black" />

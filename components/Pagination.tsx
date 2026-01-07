@@ -9,28 +9,27 @@
 // *********************
 
 "use client";
-import { usePaginationStore } from "@/app/_zustand/paginationStore";
+import { usePaginationStore } from "@/app/store/paginationStore";
 import React from "react";
 
 const Pagination = () => {
-  // getting from Zustand store current page and methods for incrementing and decrementing current page
   const { page, incrementPage, decrementPage } = usePaginationStore();
   return (
-    <div className="join flex justify-center py-16">
+    <div className="flex justify-center items-center gap-0 py-12">
       <button
-        className="join-item btn btn-lg bg-blue-500 text-white hover:bg-white hover:text-blue-500"
+        className="border border-primary bg-white text-primary text-xs font-medium uppercase tracking-wide px-4 py-2.5 hover:bg-primary hover:text-white transition-colors"
         onClick={() => decrementPage()}
       >
-        «
+        Prev
       </button>
-      <button className="join-item btn btn-lg bg-blue-500 text-white hover:bg-white hover:text-blue-500">
-        Page {page}
-      </button>
+      <span className="border-y border-primary bg-primary text-white text-xs font-medium uppercase tracking-wide px-5 py-2.5">
+        {page}
+      </span>
       <button
-        className="join-item btn btn-lg bg-blue-500 text-white hover:bg-white hover:text-blue-500"
+        className="border border-primary bg-white text-primary text-xs font-medium uppercase tracking-wide px-4 py-2.5 hover:bg-primary hover:text-white transition-colors"
         onClick={() => incrementPage()}
       >
-        »
+        Next
       </button>
     </div>
   );

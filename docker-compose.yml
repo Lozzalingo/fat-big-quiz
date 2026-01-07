@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  # Next.js Frontend
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fatbigquiz_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=https://fatbigquiz.com/api
+      - NEXT_PUBLIC_BASE_URL=https://fatbigquiz.com
+      - NEXT_PUBLIC_DO_SPACES_CDN_ENDPOINT=https://aitshirts-laurence-dot-computer.sfo3.cdn.digitaloceanspaces.com
+      - NEXT_PUBLIC_DO_SPACES_FOLDER=fat-big-quiz
+      - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY}
+      - NEXTAUTH_URL=https://fatbigquiz.com
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - DATABASE_URL=mysql://fatbigquiz:${DB_PASSWORD}@db:3306/fatbigquiz
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - fatbigquiz_network
+
+  # Express API Backend
+  api:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: fatbigquiz_api
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DATABASE_URL=mysql://fatbigquiz:${DB_PASSWORD}@db:3306/fatbigquiz
+      - FRONTEND_URL=https://fatbigquiz.com
+      - DO_SPACES_REGION=sfo3
+      - DO_SPACES_BUCKET=aitshirts-laurence-dot-computer
+      - DO_SPACES_KEY=${DO_SPACES_KEY}
+      - DO_SPACES_SECRET=${DO_SPACES_SECRET}
+      - DO_SPACES_FOLDER=fat-big-quiz
+      - DO_SPACES_ENDPOINT=https://sfo3.digitaloceanspaces.com
+      - DO_SPACES_CDN_ENDPOINT=https://aitshirts-laurence-dot-computer.sfo3.cdn.digitaloceanspaces.com
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - RESEND_FROM_EMAIL=noreply@fatbigquiz.com
+      - RESEND_REPLY_TO=${RESEND_REPLY_TO}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - fatbigquiz_network
+
+  # MySQL Database
+  db:
+    image: mysql:8.0
+    container_name: fatbigquiz_db
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+      - MYSQL_DATABASE=fatbigquiz
+      - MYSQL_USER=fatbigquiz
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fatbigquiz_network
+
+volumes:
+  mysql_data:
+
+networks:
+  fatbigquiz_network:
+    driver: bridge

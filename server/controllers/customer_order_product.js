@@ -100,7 +100,7 @@ async function getAllProductOrders(request, response) {
                         phone: true,
                         email: true,
                         company: true,
-                        adress: true,
+                        address: true,
                         apartment: true,
                         postalCode: true,
                         dateTime: true,

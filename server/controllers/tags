@@ -1,0 +1,165 @@
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
+
+async function getAllTags(request, response) {
+  try {
+    const tags = await prisma.tag.findMany({
+      include: {
+        _count: {
+          select: {
+            posts: true,
+          },
+        },
+      },
+    });
+
+    return response.json(tags);
+  } catch (error) {
+    console.error("Error fetching tags:", error);
+    return response.status(500).json({ error: "Error fetching tags" });
+  }
+}
+
+async function getTagByName(request, response) {
+  try {
+    const { name } = request.params;
+
+    const tag = await prisma.tag.findUnique({
+      where: { name },
+      include: {
+        posts: {
+          where: {
+            published: true,
+          },
+          include: {
+            author: {
+              select: {
+                name: true,
+              },
+            },
+            category: {
+              select: {
+                name: true,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+        },
+      },
+    });
+
+    if (!tag) {
+      return response.status(404).json({ error: "Tag not found" });
+    }
+
+    return response.json(tag);
+  } catch (error) {
+    console.error("Error fetching tag:", error);
+    return response.status(500).json({ error: "Error fetching tag" });
+  }
+}
+
+async function createTag(request, response) {
+  try {
+    const { name } = request.body;
+
+    // Check if tag already exists
+    const existingTag = await prisma.tag.findUnique({
+      where: { name },
+    });
+
+    if (existingTag) {
+      return response.status(409).json({ error: "Tag with this name already exists" });
+    }
+
+    // Create the tag
+    const tag = await prisma.tag.create({
+      data: { name },
+    });
+
+    return response.status(201).json(tag);
+  } catch (error) {
+    console.error("Error creating tag:", error);
+    return response.status(500).json({ error: "Error creating tag" });
+  }
+}
+
+async function updateTag(request, response) {
+  try {
+    const id = parseInt(request.params.id); // Convert to integer
+    const { name } = request.body;
+
+    // Check if tag exists
+    const existingTag = await prisma.tag.findUnique({
+      where: { id },
+    });
+
+    if (!existingTag) {
+      return response.status(404).json({ error: "Tag not found" });
+    }
+
+    // Check if name already exists in another tag
+    if (name !== existingTag.name) {
+      const duplicateTag = await prisma.tag.findUnique({
+        where: { name },
+      });
+
+      if (duplicateTag) {
+        return response.status(409).json({ error: "Tag with this name already exists" });
+      }
+    }
+
+    // Update the tag
+    const updatedTag = await prisma.tag.update({
+      where: { id },
+      data: { name },
+    });
+
+    return response.json(updatedTag);
+  } catch (error) {
+    console.error("Error updating tag:", error);
+    return response.status(500).json({ error: "Error updating tag" });
+  }
+}
+
+async function deleteTag(request, response) {
+  try {
+    const id = parseInt(request.params.id); // Convert to integer
+
+    // Check if the tag exists
+    const existingTag = await prisma.tag.findUnique({
+      where: { id },
+    });
+
+    if (!existingTag) {
+      return response.status(404).json({ error: "Tag not found" });
+    }
+
+    // Delete the tag (this will automatically disconnect it from posts due to your schema)
+    await prisma.tag.delete({
+      where: { id },
+    });
+
+    return response.status(204).send();
+  } catch (error) {
+    console.error("Error deleting tag:", error);
+    return response.status(500).json({ error: "Error deleting tag" });
+  }
+}
+
+// Cleanup Prisma client on shutdown
+process.on("SIGTERM", async () => {
+  await prisma.$disconnect();
+  process.exit(0);
+});
+
+// Export all functions
+module.exports = {
+  getAllTags,
+  getTagByName,
+  createTag,
+  updateTag,
+  deleteTag,
+};

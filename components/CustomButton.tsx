@@ -1,13 +1,3 @@
-// *********************
-// Role of the component: Custom button component
-// Name of the component: CustomButton.tsx
-// Developer: Aleksandar Kuzmanovic
-// Version: 1.0
-// Component call: <CustomButton paddingX={paddingX} paddingY={paddingY} text={text} buttonType={buttonType} customWidth={customWidth} textSize={textSize} />
-// Input parameters: CustomButtonProps interface
-// Output: custom button component
-// *********************
-
 import React from "react";
 
 interface CustomButtonProps {

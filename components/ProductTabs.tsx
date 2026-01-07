@@ -1,19 +1,9 @@
-// *********************
-// Role of the component: Single product tabs on the single product page containing product description, main product info and reviews
-// Name of the component: ProductTabs.tsx
-// Developer: Aleksandar Kuzmanovic
-// Version: 1.0
-// Component call: <ProductTabs product={product} />
-// Input parameters: { product: Product }
-// Output: Single product tabs containing product description, main product info and reviews
-// *********************
-
 "use client";
 
 import React, { useState } from "react";
 import RatingPercentElement from "./RatingPercentElement";
 import SingleReview from "./SingleReview";
-import { formatCategoryName } from "@/utils/categoryFormating";
+import { formatCategoryName } from "@/utils/categoryFormatting";
 
 const ProductTabs = ({ product }: { product: Product }) => {
   const [currentProductTab, setCurrentProductTab] = useState<number>(0);
