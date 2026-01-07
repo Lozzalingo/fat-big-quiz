@@ -1,6 +1,6 @@
 "use client";
 
-import React, { forwardRef, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import { motion, AnimatePresence } from "framer-motion";
 import BlogPostItem from "@/components/Blog/BlogPostItem";
@@ -38,8 +38,7 @@ type BlogSectionProps = {
   limit?: number;
 };
 
-const BlogSection = forwardRef<HTMLDivElement, BlogSectionProps>(
-  ({ initialPosts = [], title = "NEWS", limit = 6 }, ref) => {
+export default function BlogSection({ initialPosts = [], title = "NEWS", limit = 6 }: BlogSectionProps) {
     const [posts, setPosts] = useState<BlogPost[]>(initialPosts);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -331,9 +330,4 @@ const BlogSection = forwardRef<HTMLDivElement, BlogSectionProps>(
         </div>
       </div>
     );
-  }
-);
-
-BlogSection.displayName = "BlogSection";
-
-export default BlogSection;
+}
