@@ -32,13 +32,10 @@ type BlogPost = {
 
 type CategoryFilter = string | null;
 
-type BlogSectionProps = {
-  initialPosts?: BlogPost[];
-  title?: string;
-  limit?: number;
-};
-
-export default function BlogSection({ initialPosts = [], title = "NEWS", limit = 6 }: BlogSectionProps) {
+export default function BlogSection() {
+  const initialPosts: BlogPost[] = [];
+  const title = "NEWS";
+  const limit = 6;
     const [posts, setPosts] = useState<BlogPost[]>(initialPosts);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
