@@ -268,6 +268,18 @@ enum HomepageCardType {
   FREE
 }
 
+// Global bonus files included with every purchase
+model GlobalDownloadFile {
+  id           String   @id @default(uuid())
+  title        String                      // Display name (e.g., "Meet Laurence")
+  description  String?  @db.Text           // Optional description
+  fileName     String                      // CDN filename
+  displayOrder Int      @default(0)        // Sort order
+  isActive     Boolean  @default(true)     // Can disable without deleting
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
 model Wishlist {
   id        String  @id @default(uuid())
   productId String

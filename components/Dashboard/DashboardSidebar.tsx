@@ -5,7 +5,7 @@ import { MdDashboard } from "react-icons/md";
 import { FaTable } from "react-icons/fa6";
 import { FaRegUser } from "react-icons/fa6";
 import { FaGear } from "react-icons/fa6";
-import { FaBook, FaEnvelope, FaHome } from "react-icons/fa";
+import { FaBook, FaEnvelope, FaHome, FaGift } from "react-icons/fa";
 import { FaBagShopping } from "react-icons/fa6";
 import { MdCategory, MdQuiz } from "react-icons/md";
 import { FaBars } from "react-icons/fa6";
@@ -140,6 +140,7 @@ const DashboardSidebar = () => {
     },
     { path: "/admin/users", icon: <FaRegUser className="text-2xl" />, label: "Users", visibilitySetting: "users" },
     { path: "/admin/homepage-cards", icon: <FaHome className="text-2xl" />, label: "Homepage Cards" },
+    { path: "/admin/global-files", icon: <FaGift className="text-2xl" />, label: "Bonus Files" },
     { path: "/admin/emails", icon: <FaEnvelope className="text-2xl" />, label: "Emails" },
     { path: "/admin/settings", icon: <FaGear className="text-2xl" />, label: "Settings" },
   ];

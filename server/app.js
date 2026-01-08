@@ -35,6 +35,7 @@ const visitorRouter = require("./routes/visitors");
 const purchasesRouter = require('./routes/purchases');
 const quizFormatsRouter = require('./routes/quizFormats');
 const homepageCardsRouter = require('./routes/homepageCards');
+const globalDownloadFilesRouter = require('./routes/globalDownloadFiles');
 const {
   sendPurchaseConfirmationEmail,
   sendOrderConfirmationEmail,
@@ -92,6 +93,7 @@ app.use('/api/visitors', visitorRouter);
 app.use('/api/purchases', purchasesRouter);
 app.use('/api/quiz-formats', quizFormatsRouter);
 app.use('/api/homepage-cards', homepageCardsRouter);
+app.use('/api/global-files', globalDownloadFilesRouter);
 
 // File download route - streams file from S3 to user
 const { getFromSpaces, getKey, FOLDER } = require('./utils/spaces');
@@ -101,8 +103,9 @@ app.get('/api/download/:purchaseId/:token', async (req, res) => {
   try {
     const { purchaseId, token } = req.params;
     const fileIndex = parseInt(req.query.file) || 0;
+    const isGlobal = req.query.global === '1';
 
-    // Get purchase to verify and find file
+    // Get purchase to verify
     const purchase = await prisma.purchase.findUnique({
       where: { id: purchaseId },
       include: {
@@ -124,27 +127,54 @@ app.get('/api/download/:purchaseId/:token', async (req, res) => {
       return res.status(410).json({ error: 'Download link expired' });
     }
 
-    // Parse download files
-    let files = [];
-    try {
-      const parsed = JSON.parse(purchase.product.downloadFile);
-      files = Array.isArray(parsed) ? parsed : [purchase.product.downloadFile];
-    } catch {
-      files = [purchase.product.downloadFile];
-    }
+    let fileName, key, cleanName;
 
-    if (!files[fileIndex]) {
-      return res.status(404).json({ error: 'File not found' });
-    }
+    if (isGlobal) {
+      // Global bonus file - fetch from database and use global-bonus folder
+      const globalFiles = await prisma.globalDownloadFile.findMany({
+        where: { isActive: true },
+        orderBy: { displayOrder: "asc" },
+      });
 
-    const fileName = files[fileIndex];
-    const key = `${FOLDER}/downloads/${fileName}`;
+      // Parse product files to calculate correct global file index
+      let productFiles = [];
+      try {
+        const parsed = JSON.parse(purchase.product.downloadFile);
+        productFiles = Array.isArray(parsed) ? parsed : [purchase.product.downloadFile];
+      } catch {
+        productFiles = [purchase.product.downloadFile];
+      }
+
+      const globalIndex = fileIndex - productFiles.length;
+      if (globalIndex < 0 || globalIndex >= globalFiles.length) {
+        return res.status(404).json({ error: 'File not found' });
+      }
+
+      const globalFile = globalFiles[globalIndex];
+      fileName = globalFile.fileName;
+      key = `${FOLDER}/global-bonus/${fileName}`;
+      cleanName = globalFile.title || fileName.replace(/_\d{13}(\.[^.]+)$/, '$1');
+    } else {
+      // Product file - use downloads folder
+      let files = [];
+      try {
+        const parsed = JSON.parse(purchase.product.downloadFile);
+        files = Array.isArray(parsed) ? parsed : [purchase.product.downloadFile];
+      } catch {
+        files = [purchase.product.downloadFile];
+      }
+
+      if (!files[fileIndex]) {
+        return res.status(404).json({ error: 'File not found' });
+      }
+
+      fileName = files[fileIndex];
+      key = `${FOLDER}/downloads/${fileName}`;
+      cleanName = fileName.replace(/_\d{13}(\.[^.]+)$/, '$1');
+    }
 
     // Get file from S3
     const s3Response = await getFromSpaces(key);
-
-    // Clean filename for download
-    const cleanName = fileName.replace(/_\d{13}(\.[^.]+)$/, '$1');
 
     // Set headers for download
     res.setHeader('Content-Type', s3Response.ContentType || 'application/pdf');

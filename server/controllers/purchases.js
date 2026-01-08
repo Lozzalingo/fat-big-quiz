@@ -202,17 +202,34 @@ async function incrementDownload(request, response) {
       .update(`${purchaseId}-${Date.now()}`)
       .digest("hex");
 
-    // Parse files and create download info for each
-    const files = parseDownloadFiles(downloadFileData);
-    const downloadFiles = files.map((file, index) => ({
+    // Parse product files and create download info for each
+    const productFiles = parseDownloadFiles(downloadFileData);
+    const downloadFiles = productFiles.map((file, index) => ({
       downloadUrl: `/api/download/${purchaseId}/${token}?file=${index}`,
       fileName: cleanFileName(file),
       originalFileName: file,
+      isGlobal: false,
     }));
+
+    // Fetch active global bonus files
+    const globalFiles = await prisma.globalDownloadFile.findMany({
+      where: { isActive: true },
+      orderBy: { displayOrder: "asc" },
+    });
+
+    // Add global files to download list (with special marker)
+    globalFiles.forEach((globalFile, index) => {
+      downloadFiles.push({
+        downloadUrl: `/api/download/${purchaseId}/${token}?file=${productFiles.length + index}&global=1`,
+        fileName: globalFile.title || cleanFileName(globalFile.fileName),
+        originalFileName: globalFile.fileName,
+        isGlobal: true,
+      });
+    });
 
     return response.status(200).json({
       downloadUrl: `/api/download/${purchaseId}/${token}`,
-      fileName: files[0] ? cleanFileName(files[0]) : null,
+      fileName: productFiles[0] ? cleanFileName(productFiles[0]) : null,
       files: downloadFiles,
       remainingDownloads: purchase.product.downloadLimit
         ? purchase.product.downloadLimit - purchase.downloadCount - 1
