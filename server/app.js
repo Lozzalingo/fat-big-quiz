@@ -34,6 +34,7 @@ const settingsRouter = require('./routes/settings');
 const visitorRouter = require("./routes/visitors");
 const purchasesRouter = require('./routes/purchases');
 const quizFormatsRouter = require('./routes/quizFormats');
+const homepageCardsRouter = require('./routes/homepageCards');
 const {
   sendPurchaseConfirmationEmail,
   sendOrderConfirmationEmail,
@@ -90,6 +91,7 @@ app.use('/api/settings', settingsRouter);
 app.use('/api/visitors', visitorRouter);
 app.use('/api/purchases', purchasesRouter);
 app.use('/api/quiz-formats', quizFormatsRouter);
+app.use('/api/homepage-cards', homepageCardsRouter);
 
 // File download route - streams file from S3 to user
 const { getFromSpaces, getKey, FOLDER } = require('./utils/spaces');

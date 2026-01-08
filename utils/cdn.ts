@@ -64,6 +64,13 @@ export function getQuizFormatExplainerUrl(filename: string | null | undefined): 
 }
 
 /**
+ * Get homepage card image URL
+ */
+export function getHomepageCardImageUrl(filename: string | null | undefined): string {
+  return getImageUrl(filename, "homepage-cards");
+}
+
+/**
  * Get blog header image URL
  */
 export function getBlogImageUrl(filename: string | null | undefined): string {

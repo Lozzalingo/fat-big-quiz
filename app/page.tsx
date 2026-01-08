@@ -2,78 +2,33 @@ import { BlogSection, Newsletter } from "@/components";
 import MainHeaderClient from "@/components/MainHeaderClient";
 import { ProductShowcase } from "@/components/landing";
 import Link from "next/link";
-import {
-  FaRocket,
-  FaPlay,
-  FaDownload,
-  FaCalendar,
-  FaDatabase,
-  FaBook,
-} from "react-icons/fa";
+import { getHomepageCardImageUrl } from "@/utils/cdn";
 
 export default async function Home() {
-  const blogData = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/blog?limit=3`
-  ).then((res) => res.json());
+  // Fetch blog posts and homepage cards in parallel
+  const [blogData, cardsData] = await Promise.all([
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/blog?limit=3`, { cache: "no-store" })
+      .then((res) => res.json())
+      .catch(() => ({ posts: [] })),
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/homepage-cards/public`, { cache: "no-store" })
+      .then((res) => res.json())
+      .catch(() => []),
+  ]);
 
-  // Define all product offerings with clear user paths
-  const productOfferings = [
-    {
-      title: "Fat Big Quiz On Stage",
-      description:
-        "Live theatrical quiz experience. 90 minutes of entertainment with professional hosts and amazing prizes.",
-      price: "From £15",
-      href: "/on-stage",
-      image: "/fat-big-quiz-event.png",
-      badge: "Live Events",
-      type: "event" as const,
-    },
-    {
-      title: "Quiz App",
-      description:
-        "Host quizzes with timed rounds, live scoring, QR code join, and real-time leaderboards. Free to start.",
-      price: "Free",
-      href: "https://app.fatbigquiz.com",
-      badge: "Try Free",
-      type: "app" as const,
-    },
-    {
-      title: "Weekly Quiz Pack",
-      description:
-        "Fresh quiz content delivered every week. Perfect for pubs and regular quiz nights.",
-      price: "£4.99/mo",
-      href: "/weekly-pack",
-      badge: "Popular",
-      type: "subscription" as const,
-    },
-    {
-      title: "Quiz Downloads",
-      description:
-        "One-off quiz packs for special occasions. Instant download after purchase.",
-      price: "From £4.99",
-      href: "/shop",
-      badge: "Instant",
-      type: "download" as const,
-    },
-    {
-      title: "Questions Database",
-      description:
-        "Access thousands of questions across hundreds of categories. Build your own quizzes.",
-      price: "£9.99/mo",
-      href: "/quiz-database",
-      badge: "Pro",
-      type: "subscription" as const,
-    },
-    {
-      title: "Free Questions",
-      description:
-        "Browse our blog for free quiz questions, tips, and inspiration.",
-      price: "Free",
-      href: "/blog",
-      badge: "Free",
-      type: "free" as const,
-    },
-  ];
+  // Transform cards to match ProductShowcase format
+  const productOfferings = (cardsData || []).map((card: any) => ({
+    title: card.title,
+    description: card.description,
+    price: card.price,
+    href: card.href,
+    image: card.image
+      ? card.image.startsWith("/")
+        ? card.image
+        : getHomepageCardImageUrl(card.image)
+      : undefined,
+    badge: card.badge,
+    type: card.cardType?.toLowerCase() as "download" | "subscription" | "event" | "app" | "free",
+  }));
 
   return (
     <>

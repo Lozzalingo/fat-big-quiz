@@ -244,6 +244,29 @@ model ProductCategory {
   @@index([categoryId])
 }
 
+model HomepageCard {
+  id           String          @id @default(uuid())
+  title        String
+  description  String          @db.Text
+  price        String          // Flexible: "From £15", "Free", "£4.99/mo"
+  href         String
+  image        String?         // CDN filename
+  badge        String?
+  cardType     HomepageCardType @default(DOWNLOAD)
+  displayOrder Int             @default(0)
+  isActive     Boolean         @default(true)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+}
+
+enum HomepageCardType {
+  DOWNLOAD
+  SUBSCRIPTION
+  EVENT
+  APP
+  FREE
+}
+
 model Wishlist {
   id        String  @id @default(uuid())
   productId String
