@@ -10,23 +10,17 @@ interface GlobalFileFormProps {
   fileId?: string;
 }
 
-interface FormInput {
-  title: string;
-  description: string;
-}
-
 const GlobalFileForm = ({ mode, fileId }: GlobalFileFormProps) => {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [isLoading, setIsLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [formInput, setFormInput] = useState<FormInput>({
-    title: "",
-    description: "",
-  });
-  const [fileName, setFileName] = useState<string>("");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [fileName, setFileName] = useState("");
   const [isActive, setIsActive] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const isEditMode = mode === "edit" && !!fileId;
 
@@ -39,10 +33,8 @@ const GlobalFileForm = ({ mode, fileId }: GlobalFileFormProps) => {
           return res.json();
         })
         .then((data) => {
-          setFormInput({
-            title: data.title || "",
-            description: data.description || "",
-          });
+          setTitle(data.title || "");
+          setDescription(data.description || "");
           setFileName(data.fileName || "");
           setIsActive(data.isActive || false);
         })
@@ -56,91 +48,99 @@ const GlobalFileForm = ({ mode, fileId }: GlobalFileFormProps) => {
     }
   }, [fileId, isEditMode]);
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormInput((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file || !fileId) {
-      if (!fileId) {
-        toast.error("Please save the file entry first before uploading");
+    if (file) {
+      setSelectedFile(file);
+      // Auto-fill title from filename if empty
+      if (!title) {
+        const nameWithoutExt = file.name.replace(/\.[^/.]+$/, "").replace(/_/g, " ");
+        setTitle(nameWithoutExt);
       }
-      return;
-    }
-
-    setUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("uploadedFile", file);
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/global-files/${fileId}/upload`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to upload file");
-      }
-
-      const data = await response.json();
-      setFileName(data.fileName);
-      setIsActive(data.isActive);
-      toast.success("File uploaded successfully");
-    } catch (error: any) {
-      console.error("Error uploading file:", error);
-      toast.error(error.message || "Failed to upload file");
-    } finally {
-      if (event.target) event.target.value = "";
-      setUploading(false);
     }
   };
 
   const handleSubmit = async () => {
-    if (formInput.title.trim().length === 0) {
+    if (!title.trim()) {
       toast.error("Title is required");
+      return;
+    }
+
+    if (!isEditMode && !selectedFile) {
+      toast.error("Please select a file to upload");
       return;
     }
 
     setIsLoading(true);
 
-    const url = isEditMode
-      ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/global-files/${fileId}`
-      : `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/global-files`;
-
-    const method = isEditMode ? "PUT" : "POST";
-
     try {
-      const response = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formInput),
-      });
+      let currentFileId = fileId;
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `Failed to ${isEditMode ? "update" : "create"}`);
-      }
-
-      const data = await response.json();
-      toast.success(`File ${isEditMode ? "updated" : "created"} successfully`);
-
+      // For new files, first create the record
       if (!isEditMode) {
-        // Redirect to edit page so user can upload the file
-        router.push(`/admin/global-files/${data.id}`);
+        const createResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/global-files`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title, description }),
+          }
+        );
+
+        if (!createResponse.ok) {
+          throw new Error("Failed to create file record");
+        }
+
+        const createdFile = await createResponse.json();
+        currentFileId = createdFile.id;
+      } else {
+        // Update existing record
+        const updateResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/global-files/${fileId}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title, description }),
+          }
+        );
+
+        if (!updateResponse.ok) {
+          throw new Error("Failed to update file record");
+        }
       }
+
+      // Upload file if selected
+      if (selectedFile && currentFileId) {
+        setUploading(true);
+        const formData = new FormData();
+        formData.append("uploadedFile", selectedFile);
+
+        const uploadResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/global-files/${currentFileId}/upload`,
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+
+        if (!uploadResponse.ok) {
+          const error = await uploadResponse.json();
+          throw new Error(error.error || "Failed to upload file");
+        }
+
+        const uploadedData = await uploadResponse.json();
+        setFileName(uploadedData.fileName);
+        setIsActive(uploadedData.isActive);
+      }
+
+      toast.success(isEditMode ? "File updated successfully" : "File created successfully");
+      router.push("/admin/global-files");
     } catch (error: any) {
       console.error("Error saving:", error);
       toast.error(error.message || "Failed to save");
     } finally {
       setIsLoading(false);
+      setUploading(false);
     }
   };
 
@@ -207,6 +207,70 @@ const GlobalFileForm = ({ mode, fileId }: GlobalFileFormProps) => {
         ) : (
           <div className="bg-white shadow-md rounded-lg p-6 max-w-2xl">
             <div className="space-y-6">
+              {/* File Upload Section - Show first */}
+              <div className="form-control w-full">
+                <label className="label">
+                  <span className="label-text font-medium">File:</span>
+                </label>
+
+                {fileName || selectedFile ? (
+                  <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                    <FaFile className="text-2xl text-primary" />
+                    <div className="flex-1">
+                      <p className="font-medium truncate">
+                        {selectedFile ? selectedFile.name : fileName}
+                      </p>
+                      {isEditMode && fileName && (
+                        <p className="text-sm text-gray-500">
+                          Status:{" "}
+                          {isActive ? (
+                            <span className="text-green-600">Active</span>
+                          ) : (
+                            <span className="text-gray-500">Inactive</span>
+                          )}
+                        </p>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="btn btn-sm btn-outline"
+                      disabled={uploading}
+                    >
+                      {uploading ? (
+                        <span className="loading loading-spinner loading-sm"></span>
+                      ) : (
+                        "Replace"
+                      )}
+                    </button>
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-primary transition-colors"
+                  >
+                    {uploading ? (
+                      <span className="loading loading-spinner loading-lg"></span>
+                    ) : (
+                      <>
+                        <FaUpload className="text-4xl text-gray-400 mx-auto mb-2" />
+                        <p className="text-gray-500">Click to upload a file</p>
+                        <p className="text-sm text-gray-400 mt-1">
+                          PDF, Images, or ZIP (max 50MB)
+                        </p>
+                      </>
+                    )}
+                  </div>
+                )}
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  className="hidden"
+                  onChange={handleFileSelect}
+                  accept=".pdf,.png,.jpg,.jpeg,.zip"
+                />
+              </div>
+
               {/* Title Field */}
               <div className="form-control w-full">
                 <label className="label">
@@ -214,10 +278,9 @@ const GlobalFileForm = ({ mode, fileId }: GlobalFileFormProps) => {
                 </label>
                 <input
                   type="text"
-                  name="title"
                   className="input input-bordered w-full"
-                  value={formInput.title}
-                  onChange={handleInputChange}
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
                   placeholder="e.g., Meet Laurence - Your Quiz Creator"
                 />
               </div>
@@ -228,85 +291,14 @@ const GlobalFileForm = ({ mode, fileId }: GlobalFileFormProps) => {
                   <span className="label-text font-medium">Description (optional):</span>
                 </label>
                 <textarea
-                  name="description"
                   className="textarea textarea-bordered w-full h-24"
-                  value={formInput.description}
-                  onChange={handleInputChange}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
                   placeholder="A short description of this bonus file..."
                 />
               </div>
 
-              {/* File Upload Section */}
-              {isEditMode && (
-                <div className="form-control w-full">
-                  <label className="label">
-                    <span className="label-text font-medium">File:</span>
-                  </label>
-
-                  {fileName ? (
-                    <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
-                      <FaFile className="text-2xl text-primary" />
-                      <div className="flex-1">
-                        <p className="font-medium truncate">{fileName}</p>
-                        <p className="text-sm text-gray-500">
-                          Status: {isActive ? (
-                            <span className="text-green-600">Active</span>
-                          ) : (
-                            <span className="text-gray-500">Inactive</span>
-                          )}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => fileInputRef.current?.click()}
-                        className="btn btn-sm btn-outline"
-                        disabled={uploading}
-                      >
-                        {uploading ? (
-                          <span className="loading loading-spinner loading-sm"></span>
-                        ) : (
-                          "Replace"
-                        )}
-                      </button>
-                    </div>
-                  ) : (
-                    <div
-                      onClick={() => fileInputRef.current?.click()}
-                      className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-primary transition-colors"
-                    >
-                      {uploading ? (
-                        <span className="loading loading-spinner loading-lg"></span>
-                      ) : (
-                        <>
-                          <FaUpload className="text-4xl text-gray-400 mx-auto mb-2" />
-                          <p className="text-gray-500">Click to upload a file</p>
-                          <p className="text-sm text-gray-400 mt-1">
-                            PDF, Images, or ZIP (max 50MB)
-                          </p>
-                        </>
-                      )}
-                    </div>
-                  )}
-
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    className="hidden"
-                    onChange={handleFileUpload}
-                    accept=".pdf,.png,.jpg,.jpeg,.zip"
-                  />
-                </div>
-              )}
-
-              {!isEditMode && (
-                <div className="alert alert-info">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                  </svg>
-                  <span>Save first to upload a file.</span>
-                </div>
-              )}
-
-              {/* Active Toggle */}
+              {/* Active Toggle - Only show in edit mode with a file */}
               {isEditMode && fileName && (
                 <div className="form-control">
                   <label className="label cursor-pointer justify-start gap-4">
@@ -317,7 +309,9 @@ const GlobalFileForm = ({ mode, fileId }: GlobalFileFormProps) => {
                       onChange={handleToggleActive}
                     />
                     <span className="label-text">
-                      {isActive ? "Active - included in all downloads" : "Inactive - not included in downloads"}
+                      {isActive
+                        ? "Active - included in all downloads"
+                        : "Inactive - not included in downloads"}
                     </span>
                   </label>
                 </div>
@@ -329,9 +323,15 @@ const GlobalFileForm = ({ mode, fileId }: GlobalFileFormProps) => {
                 type="button"
                 className="btn btn-primary"
                 onClick={handleSubmit}
-                disabled={isLoading}
+                disabled={isLoading || uploading}
               >
-                {isEditMode ? "Update" : "Create"}
+                {isLoading || uploading ? (
+                  <span className="loading loading-spinner loading-sm"></span>
+                ) : isEditMode ? (
+                  "Update"
+                ) : (
+                  "Create"
+                )}
               </button>
 
               {isEditMode && (

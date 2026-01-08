@@ -165,8 +165,24 @@ async function uploadGlobalFile(request, response) {
       return response.status(404).json({ error: "Global file not found" });
     }
 
-    if (!request.file) {
+    // express-fileupload puts files in request.files
+    if (!request.files || !request.files.uploadedFile) {
       return response.status(400).json({ error: "No file uploaded" });
+    }
+
+    const uploadedFile = request.files.uploadedFile;
+
+    // Validate file type
+    const allowedTypes = [
+      "application/pdf",
+      "image/png",
+      "image/jpeg",
+      "image/jpg",
+      "application/zip",
+      "application/x-zip-compressed",
+    ];
+    if (!allowedTypes.includes(uploadedFile.mimetype)) {
+      return response.status(400).json({ error: "Only PDF, images, and ZIP files are allowed" });
     }
 
     // Delete old file if exists
@@ -178,8 +194,13 @@ async function uploadGlobalFile(request, response) {
       }
     }
 
-    // Upload new file
-    const fileName = await uploadToSpaces(request.file, "global-bonus");
+    // Upload new file - convert express-fileupload format to expected format
+    const fileForUpload = {
+      buffer: uploadedFile.data,
+      originalname: uploadedFile.name,
+      mimetype: uploadedFile.mimetype,
+    };
+    const fileName = await uploadToSpaces(fileForUpload, "global-bonus");
 
     // Update database
     const file = await prisma.globalDownloadFile.update({

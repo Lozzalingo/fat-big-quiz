@@ -126,6 +126,7 @@ const DashboardSidebar = () => {
         { path: "/admin/categories", icon: <MdCategory className="text-xl" />, label: "Categories" },
         { path: "/admin/quiz-formats", icon: <MdQuiz className="text-xl" />, label: "Quiz Formats" },
         { path: "/admin/discount-codes", icon: <FaTable className="text-xl" />, label: "Discount Codes" },
+        { path: "/admin/global-files", icon: <FaGift className="text-xl" />, label: "Bonus Files" },
       ],
     },
     {
@@ -140,7 +141,6 @@ const DashboardSidebar = () => {
     },
     { path: "/admin/users", icon: <FaRegUser className="text-2xl" />, label: "Users", visibilitySetting: "users" },
     { path: "/admin/homepage-cards", icon: <FaHome className="text-2xl" />, label: "Homepage Cards" },
-    { path: "/admin/global-files", icon: <FaGift className="text-2xl" />, label: "Bonus Files" },
     { path: "/admin/emails", icon: <FaEnvelope className="text-2xl" />, label: "Emails" },
     { path: "/admin/settings", icon: <FaGear className="text-2xl" />, label: "Settings" },
   ];
