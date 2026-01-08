@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1.4
 # Build stage
 FROM node:20-alpine AS builder
 
@@ -6,8 +7,9 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci
+# Install dependencies with cache mount (keeps npm cache between builds)
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci
 
 # Copy prisma schema from server folder for generate
 COPY server/prisma ./prisma
@@ -24,8 +26,9 @@ ENV NEXT_PUBLIC_BASE_URL=https://fatbigquiz.com
 ENV NEXT_PUBLIC_DO_SPACES_CDN_ENDPOINT=https://aitshirts-laurence-dot-computer.sfo3.cdn.digitaloceanspaces.com
 ENV NEXT_PUBLIC_DO_SPACES_FOLDER=fat-big-quiz
 
-# Build the Next.js app
-RUN npm run build
+# Build the Next.js app with cache mount (keeps .next/cache between builds)
+RUN --mount=type=cache,target=/app/.next/cache \
+    npm run build
 
 # Production stage
 FROM node:20-slim AS runner
