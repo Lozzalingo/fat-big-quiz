@@ -57,9 +57,9 @@ const ProductShowcase: React.FC<ProductShowcaseProps> = ({
         {...(cardProps as any)}
         className="group bg-white rounded-xl shadow-sm border border-border overflow-hidden hover:shadow-lg hover:-translate-y-1 hover:border-primary transition-all duration-300 flex flex-col"
       >
-        {/* Image or Gradient Header */}
+        {/* Image or Gradient Header - maintains aspect ratio */}
         {product.image ? (
-          <div className="relative overflow-hidden h-32 sm:h-40">
+          <div className="relative overflow-hidden aspect-[4/3]">
             <img
               src={product.image}
               alt={product.title}
@@ -75,7 +75,7 @@ const ProductShowcase: React.FC<ProductShowcaseProps> = ({
           </div>
         ) : (
           <div
-            className={`${config.color} flex items-center justify-center relative h-24 sm:h-32`}
+            className={`${config.color} flex items-center justify-center relative aspect-[4/3]`}
           >
             <Icon className="text-4xl text-white/30" />
             <div className="absolute top-2 left-2">
