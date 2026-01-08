@@ -190,7 +190,7 @@ export default function BlogSection() {
           </div>
         </div>
 
-        <div className="max-w-screen-2xl mx-auto px-4 md:px-8 py-12" ref={ref}>
+        <div className="max-w-screen-2xl mx-auto px-4 md:px-8 py-12" ref={loadMoreRef}>
           {/* Search and Filters */}
           <div className="flex flex-col lg:flex-row justify-between items-center mb-12 gap-6">
             <div className="w-full lg:w-1/3">
