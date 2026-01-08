@@ -3,6 +3,7 @@ import MainHeaderClient from "@/components/MainHeaderClient";
 import { ProductShowcase } from "@/components/landing";
 import Link from "next/link";
 import { getHomepageCardImageUrl } from "@/utils/cdn";
+import { FaRocket, FaDownload } from "react-icons/fa";
 
 export default async function Home() {
   // Fetch blog posts and homepage cards in parallel
