@@ -804,8 +804,19 @@ const getReferrerStats = async (req, res) => {
       totalVisits += count;
 
       const parsed = parseReferrer(r.referrer);
-      const platform = parsed.source;
-      const category = parsed.category;
+      let platform = parsed.source;
+      let category = parsed.category;
+
+      // Normalize "direct" variations to "Direct"
+      if (platform.toLowerCase() === 'direct') {
+        platform = 'Direct';
+        category = 'Direct';
+      }
+
+      // Skip localhost entries
+      if (platform.toLowerCase().includes('localhost') || platform.includes('127.0.0.1')) {
+        return;
+      }
 
       // Aggregate by platform (Facebook, Google, Instagram, etc.)
       platformCounts[platform] = (platformCounts[platform] || 0) + count;
