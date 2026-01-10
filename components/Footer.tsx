@@ -3,12 +3,19 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { useScroll } from "@/utils/ScrollContext";
 import { FaRocket, FaInstagram, FaTwitter, FaEnvelope } from "react-icons/fa";
 
 const Footer = () => {
+  const pathname = usePathname();
   const { scrollToProducts } = useScroll();
   const currentYear = new Date().getFullYear();
+
+  // Don't render footer on admin pages (admin has its own layout)
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
 
   return (
     <footer className="bg-gradient-to-b from-primary-dark to-primary text-white" aria-labelledby="footer-heading">

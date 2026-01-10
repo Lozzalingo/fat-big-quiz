@@ -121,6 +121,11 @@ const EnhancedHeader = () => {
     { href: "/blog", label: "Blog", icon: FaBook },
   ];
 
+  // Don't render main header on admin pages (admin has its own sidebar)
+  if (isAdminPage) {
+    return null;
+  }
+
   return (
     <header className={`sticky top-0 z-50 w-full transition-all duration-300 ${scrolled ? 'shadow-xl' : 'shadow-lg'}`}>
       {/* Main Navigation */}
