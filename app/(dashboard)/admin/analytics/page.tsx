@@ -123,6 +123,7 @@ interface Activity {
   id: string;
   path: string;
   eventType: string;
+  eventData: string | { buttonName?: string; button?: string } | null;
   country: string;
   city: string;
   deviceType: string;
@@ -313,6 +314,16 @@ export default function AnalyticsDashboard() {
     }
   };
 
+  const getButtonName = (eventData: Activity["eventData"]): string | null => {
+    if (!eventData) return null;
+    try {
+      const data = typeof eventData === "string" ? JSON.parse(eventData) : eventData;
+      return data?.buttonName || data?.button || null;
+    } catch {
+      return null;
+    }
+  };
+
   // Stat Card Component
   const StatCard = ({
     title,
@@ -372,26 +383,28 @@ export default function AnalyticsDashboard() {
       <DashboardSidebar />
       <div className="flex-1 min-w-0 p-6 overflow-auto">
         {/* Header */}
-        <div className="mb-6 flex justify-between items-center flex-wrap gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800">Analytics</h1>
-            <p className="text-gray-500 mt-1">Comprehensive visitor insights and metrics</p>
-          </div>
-          <div className="flex gap-2">
-            {timeRanges.map((range) => (
-              <button
-                key={range.value}
-                onClick={() => setTimeRange(range.value)}
-                data-track-button={`Analytics:Time Range ${range.label}`}
-                className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
-                  timeRange === range.value
-                    ? "bg-blue-600 text-white"
-                    : "bg-white text-gray-600 hover:bg-gray-100 border"
-                }`}
-              >
-                {range.label}
-              </button>
-            ))}
+        <div className="mb-8">
+          <div className="flex justify-between items-start flex-wrap gap-4 mb-4">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-800">Analytics</h1>
+              <p className="text-gray-500 mt-1">Comprehensive visitor insights and metrics</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {timeRanges.map((range) => (
+                <button
+                  key={range.value}
+                  onClick={() => setTimeRange(range.value)}
+                  data-track-button={`Analytics:Time Range ${range.label}`}
+                  className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                    timeRange === range.value
+                      ? "bg-blue-600 text-white"
+                      : "bg-white text-gray-600 hover:bg-gray-100 border"
+                  }`}
+                >
+                  {range.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -926,22 +939,31 @@ export default function AnalyticsDashboard() {
                         {new Date(activity.timestamp).toLocaleTimeString()}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-900 max-w-xs truncate">{activity.path}</td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <span
-                          className={`px-2 py-1 text-xs rounded-full ${
-                            activity.eventType === "page_view"
-                              ? "bg-blue-100 text-blue-800"
-                              : activity.eventType === "product_view"
-                              ? "bg-purple-100 text-purple-800"
-                              : activity.eventType === "add_to_cart"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : activity.eventType === "purchase"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-gray-100 text-gray-800"
-                          }`}
-                        >
-                          {activity.eventType}
-                        </span>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-col gap-1">
+                          <span
+                            className={`px-2 py-1 text-xs rounded-full inline-block w-fit ${
+                              activity.eventType === "page_view"
+                                ? "bg-blue-100 text-blue-800"
+                                : activity.eventType === "product_view"
+                                ? "bg-purple-100 text-purple-800"
+                                : activity.eventType === "add_to_cart"
+                                ? "bg-yellow-100 text-yellow-800"
+                                : activity.eventType === "purchase"
+                                ? "bg-green-100 text-green-800"
+                                : activity.eventType === "button_click"
+                                ? "bg-orange-100 text-orange-800"
+                                : "bg-gray-100 text-gray-800"
+                            }`}
+                          >
+                            {activity.eventType}
+                          </span>
+                          {activity.eventType === "button_click" && getButtonName(activity.eventData) && (
+                            <span className="text-xs text-gray-600 font-medium truncate max-w-[200px]">
+                              {getButtonName(activity.eventData)}
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
                         {activity.city}, {activity.country}

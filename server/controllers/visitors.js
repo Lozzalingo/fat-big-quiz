@@ -805,6 +805,7 @@ const getRecentActivity = async (req, res) => {
         id: true,
         path: true,
         eventType: true,
+        eventData: true,
         country: true,
         city: true,
         deviceType: true,
