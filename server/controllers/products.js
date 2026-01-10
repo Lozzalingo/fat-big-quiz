@@ -253,7 +253,7 @@ async function getAllProducts(request, response) {
     }
 
     if (sortByValue === "defaultSort") {
-      sortObj = {};
+      sortObj = { displayOrder: "asc" };
     } else if (sortByValue === "titleAsc") {
       sortObj = {
         title: "asc",
