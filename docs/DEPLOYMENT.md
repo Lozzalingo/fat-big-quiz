@@ -91,6 +91,29 @@ docker run -d \
 
 **ALWAYS use `--env-file /root/fat-big-quiz/.env`** when starting containers.
 
+---
+
+## Google Service Account Files (NOT in Git!)
+
+These files contain private keys and must be manually copied to the server. They are in `.gitignore` and NOT stored in the repository.
+
+| File | Purpose | Search Console Permission |
+|------|---------|--------------------------|
+| `server/config/google-merchant-credentials.json` | Google Merchant Center API | N/A |
+| `server/config/google-service-account.json` | Google Indexing API | Owner on fatbigquiz.com |
+
+### Setup Instructions
+
+1. Download JSON keys from [Google Cloud Console](https://console.cloud.google.com/) → IAM & Admin → Service Accounts
+2. Upload to server:
+   ```bash
+   scp your-key.json root@157.245.42.21:/root/fat-big-quiz/server/config/google-service-account.json
+   chmod 600 /root/fat-big-quiz/server/config/google-service-account.json
+   ```
+3. For Indexing API: Add the service account email as **Owner** in [Search Console](https://search.google.com/search-console) → Settings → Users and Permissions
+
+See `docs/google-indexing-setup.md` for detailed setup.
+
 **NEVER manually pass individual `-e` flags** like:
 ```bash
 # DO NOT DO THIS - you will miss variables!

@@ -52,6 +52,10 @@ services:
       - RESEND_API_KEY=${RESEND_API_KEY}
       - RESEND_FROM_EMAIL=noreply@fatbigquiz.com
       - RESEND_REPLY_TO=${RESEND_REPLY_TO}
+      - GOOGLE_MERCHANT_ID=5708205694
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/config/google-merchant-credentials.json
+    volumes:
+      - ./server/config:/app/config:ro
     depends_on:
       db:
         condition: service_healthy

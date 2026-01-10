@@ -41,6 +41,7 @@ next-env.d.ts
 
 # Sensitive files - NEVER commit these
 server/config/google-merchant-credentials.json
+server/config/google-service-account.json
 server/config/*.json
 **/credentials*.json
 **/service-account*.json

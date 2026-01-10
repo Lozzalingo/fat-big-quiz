@@ -3,6 +3,7 @@ const prisma = new PrismaClient();
 const { deleteFromSpaces, getKey } = require("../utils/spaces");
 const merchantApi = require("../services/merchantApi");
 const { formatProductForMerchant } = require("../utils/merchantFeed");
+const googleIndexing = require("../services/googleIndexing");
 
 /**
  * Sync a product to Google Merchant Center (non-blocking)
@@ -57,6 +58,29 @@ async function removeProductFromMerchant(productId) {
     }
   } catch (error) {
     console.error(`[Merchant] Error removing product ${productId}:`, error.message);
+  }
+}
+
+/**
+ * Submit a product URL for Google indexing (non-blocking)
+ * Call this after creating or updating a product
+ */
+async function submitProductForIndexing(slug, type = "URL_UPDATED") {
+  if (!googleIndexing.isConfigured()) {
+    return; // Skip if not configured
+  }
+
+  try {
+    const url = `https://fatbigquiz.com/product/${slug}`;
+    const result = await googleIndexing.submitUrl(url, type);
+
+    if (result.success) {
+      console.log(`[Indexing] Submitted for indexing: ${url}`);
+    } else {
+      console.error(`[Indexing] Failed to submit ${url}:`, result.error);
+    }
+  } catch (error) {
+    console.error(`[Indexing] Error submitting product ${slug}:`, error.message);
   }
 }
 
@@ -394,6 +418,8 @@ async function createProduct(request, response) {
     });
     // Auto-sync to Google Merchant Center (non-blocking)
     syncProductToMerchant(product.id).catch(() => {});
+    // Auto-submit for Google indexing (non-blocking)
+    submitProductForIndexing(product.slug).catch(() => {});
 
     return response.status(201).json(product);
   } catch (error) {
@@ -493,6 +519,8 @@ async function updateProduct(request, response) {
 
     // Auto-sync to Google Merchant Center (non-blocking)
     syncProductToMerchant(id).catch(() => {});
+    // Auto-submit for Google indexing (non-blocking)
+    submitProductForIndexing(productWithRelations.slug).catch(() => {});
 
     return response.status(200).json(productWithRelations);
   } catch (error) {
@@ -527,10 +555,10 @@ async function deleteProduct(request, response) {
       });
     }
 
-    // Get the product first to clean up files
+    // Get the product first to clean up files and notify indexing
     const product = await prisma.product.findUnique({
       where: { id },
-      select: { mainImage: true, downloadFile: true },
+      select: { mainImage: true, downloadFile: true, slug: true },
     });
 
     if (product) {
@@ -575,6 +603,10 @@ async function deleteProduct(request, response) {
 
     // Remove from Google Merchant Center before deleting (non-blocking)
     removeProductFromMerchant(id).catch(() => {});
+    // Notify Google Indexing API of deletion (non-blocking)
+    if (product?.slug) {
+      submitProductForIndexing(product.slug, "URL_DELETED").catch(() => {});
+    }
 
     // Delete all related records first (in order to avoid FK constraints)
     await prisma.productCategory.deleteMany({ where: { productId: id } });
