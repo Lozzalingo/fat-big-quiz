@@ -318,6 +318,11 @@ function categorizeReferrer(referrer) {
 
   const ref = referrer.toLowerCase();
 
+  // Internal navigation (same site) - treat as Direct
+  if (/fatbigquiz\.com/i.test(ref)) {
+    return "Direct";
+  }
+
   // Search engines
   if (/google\.|bing\.|yahoo\.|duckduckgo\.|baidu\.|yandex\.|ecosia\./i.test(ref)) {
     return "Organic Search";
@@ -647,10 +652,19 @@ const getReferrerStats = async (req, res) => {
       orderBy: { _count: { referrerCategory: 'desc' } },
     });
 
-    // Top referrers
+    // Top referrers (exclude internal navigation)
     const referrers = await prisma.visitor.groupBy({
       by: ['referrer'],
-      where: { ...whereClause, referrer: { not: null } },
+      where: {
+        ...whereClause,
+        referrer: {
+          not: null,
+          notIn: ['Direct', ''],
+        },
+        NOT: {
+          referrer: { contains: 'fatbigquiz.com' }
+        }
+      },
       _count: { referrer: true },
       orderBy: { _count: { referrer: 'desc' } },
       take: 20,
