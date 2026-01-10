@@ -310,40 +310,183 @@ const trackEvent = async (req, res) => {
   }
 };
 
-/**
- * Categorize referrer source
- */
-function categorizeReferrer(referrer) {
-  if (!referrer) return "Direct";
+// Platform detection dictionaries
+const SOCIAL_PLATFORMS = {
+  'facebook.com': 'Facebook',
+  'fb.me': 'Facebook',
+  'fb.com': 'Facebook',
+  'l.facebook.com': 'Facebook',
+  'lm.facebook.com': 'Facebook',
+  'm.facebook.com': 'Facebook',
+  'instagram.com': 'Instagram',
+  'l.instagram.com': 'Instagram',
+  'twitter.com': 'Twitter/X',
+  'x.com': 'Twitter/X',
+  't.co': 'Twitter/X',
+  'linkedin.com': 'LinkedIn',
+  'youtube.com': 'YouTube',
+  'youtu.be': 'YouTube',
+  'tiktok.com': 'TikTok',
+  'pinterest.com': 'Pinterest',
+  'reddit.com': 'Reddit',
+  'redd.it': 'Reddit',
+  'snapchat.com': 'Snapchat',
+  'sc-cdn.net': 'Snapchat',
+  'whatsapp.com': 'WhatsApp',
+  'telegram.org': 'Telegram',
+  't.me': 'Telegram',
+  'discord.gg': 'Discord',
+  'discord.com': 'Discord',
+};
 
-  const ref = referrer.toLowerCase();
+const SEARCH_ENGINES = {
+  'google.com': 'Google',
+  'google.co.uk': 'Google',
+  'google.co.za': 'Google',
+  'google.ca': 'Google',
+  'google.com.au': 'Google',
+  'google.de': 'Google',
+  'google.fr': 'Google',
+  'google.es': 'Google',
+  'google.it': 'Google',
+  'google.nl': 'Google',
+  'google.be': 'Google',
+  'google.ie': 'Google',
+  'bing.com': 'Bing',
+  'yahoo.com': 'Yahoo',
+  'duckduckgo.com': 'DuckDuckGo',
+  'yandex.com': 'Yandex',
+  'yandex.ru': 'Yandex',
+  'baidu.com': 'Baidu',
+  'ecosia.org': 'Ecosia',
+};
+
+/**
+ * Parse referrer and return specific platform info
+ */
+function parseReferrer(referrerUrl) {
+  const result = {
+    source: 'Direct',
+    category: 'Direct',
+    platform: null,
+    isSocial: false,
+    isSearch: false,
+  };
+
+  if (!referrerUrl) return result;
+
+  const ref = referrerUrl.toLowerCase();
 
   // Internal navigation (same site) - treat as Direct
   if (/fatbigquiz\.com/i.test(ref)) {
-    return "Direct";
+    return result;
   }
 
-  // Search engines
-  if (/google\.|bing\.|yahoo\.|duckduckgo\.|baidu\.|yandex\.|ecosia\./i.test(ref)) {
-    return "Organic Search";
-  }
+  try {
+    // Parse URL to get hostname
+    let hostname = ref;
+    if (ref.includes('://')) {
+      hostname = ref.split('://')[1].split('/')[0];
+    }
+    hostname = hostname.replace('www.', '');
 
-  // Social Media
-  if (/facebook\.|fb\.|instagram\.|twitter\.|x\.com|linkedin\.|pinterest\.|reddit\.|tiktok\.|youtube\.|snapchat\.|whatsapp\.|telegram\.|discord\./i.test(ref)) {
-    return "Social Media";
-  }
+    // Check for Facebook click tracking (fbclid parameter)
+    if (ref.includes('fbclid=')) {
+      return {
+        source: 'Facebook',
+        category: 'Social Media',
+        platform: 'Facebook',
+        isSocial: true,
+        isSearch: false,
+      };
+    }
 
-  // Email
-  if (/mail\.|gmail\.|outlook\.|mailchimp\.|campaign-archive/i.test(ref)) {
-    return "Email";
-  }
+    // Check for Instagram tracking (igshid parameter)
+    if (ref.includes('igshid=') || ref.includes('utm_source=ig')) {
+      return {
+        source: 'Instagram',
+        category: 'Social Media',
+        platform: 'Instagram',
+        isSocial: true,
+        isSearch: false,
+      };
+    }
 
-  // Paid Ads
-  if (/googleads\.|doubleclick\.|googlesyndication\.|ads\.|ad\./i.test(ref)) {
-    return "Paid Ads";
-  }
+    // Check social media platforms
+    for (const [domain, platform] of Object.entries(SOCIAL_PLATFORMS)) {
+      if (hostname.includes(domain) || hostname === domain) {
+        return {
+          source: platform,
+          category: 'Social Media',
+          platform: platform,
+          isSocial: true,
+          isSearch: false,
+        };
+      }
+    }
 
-  return "Referral";
+    // Check search engines
+    for (const [domain, engine] of Object.entries(SEARCH_ENGINES)) {
+      if (hostname.includes(domain) || hostname === domain) {
+        return {
+          source: engine,
+          category: 'Organic Search',
+          platform: engine,
+          isSocial: false,
+          isSearch: true,
+        };
+      }
+    }
+
+    // Check for email
+    if (/mail\.|gmail\.|outlook\.|mailchimp\.|campaign-archive/i.test(ref)) {
+      return {
+        source: 'Email',
+        category: 'Email',
+        platform: 'Email',
+        isSocial: false,
+        isSearch: false,
+      };
+    }
+
+    // Check for paid ads
+    if (/googleads\.|doubleclick\.|googlesyndication\.|ads\.|ad\./i.test(ref)) {
+      return {
+        source: 'Google Ads',
+        category: 'Paid Ads',
+        platform: 'Google Ads',
+        isSocial: false,
+        isSearch: false,
+      };
+    }
+
+    // Other referral - extract domain name for display
+    const displayName = hostname.split('.')[0];
+    return {
+      source: hostname,
+      category: 'Referral',
+      platform: displayName.charAt(0).toUpperCase() + displayName.slice(1),
+      isSocial: false,
+      isSearch: false,
+    };
+
+  } catch (e) {
+    return {
+      source: 'Referral',
+      category: 'Referral',
+      platform: null,
+      isSocial: false,
+      isSearch: false,
+    };
+  }
+}
+
+/**
+ * Categorize referrer source (for backward compatibility)
+ */
+function categorizeReferrer(referrer) {
+  const parsed = parseReferrer(referrer);
+  return parsed.category;
 }
 
 /**
@@ -631,7 +774,7 @@ const getTrafficTimeline = async (req, res) => {
 };
 
 /**
- * Get referrer/traffic source data
+ * Get referrer/traffic source data with specific platform breakdown
  */
 const getReferrerStats = async (req, res) => {
   try {
@@ -644,30 +787,54 @@ const getReferrerStats = async (req, res) => {
       isBot: { not: true },
     };
 
-    // Referrer categories
-    const categories = await prisma.visitor.groupBy({
-      by: ['referrerCategory'],
+    // Get all referrers with counts
+    const rawReferrers = await prisma.visitor.groupBy({
+      by: ['referrer'],
       where: whereClause,
-      _count: { referrerCategory: true },
-      orderBy: { _count: { referrerCategory: 'desc' } },
+      _count: { referrer: true },
     });
 
-    // Top referrers (exclude internal navigation)
-    const referrers = await prisma.visitor.groupBy({
-      by: ['referrer'],
-      where: {
-        ...whereClause,
-        referrer: {
-          not: null,
-          notIn: ['Direct', ''],
-        },
-        NOT: {
-          referrer: { contains: 'fatbigquiz.com' }
-        }
-      },
-      _count: { referrer: true },
-      orderBy: { _count: { referrer: 'desc' } },
-      take: 20,
+    // Parse each referrer and aggregate by platform
+    const platformCounts = {};
+    const categoryCounts = {};
+    let totalVisits = 0;
+
+    rawReferrers.forEach(r => {
+      const count = r._count.referrer;
+      totalVisits += count;
+
+      const parsed = parseReferrer(r.referrer);
+      const platform = parsed.source;
+      const category = parsed.category;
+
+      // Aggregate by platform (Facebook, Google, Instagram, etc.)
+      platformCounts[platform] = (platformCounts[platform] || 0) + count;
+
+      // Aggregate by category (Social Media, Organic Search, etc.)
+      categoryCounts[category] = (categoryCounts[category] || 0) + count;
+    });
+
+    // Sort platforms by count
+    const sortedPlatforms = Object.entries(platformCounts)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count);
+
+    // Sort categories by count
+    const sortedCategories = Object.entries(categoryCounts)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count);
+
+    // Get social media breakdown
+    const socialPlatforms = sortedPlatforms.filter(p => {
+      const parsed = parseReferrer(p.name);
+      // Check if original source was a social platform
+      return parsed.isSocial || ['Facebook', 'Instagram', 'Twitter/X', 'Snapchat', 'TikTok', 'YouTube', 'LinkedIn', 'Pinterest', 'Reddit', 'WhatsApp', 'Telegram', 'Discord'].includes(p.name);
+    });
+
+    // Get search engine breakdown
+    const searchEngines = sortedPlatforms.filter(p => {
+      const parsed = parseReferrer(p.name);
+      return parsed.isSearch || ['Google', 'Bing', 'Yahoo', 'DuckDuckGo', 'Yandex', 'Baidu', 'Ecosia'].includes(p.name);
     });
 
     // UTM sources
@@ -680,14 +847,25 @@ const getReferrerStats = async (req, res) => {
     });
 
     res.json({
-      categories: categories.map(c => ({ name: c.referrerCategory || 'Direct', count: c._count.referrerCategory })),
-      referrers: referrers.map(r => ({ name: r.referrer, count: r._count.referrer })),
+      // Categories (Direct, Social Media, Organic Search, etc.)
+      categories: sortedCategories,
+      // All platforms sorted by count (Facebook, Google, Direct, Instagram, etc.)
+      platforms: sortedPlatforms.slice(0, 20),
+      // Social media breakdown (Facebook, Instagram, Snapchat, etc.)
+      socialPlatforms: socialPlatforms,
+      // Search engines breakdown (Google, Bing, Yahoo, etc.)
+      searchEngines: searchEngines,
+      // Raw referrer URLs (for debugging/detail view)
+      referrers: sortedPlatforms.filter(p => p.name !== 'Direct').slice(0, 20),
+      // UTM campaign data
       utmSources: utmSources.map(u => ({
         source: u.utmSource,
         medium: u.utmMedium,
         campaign: u.utmCampaign,
         count: u._count.utmSource,
       })),
+      // Total for percentage calculations
+      totalVisits,
     });
   } catch (error) {
     console.error("Error getting referrer stats:", error);

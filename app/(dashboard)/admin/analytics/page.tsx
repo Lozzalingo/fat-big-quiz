@@ -25,6 +25,20 @@ import {
   FaAndroid,
   FaWindows,
   FaLinux,
+  FaFacebook,
+  FaInstagram,
+  FaSnapchat,
+  FaTwitter,
+  FaTiktok,
+  FaYoutube,
+  FaLinkedin,
+  FaPinterest,
+  FaReddit,
+  FaWhatsapp,
+  FaTelegram,
+  FaDiscord,
+  FaGoogle,
+  FaYahoo,
 } from "react-icons/fa";
 import {
   LineChart,
@@ -94,8 +108,12 @@ interface GeoStats {
 
 interface ReferrerStats {
   categories: { name: string; count: number }[];
+  platforms: { name: string; count: number }[];
+  socialPlatforms: { name: string; count: number }[];
+  searchEngines: { name: string; count: number }[];
   referrers: { name: string; count: number }[];
   utmSources: { source: string; medium: string; campaign: string; count: number }[];
+  totalVisits: number;
 }
 
 interface PageStats {
@@ -311,6 +329,51 @@ export default function AnalyticsDashboard() {
         return <FaLink className="text-green-500" />;
       default:
         return <FaGlobe className="text-gray-500" />;
+    }
+  };
+
+  const getPlatformIcon = (platform: string) => {
+    switch (platform?.toLowerCase()) {
+      case "facebook":
+        return <FaFacebook className="text-blue-600" />;
+      case "instagram":
+        return <FaInstagram className="text-pink-500" />;
+      case "snapchat":
+        return <FaSnapchat className="text-yellow-400" />;
+      case "twitter/x":
+        return <FaTwitter className="text-blue-400" />;
+      case "tiktok":
+        return <FaTiktok className="text-black" />;
+      case "youtube":
+        return <FaYoutube className="text-red-600" />;
+      case "linkedin":
+        return <FaLinkedin className="text-blue-700" />;
+      case "pinterest":
+        return <FaPinterest className="text-red-500" />;
+      case "reddit":
+        return <FaReddit className="text-orange-500" />;
+      case "whatsapp":
+        return <FaWhatsapp className="text-green-500" />;
+      case "telegram":
+        return <FaTelegram className="text-blue-400" />;
+      case "discord":
+        return <FaDiscord className="text-indigo-500" />;
+      case "google":
+        return <FaGoogle className="text-blue-500" />;
+      case "bing":
+        return <FaSearch className="text-teal-500" />;
+      case "yahoo":
+        return <FaYahoo className="text-purple-600" />;
+      case "duckduckgo":
+        return <FaSearch className="text-orange-500" />;
+      case "direct":
+        return <FaGlobe className="text-gray-500" />;
+      case "email":
+        return <FaEnvelope className="text-yellow-500" />;
+      case "google ads":
+        return <FaGoogle className="text-green-500" />;
+      default:
+        return <FaLink className="text-gray-400" />;
     }
   };
 
@@ -532,7 +595,7 @@ export default function AnalyticsDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
               {/* Traffic by Category */}
               <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Traffic by Source</h3>
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Traffic by Category</h3>
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -556,16 +619,75 @@ export default function AnalyticsDashboard() {
                 </div>
               </div>
 
-              {/* Top Referrers */}
+              {/* Top Platforms */}
               <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Top Referrers</h3>
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Top Traffic Sources</h3>
                 <div className="space-y-3 max-h-80 overflow-y-auto">
-                  {referrers?.referrers.slice(0, 15).map((ref, index) => (
+                  {referrers?.platforms?.slice(0, 15).map((platform, index) => (
                     <div key={index} className="flex items-center justify-between py-2 border-b last:border-0">
-                      <span className="text-sm text-gray-700 truncate flex-1 mr-4">{ref.name}</span>
-                      <span className="text-sm font-medium text-gray-900">{ref.count.toLocaleString()}</span>
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">{getPlatformIcon(platform.name)}</span>
+                        <span className="text-sm text-gray-700">{platform.name}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-gray-900">{platform.count.toLocaleString()}</span>
+                        {referrers?.totalVisits && (
+                          <span className="text-xs text-gray-500">
+                            ({((platform.count / referrers.totalVisits) * 100).toFixed(1)}%)
+                          </span>
+                        )}
+                      </div>
                     </div>
                   ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Social Media & Search Engines Breakdown */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              {/* Social Media */}
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                  <FaShareAlt className="text-pink-500" />
+                  Social Media
+                </h3>
+                <div className="space-y-3 max-h-64 overflow-y-auto">
+                  {referrers?.socialPlatforms && referrers.socialPlatforms.length > 0 ? (
+                    referrers.socialPlatforms.map((platform, index) => (
+                      <div key={index} className="flex items-center justify-between py-2 border-b last:border-0">
+                        <div className="flex items-center gap-3">
+                          <span className="text-xl">{getPlatformIcon(platform.name)}</span>
+                          <span className="text-sm text-gray-700">{platform.name}</span>
+                        </div>
+                        <span className="text-sm font-medium text-gray-900">{platform.count.toLocaleString()}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-500">No social media traffic yet</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Search Engines */}
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                  <FaSearch className="text-blue-500" />
+                  Search Engines
+                </h3>
+                <div className="space-y-3 max-h-64 overflow-y-auto">
+                  {referrers?.searchEngines && referrers.searchEngines.length > 0 ? (
+                    referrers.searchEngines.map((engine, index) => (
+                      <div key={index} className="flex items-center justify-between py-2 border-b last:border-0">
+                        <div className="flex items-center gap-3">
+                          <span className="text-xl">{getPlatformIcon(engine.name)}</span>
+                          <span className="text-sm text-gray-700">{engine.name}</span>
+                        </div>
+                        <span className="text-sm font-medium text-gray-900">{engine.count.toLocaleString()}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-500">No search engine traffic yet</p>
+                  )}
                 </div>
               </div>
             </div>
