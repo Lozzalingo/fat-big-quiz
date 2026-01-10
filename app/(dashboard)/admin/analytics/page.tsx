@@ -691,65 +691,6 @@ export default function AnalyticsDashboard() {
               </div>
             </div>
 
-            {/* Social Media & Search Engines Breakdown */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-              {/* Social Media */}
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                  <FaShareAlt className="text-pink-500" />
-                  Social Media
-                </h3>
-                <div className="space-y-3 max-h-64 overflow-y-auto">
-                  {referrers?.socialPlatforms && referrers.socialPlatforms.length > 0 ? (
-                    referrers.socialPlatforms.map((platform, index) => (
-                      <div key={index} className="flex items-center justify-between py-2 border-b last:border-0">
-                        <div className="flex items-center gap-3">
-                          <span className="text-xl">{getPlatformIcon(platform.name)}</span>
-                          <div>
-                            <span className="text-sm text-gray-700 block">{platform.name}</span>
-                            <span className="text-xs text-gray-500">
-                              {platform.avgPages} pages · {platform.avgTime ? `${Math.floor(platform.avgTime / 60)}m ${platform.avgTime % 60}s` : '0s'}
-                            </span>
-                          </div>
-                        </div>
-                        <span className="text-sm font-medium text-gray-900">{platform.count} sessions</span>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-sm text-gray-500">No social media traffic yet</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Search Engines */}
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                  <FaSearch className="text-blue-500" />
-                  Search Engines
-                </h3>
-                <div className="space-y-3 max-h-64 overflow-y-auto">
-                  {referrers?.searchEngines && referrers.searchEngines.length > 0 ? (
-                    referrers.searchEngines.map((engine, index) => (
-                      <div key={index} className="flex items-center justify-between py-2 border-b last:border-0">
-                        <div className="flex items-center gap-3">
-                          <span className="text-xl">{getPlatformIcon(engine.name)}</span>
-                          <div>
-                            <span className="text-sm text-gray-700 block">{engine.name}</span>
-                            <span className="text-xs text-gray-500">
-                              {engine.avgPages} pages · {engine.avgTime ? `${Math.floor(engine.avgTime / 60)}m ${engine.avgTime % 60}s` : '0s'}
-                            </span>
-                          </div>
-                        </div>
-                        <span className="text-sm font-medium text-gray-900">{engine.count} sessions</span>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-sm text-gray-500">No search engine traffic yet</p>
-                  )}
-                </div>
-              </div>
-            </div>
-
             {/* UTM Campaigns */}
             {referrers?.utmSources && referrers.utmSources.length > 0 && (
               <div className="bg-white rounded-lg shadow-md p-6">
