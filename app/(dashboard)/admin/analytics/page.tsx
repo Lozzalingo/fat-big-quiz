@@ -106,13 +106,20 @@ interface GeoStats {
   locations: { latitude: number; longitude: number; city: string; country: string }[];
 }
 
+interface PlatformStats {
+  name: string;
+  count: number;
+  avgPages?: string;
+  avgTime?: number;
+}
+
 interface ReferrerStats {
   categories: { name: string; count: number }[];
-  platforms: { name: string; count: number }[];
-  socialPlatforms: { name: string; count: number }[];
-  searchEngines: { name: string; count: number }[];
-  referrers: { name: string; count: number }[];
-  utmSources: { source: string; medium: string; campaign: string; count: number }[];
+  platforms: PlatformStats[];
+  socialPlatforms: PlatformStats[];
+  searchEngines: PlatformStats[];
+  referrers: PlatformStats[];
+  utmSources: { source: string; medium: string | null; campaign: string | null; count: number }[];
   totalVisits: number;
 }
 
@@ -643,6 +650,47 @@ export default function AnalyticsDashboard() {
               </div>
             </div>
 
+            {/* Engagement by Source */}
+            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Engagement by Source</h3>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Source</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sessions</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Avg Pages</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Avg Time</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {referrers?.platforms?.filter(p => p.name !== 'Direct').slice(0, 10).map((platform, index) => (
+                      <tr key={index}>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">{getPlatformIcon(platform.name)}</span>
+                            <span className="text-sm text-gray-900">{platform.name}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {platform.count}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                          {platform.avgPages || '-'} pages
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                          {platform.avgTime ? `${Math.floor(platform.avgTime / 60)}m ${platform.avgTime % 60}s` : '-'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {(!referrers?.platforms || referrers.platforms.filter(p => p.name !== 'Direct').length === 0) && (
+                  <p className="text-sm text-gray-500 text-center py-4">No external traffic sources yet</p>
+                )}
+              </div>
+            </div>
+
             {/* Social Media & Search Engines Breakdown */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
               {/* Social Media */}
@@ -657,9 +705,14 @@ export default function AnalyticsDashboard() {
                       <div key={index} className="flex items-center justify-between py-2 border-b last:border-0">
                         <div className="flex items-center gap-3">
                           <span className="text-xl">{getPlatformIcon(platform.name)}</span>
-                          <span className="text-sm text-gray-700">{platform.name}</span>
+                          <div>
+                            <span className="text-sm text-gray-700 block">{platform.name}</span>
+                            <span className="text-xs text-gray-500">
+                              {platform.avgPages} pages · {platform.avgTime ? `${Math.floor(platform.avgTime / 60)}m ${platform.avgTime % 60}s` : '0s'}
+                            </span>
+                          </div>
                         </div>
-                        <span className="text-sm font-medium text-gray-900">{platform.count.toLocaleString()}</span>
+                        <span className="text-sm font-medium text-gray-900">{platform.count} sessions</span>
                       </div>
                     ))
                   ) : (
@@ -680,9 +733,14 @@ export default function AnalyticsDashboard() {
                       <div key={index} className="flex items-center justify-between py-2 border-b last:border-0">
                         <div className="flex items-center gap-3">
                           <span className="text-xl">{getPlatformIcon(engine.name)}</span>
-                          <span className="text-sm text-gray-700">{engine.name}</span>
+                          <div>
+                            <span className="text-sm text-gray-700 block">{engine.name}</span>
+                            <span className="text-xs text-gray-500">
+                              {engine.avgPages} pages · {engine.avgTime ? `${Math.floor(engine.avgTime / 60)}m ${engine.avgTime % 60}s` : '0s'}
+                            </span>
+                          </div>
                         </div>
-                        <span className="text-sm font-medium text-gray-900">{engine.count.toLocaleString()}</span>
+                        <span className="text-sm font-medium text-gray-900">{engine.count} sessions</span>
                       </div>
                     ))
                   ) : (

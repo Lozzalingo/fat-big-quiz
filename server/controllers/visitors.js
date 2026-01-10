@@ -775,35 +775,61 @@ const getTrafficTimeline = async (req, res) => {
 
 /**
  * Get referrer/traffic source data with specific platform breakdown
+ * Counts unique sessions (arrivals), not page views
  */
 const getReferrerStats = async (req, res) => {
   try {
     const { timeRange = 'today' } = req.query;
     const startDate = getStartDate(timeRange);
 
-    // Simple where clause that allows old data (null isBot/eventType)
-    const whereClause = {
-      timestamp: { gte: startDate },
-      isBot: { not: true },
-    };
-
-    // Get all referrers with counts
-    const rawReferrers = await prisma.visitor.groupBy({
-      by: ['referrer'],
-      where: whereClause,
-      _count: { referrer: true },
+    // Get all visitors with session data for the time range
+    const visitors = await prisma.visitor.findMany({
+      where: {
+        timestamp: { gte: startDate },
+        isBot: { not: true },
+      },
+      select: {
+        sessionId: true,
+        referrer: true,
+        timestamp: true,
+        sessionPageCount: true,
+        timeOnPage: true,
+      },
+      orderBy: { timestamp: 'asc' },
     });
 
-    // Parse each referrer and aggregate by platform
-    const platformCounts = {};
+    // Group by session to find the first page view (arrival) of each session
+    const sessionMap = new Map();
+    const sessionEngagement = new Map(); // Track pages and time per session
+
+    visitors.forEach(v => {
+      const sessionKey = v.sessionId || `anon_${v.timestamp.getTime()}`;
+
+      // Track first visit of each session (the arrival)
+      if (!sessionMap.has(sessionKey)) {
+        sessionMap.set(sessionKey, {
+          referrer: v.referrer,
+          timestamp: v.timestamp,
+        });
+        sessionEngagement.set(sessionKey, {
+          pageCount: 1,
+          totalTime: v.timeOnPage || 0,
+        });
+      } else {
+        // Update engagement for subsequent page views in same session
+        const engagement = sessionEngagement.get(sessionKey);
+        engagement.pageCount++;
+        engagement.totalTime += v.timeOnPage || 0;
+      }
+    });
+
+    // Now count unique sessions by platform
+    const platformData = {};
     const categoryCounts = {};
-    let totalVisits = 0;
+    let totalSessions = 0;
 
-    rawReferrers.forEach(r => {
-      const count = r._count.referrer;
-      totalVisits += count;
-
-      const parsed = parseReferrer(r.referrer);
+    sessionMap.forEach((session, sessionKey) => {
+      const parsed = parseReferrer(session.referrer);
       let platform = parsed.source;
       let category = parsed.category;
 
@@ -818,16 +844,36 @@ const getReferrerStats = async (req, res) => {
         return;
       }
 
-      // Aggregate by platform (Facebook, Google, Instagram, etc.)
-      platformCounts[platform] = (platformCounts[platform] || 0) + count;
+      totalSessions++;
 
-      // Aggregate by category (Social Media, Organic Search, etc.)
-      categoryCounts[category] = (categoryCounts[category] || 0) + count;
+      // Get engagement data for this session
+      const engagement = sessionEngagement.get(sessionKey);
+
+      // Aggregate by platform with engagement metrics
+      if (!platformData[platform]) {
+        platformData[platform] = {
+          sessions: 0,
+          totalPages: 0,
+          totalTime: 0,
+          category: category,
+        };
+      }
+      platformData[platform].sessions++;
+      platformData[platform].totalPages += engagement.pageCount;
+      platformData[platform].totalTime += engagement.totalTime;
+
+      // Aggregate by category
+      categoryCounts[category] = (categoryCounts[category] || 0) + 1;
     });
 
-    // Sort platforms by count
-    const sortedPlatforms = Object.entries(platformCounts)
-      .map(([name, count]) => ({ name, count }))
+    // Sort platforms by session count and calculate averages
+    const sortedPlatforms = Object.entries(platformData)
+      .map(([name, data]) => ({
+        name,
+        count: data.sessions,
+        avgPages: data.sessions > 0 ? (data.totalPages / data.sessions).toFixed(1) : '0',
+        avgTime: data.sessions > 0 ? Math.round(data.totalTime / data.sessions) : 0,
+      }))
       .sort((a, b) => b.count - a.count);
 
     // Sort categories by count
@@ -835,48 +881,73 @@ const getReferrerStats = async (req, res) => {
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count);
 
-    // Get social media breakdown
-    const socialPlatforms = sortedPlatforms.filter(p => {
-      const parsed = parseReferrer(p.name);
-      // Check if original source was a social platform
-      return parsed.isSocial || ['Facebook', 'Instagram', 'Twitter/X', 'Snapchat', 'TikTok', 'YouTube', 'LinkedIn', 'Pinterest', 'Reddit', 'WhatsApp', 'Telegram', 'Discord'].includes(p.name);
+    // Filter for social media platforms
+    const socialPlatforms = sortedPlatforms.filter(p =>
+      ['Facebook', 'Instagram', 'Twitter/X', 'Snapchat', 'TikTok', 'YouTube', 'LinkedIn', 'Pinterest', 'Reddit', 'WhatsApp', 'Telegram', 'Discord'].includes(p.name)
+    );
+
+    // Filter for search engines
+    const searchEngines = sortedPlatforms.filter(p =>
+      ['Google', 'Bing', 'Yahoo', 'DuckDuckGo', 'Yandex', 'Baidu', 'Ecosia'].includes(p.name)
+    );
+
+    // UTM sources - also count unique sessions
+    const utmVisitors = await prisma.visitor.findMany({
+      where: {
+        timestamp: { gte: startDate },
+        isBot: { not: true },
+        utmSource: { not: null },
+      },
+      select: {
+        sessionId: true,
+        utmSource: true,
+        utmMedium: true,
+        utmCampaign: true,
+        timestamp: true,
+      },
+      orderBy: { timestamp: 'asc' },
     });
 
-    // Get search engine breakdown
-    const searchEngines = sortedPlatforms.filter(p => {
-      const parsed = parseReferrer(p.name);
-      return parsed.isSearch || ['Google', 'Bing', 'Yahoo', 'DuckDuckGo', 'Yandex', 'Baidu', 'Ecosia'].includes(p.name);
+    // Count unique sessions per UTM source
+    const utmSessionMap = new Map();
+    utmVisitors.forEach(v => {
+      const sessionKey = v.sessionId || `anon_${v.timestamp.getTime()}`;
+      const utmKey = `${v.utmSource}|${v.utmMedium || ''}|${v.utmCampaign || ''}`;
+
+      if (!utmSessionMap.has(sessionKey)) {
+        utmSessionMap.set(sessionKey, utmKey);
+      }
     });
 
-    // UTM sources
-    const utmSources = await prisma.visitor.groupBy({
-      by: ['utmSource', 'utmMedium', 'utmCampaign'],
-      where: { ...whereClause, utmSource: { not: null } },
-      _count: { utmSource: true },
-      orderBy: { _count: { utmSource: 'desc' } },
-      take: 20,
+    // Aggregate UTM data
+    const utmCounts = {};
+    utmSessionMap.forEach(utmKey => {
+      utmCounts[utmKey] = (utmCounts[utmKey] || 0) + 1;
     });
+
+    const utmSources = Object.entries(utmCounts)
+      .map(([key, count]) => {
+        const [source, medium, campaign] = key.split('|');
+        return { source, medium: medium || null, campaign: campaign || null, count };
+      })
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 20);
 
     res.json({
       // Categories (Direct, Social Media, Organic Search, etc.)
       categories: sortedCategories,
-      // All platforms sorted by count (Facebook, Google, Direct, Instagram, etc.)
+      // All platforms sorted by count with engagement metrics
       platforms: sortedPlatforms.slice(0, 20),
-      // Social media breakdown (Facebook, Instagram, Snapchat, etc.)
+      // Social media breakdown
       socialPlatforms: socialPlatforms,
-      // Search engines breakdown (Google, Bing, Yahoo, etc.)
+      // Search engines breakdown
       searchEngines: searchEngines,
       // Raw referrer URLs (for debugging/detail view)
       referrers: sortedPlatforms.filter(p => p.name !== 'Direct').slice(0, 20),
-      // UTM campaign data
-      utmSources: utmSources.map(u => ({
-        source: u.utmSource,
-        medium: u.utmMedium,
-        campaign: u.utmCampaign,
-        count: u._count.utmSource,
-      })),
-      // Total for percentage calculations
-      totalVisits,
+      // UTM campaign data (unique sessions)
+      utmSources: utmSources,
+      // Total unique sessions for percentage calculations
+      totalVisits: totalSessions,
     });
   } catch (error) {
     console.error("Error getting referrer stats:", error);
