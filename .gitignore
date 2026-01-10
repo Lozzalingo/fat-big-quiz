@@ -38,4 +38,15 @@ next-env.d.ts
 
 # local assets
 /Cards
+
+# Sensitive files - NEVER commit these
 server/config/google-merchant-credentials.json
+server/config/*.json
+**/credentials*.json
+**/service-account*.json
+**/*-credentials.json
+**/*-key.json
+*.key
+.env*
+!.env.example
+!.env.production.example

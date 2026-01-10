@@ -4,6 +4,7 @@
 - **Server IP:** 157.245.42.21
 - **User:** root
 - **Project Path:** /root/fat-big-quiz
+- **GitHub:** https://github.com/Lozzalingo/fat-big-quiz
 
 ## Container Names
 - `fatbigquiz-frontend` - Next.js frontend (port 3000)
@@ -12,6 +13,32 @@
 
 ## Network
 - `fat-big-quiz_fatbigquiz_network`
+
+---
+
+## Pre-Deployment: Commit to GitHub
+
+**ALWAYS commit your changes to GitHub before deploying!**
+
+```bash
+# 1. Check what's changed
+git status
+
+# 2. Stage all changes
+git add -A
+
+# 3. Commit with a descriptive message
+git commit -m "Description of changes"
+
+# 4. Push to GitHub
+git push origin main
+```
+
+This ensures:
+- Code is backed up
+- Changes are tracked with history
+- Easy rollback if something breaks
+- Team collaboration possible
 
 ---
 
