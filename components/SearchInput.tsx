@@ -17,10 +17,10 @@ const SearchInput = () => {
   const router = useRouter();
 
   // function for modifying URL for searching products
-  // After it we will grab URL on the search page and send GET request for searched products
+  // Redirects to shop page with search parameter
   const searchProducts = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    router.push(`/search?search=${searchInput}`);
+    router.push(`/shop?search=${encodeURIComponent(searchInput)}`);
     setSearchInput("");
   };
 
@@ -33,7 +33,7 @@ const SearchInput = () => {
         placeholder="Type here"
         className="bg-gray-50 input input-bordered w-[70%] rounded-r-none outline-none focus:outline-none max-sm:w-full"
       />
-      <button type="submit" className="btn bg-blue-500 text-white rounded-l-none rounded-r-xl hover:bg-blue-600">
+      <button type="submit" data-track-button="Search:Submit" className="btn bg-blue-500 text-white rounded-l-none rounded-r-xl hover:bg-blue-600">
         Search
       </button>
     </form>

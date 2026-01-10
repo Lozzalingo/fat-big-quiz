@@ -1,892 +1,329 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from 'react';
-import { 
-  FaArrowUp, FaArrowDown, FaGlobeAmericas, FaUsers, 
-  FaNetworkWired, FaChartLine, FaClock, FaMapMarkerAlt 
-} from 'react-icons/fa';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import dynamic from 'next/dynamic';
-import io from 'socket.io-client';
-import { DashboardSidebar } from '@/components';
+import { useState, useEffect } from "react";
+import {
+  FaShoppingBag,
+  FaUsers,
+  FaPoundSign,
+  FaChartLine,
+  FaEnvelope,
+  FaBoxOpen,
+  FaGoogle,
+  FaEye,
+} from "react-icons/fa";
+import { DashboardSidebar } from "@/components";
+import Link from "next/link";
 
-// Import the map component dynamically with ssr disabled
-const MapView = dynamic(() => import('@/components/MapView'), { 
-  ssr: false,
-  loading: () => (
-    <div className="h-full w-full flex items-center justify-center bg-gray-100">
-      <div className="animate-pulse flex flex-col items-center">
-        <div className="h-12 w-12 rounded-full bg-gray-300 mb-2"></div>
-        <div className="h-4 w-32 bg-gray-300 rounded"></div>
-      </div>
-    </div>
-  )
-});
+interface DashboardStats {
+  todayOrders: number;
+  todayRevenue: number;
+  totalOrders: number;
+  totalRevenue: number;
+  totalUsers: number;
+  newUsersToday: number;
+  subscriberCount: number;
+  productCount: number;
+  lowStockCount: number;
+  todayVisitors: number;
+  percentageChange: string;
+}
 
-interface Visitor {
+interface RecentOrder {
   id: string;
-  latitude: number;
-  longitude: number;
-  city: string;
-  country: string;
-  ip: string;
-  referrerCategory: string;
-  referrer: string;
-  path: string;
-  timestamp: string;
+  createdAt: string;
+  total: number;
+  status: string;
+  user?: {
+    email: string;
+    name?: string;
+  };
 }
 
-interface VisitorData {
-  count: number;
-  visitors: Visitor[];
-  hourlyData: { hour: string; count: number }[];
-  pathData: { path: string; count: number }[];
+interface GoogleMerchantStatus {
+  configured: boolean;
+  productCount?: number;
+  lastSync?: string;
 }
 
-export default function EnhancedDashboard() {
-  const [visitorData, setVisitorData] = useState<VisitorData>({ 
-    count: 0, 
-    visitors: [],
-    hourlyData: [],
-    pathData: []
-  });
-  const [percentageChange, setPercentageChange] = useState<string | null>(null);
-  const [isPositiveChange, setIsPositiveChange] = useState(true);
+export default function AdminDashboard() {
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
+  const [merchantStatus, setMerchantStatus] = useState<GoogleMerchantStatus | null>(null);
   const [loading, setLoading] = useState(true);
-  const [referrerCounts, setReferrerCounts] = useState<{[key: string]: number}>({});
-  const [activeTab, setActiveTab] = useState('overview');
-  const [timeRange, setTimeRange] = useState('today');
-  
+
   useEffect(() => {
-    // Fetch percentage change
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/visitors/change`)
-      .then((res) => res.json())
-      .then((data) => {
-        setPercentageChange(data.percentageChange);
-        setIsPositiveChange(parseFloat(data.percentageChange) >= 0);
-      })
-      .catch((err) => console.error('Error fetching visitor change:', err));
+    const fetchDashboardData = async () => {
+      try {
+        // Fetch multiple endpoints in parallel
+        const [ordersRes, usersRes, productsRes, visitorsRes, merchantRes] = await Promise.all([
+          fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/orders`),
+          fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users`),
+          fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products?mode=admin`),
+          fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/visitors/change`),
+          fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/merchant/status`).catch(() => null),
+        ]);
 
-    // Set up Socket.IO
-    const socket = io(`${process.env.NEXT_PUBLIC_API_BASE_URL}`, { transports: ['websocket'] });
+        const orders = await ordersRes.json();
+        const users = await usersRes.json();
+        const products = await productsRes.json();
+        const visitors = await visitorsRes.json();
+        const merchant = merchantRes ? await merchantRes.json() : null;
 
-    socket.on('visitorUpdate', (data) => {
-      setVisitorData({
-        ...data,
-        hourlyData: processHourlyData(data.visitors),
-        pathData: processPathData(data.visitors)
-      });
-      setLoading(false);
-      
-      // Calculate referrer counts
-      const referrers: {[key: string]: number} = {};
-      data.visitors.forEach((visitor: Visitor) => {
-        const referrer = visitor.referrerCategory || 'Direct';
-        referrers[referrer] = (referrers[referrer] || 0) + 1;
-      });
-      setReferrerCounts(referrers);
-    });
+        // Calculate today's stats
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
 
-    socket.on('connect', () => {
-      socket.emit('getVisitorData', { timeRange });
-    });
+        const todayOrders = orders.filter((o: any) => new Date(o.createdAt) >= today);
+        const todayRevenue = todayOrders.reduce((sum: number, o: any) => sum + (o.total || 0), 0);
+        const totalRevenue = orders.reduce((sum: number, o: any) => sum + (o.total || 0), 0);
 
-    return () => {
-      socket.disconnect();
+        const newUsersToday = users.filter((u: any) => new Date(u.createdAt) >= today).length;
+        const subscribers = users.filter((u: any) => u.newsletter === true || u.newsletter === 1).length;
+
+        const lowStockProducts = products.filter((p: any) => p.inStock !== undefined && p.inStock < 5 && p.inStock > 0);
+
+        setStats({
+          todayOrders: todayOrders.length,
+          todayRevenue,
+          totalOrders: orders.length,
+          totalRevenue,
+          totalUsers: users.length,
+          newUsersToday,
+          subscriberCount: subscribers,
+          productCount: products.length,
+          lowStockCount: lowStockProducts.length,
+          todayVisitors: visitors.todayCount || 0,
+          percentageChange: visitors.percentageChange || "0",
+        });
+
+        setRecentOrders(orders.slice(0, 5));
+
+        if (merchant) {
+          setMerchantStatus({
+            configured: merchant.configured || merchant.success || false,
+            productCount: merchant.productCount,
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch dashboard data:", error);
+      } finally {
+        setLoading(false);
+      }
     };
-  }, [timeRange]);
 
-  // Process visitor data to get hourly distribution
-  const processHourlyData = (visitors: Visitor[]) => {
-    const hourCounts: {[key: string]: number} = {};
-    // Initialize all hours
-    for (let i = 0; i < 24; i++) {
-      const hourStr = i.toString().padStart(2, '0') + ':00';
-      hourCounts[hourStr] = 0;
-    }
-    
-    // Count visitors per hour
-    visitors.forEach(visitor => {
-      if (visitor.timestamp) {
-        const date = new Date(visitor.timestamp);
-        const hour = date.getHours().toString().padStart(2, '0') + ':00';
-        hourCounts[hour] = (hourCounts[hour] || 0) + 1;
-      }
-    });
-    
-    // Convert to array format for charts
-    return Object.entries(hourCounts)
-      .map(([hour, count]) => ({ hour, count }))
-      .sort((a, b) => a.hour.localeCompare(b.hour));
-  };
-  
-  // Process visitor data to get path distribution
-  const processPathData = (visitors: Visitor[]) => {
-    const pathCounts: {[key: string]: number} = {};
-    
-    visitors.forEach(visitor => {
-      if (visitor.path) {
-        const path = visitor.path;
-        pathCounts[path] = (pathCounts[path] || 0) + 1;
-      }
-    });
-    
-    // Convert to array and sort by count (descending)
-    return Object.entries(pathCounts)
-      .map(([path, count]) => ({ path, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 10); // Get top 10 paths
-  };
-  
-  // Get unique countries
-  const uniqueCountries = visitorData.visitors
-    .map(visitor => visitor.country)
-    .filter((country, index, self) => 
-      country && self.indexOf(country) === index
+    fetchDashboardData();
+  }, []);
+
+  const StatCard = ({
+    title,
+    value,
+    subValue,
+    icon,
+    color,
+    link,
+  }: {
+    title: string;
+    value: string | number;
+    subValue?: string;
+    icon: React.ReactNode;
+    color: string;
+    link?: string;
+  }) => {
+    const content = (
+      <div className={`bg-white rounded-lg shadow-md p-6 border-l-4 ${color} hover:shadow-lg transition-shadow h-full`}>
+        <div className="flex justify-between items-start h-full">
+          <div className="flex flex-col">
+            <p className="text-sm text-gray-500 mb-1">{title}</p>
+            <h2 className="text-2xl font-bold text-gray-800">{loading ? "..." : value}</h2>
+            {subValue && <p className="text-sm text-gray-500 mt-1">{subValue}</p>}
+            {!subValue && <p className="text-sm text-gray-500 mt-1 invisible">placeholder</p>}
+          </div>
+          <div className={`p-3 rounded-full ${color.replace("border-", "bg-").replace("-500", "-100")} flex-shrink-0`}>
+            {icon}
+          </div>
+        </div>
+      </div>
     );
 
-  // Calculate peak traffic hour
-  const peakTrafficHour = visitorData.hourlyData.length > 0
-    ? visitorData.hourlyData.reduce((max, hour) => hour.count > max.count ? hour : max, { hour: '', count: 0 })
-    : null;
+    return link ? <Link href={link} className="h-full">{content}</Link> : content;
+  };
 
   return (
     <div className="bg-gray-50 flex min-h-screen">
       <DashboardSidebar />
       <div className="flex-1 min-w-0 p-6 overflow-auto">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold text-gray-800">Visitor Analytics Dashboard</h1>
-            
-            <div className="flex space-x-2">
-              <button 
-                onClick={() => setTimeRange('today')}
-                className={`px-4 py-2 rounded-md text-sm font-medium ${
-                  timeRange === 'today' 
-                    ? 'bg-blue-600 text-white' 
-                    : 'bg-white text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                Today
-              </button>
-              <button 
-                onClick={() => setTimeRange('week')}
-                className={`px-4 py-2 rounded-md text-sm font-medium ${
-                  timeRange === 'week' 
-                    ? 'bg-blue-600 text-white' 
-                    : 'bg-white text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                This Week
-              </button>
-              <button 
-                onClick={() => setTimeRange('month')}
-                className={`px-4 py-2 rounded-md text-sm font-medium ${
-                  timeRange === 'month' 
-                    ? 'bg-blue-600 text-white' 
-                    : 'bg-white text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                This Month
-              </button>
-            </div>
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-800">Dashboard Overview</h1>
+          <p className="text-gray-500 mt-1">Welcome back! Here&apos;s what&apos;s happening today.</p>
+        </div>
+
+        {/* Main Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <StatCard
+            title="Today's Orders"
+            value={stats?.todayOrders || 0}
+            subValue={`£${(stats?.todayRevenue || 0).toFixed(2)} revenue`}
+            icon={<FaShoppingBag className="text-blue-500 text-xl" />}
+            color="border-blue-500"
+            link="/admin/orders"
+          />
+          <StatCard
+            title="Total Revenue"
+            value={`£${(stats?.totalRevenue || 0).toFixed(2)}`}
+            subValue={`${stats?.totalOrders || 0} orders total`}
+            icon={<FaPoundSign className="text-green-500 text-xl" />}
+            color="border-green-500"
+            link="/admin/orders"
+          />
+          <StatCard
+            title="Registered Users"
+            value={stats?.totalUsers || 0}
+            subValue={`+${stats?.newUsersToday || 0} today`}
+            icon={<FaUsers className="text-purple-500 text-xl" />}
+            color="border-purple-500"
+            link="/admin/users"
+          />
+          <StatCard
+            title="Site Visitors"
+            value={stats?.todayVisitors || 0}
+            subValue={`${stats?.percentageChange || "0"}% vs yesterday`}
+            icon={<FaEye className="text-amber-500 text-xl" />}
+            color="border-amber-500"
+            link="/admin/analytics"
+          />
+        </div>
+
+        {/* Secondary Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <StatCard
+            title="Newsletter Subscribers"
+            value={stats?.subscriberCount || 0}
+            icon={<FaEnvelope className="text-pink-500 text-xl" />}
+            color="border-pink-500"
+            link="/admin/emails"
+          />
+          <StatCard
+            title="Products Listed"
+            value={stats?.productCount || 0}
+            subValue={stats?.lowStockCount ? `${stats.lowStockCount} low stock` : undefined}
+            icon={<FaBoxOpen className="text-indigo-500 text-xl" />}
+            color="border-indigo-500"
+            link="/admin/products"
+          />
+          <StatCard
+            title="Google Merchant"
+            value={merchantStatus?.configured ? "Connected" : "Not configured"}
+            subValue={merchantStatus?.productCount ? `${merchantStatus.productCount} products synced` : undefined}
+            icon={<FaGoogle className="text-red-500 text-xl" />}
+            color="border-red-500"
+            link="/admin/google-merchant"
+          />
+          <StatCard
+            title="Analytics"
+            value="View Details"
+            subValue="Traffic, sources, geography"
+            icon={<FaChartLine className="text-cyan-500 text-xl" />}
+            color="border-cyan-500"
+            link="/admin/analytics"
+          />
+        </div>
+
+        {/* Recent Orders Section */}
+        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+            <h2 className="text-xl font-semibold text-gray-800">Recent Orders</h2>
+            <Link href="/admin/orders" className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+              View All →
+            </Link>
           </div>
-          
-          {/* Tab Navigation */}
-          <div className="mb-6 border-b border-gray-200">
-            <nav className="flex space-x-8">
-              <button 
-                onClick={() => setActiveTab('overview')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'overview'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Overview
-              </button>
-              <button 
-                onClick={() => setActiveTab('traffic')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'traffic'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Traffic Sources
-              </button>
-              <button 
-                onClick={() => setActiveTab('content')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'content'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Content Performance
-              </button>
-              <button 
-                onClick={() => setActiveTab('geo')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'geo'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Geographic
-              </button>
-            </nav>
-          </div>
-          
-          {/* Overview Tab */}
-          {activeTab === 'overview' && (
-            <>
-              {/* Stats Row */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                {/* Today's Visitors Card */}
-                <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500 hover:shadow-lg transition-shadow">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="text-sm text-gray-500 mb-1">Today's Visitors</p>
-                      <h2 className="text-3xl font-bold text-gray-800">{loading ? '...' : visitorData.count}</h2>
-                      {percentageChange !== null && (
-                        <p className={`text-sm flex items-center mt-2 ${isPositiveChange ? 'text-green-500' : 'text-red-500'}`}>
-                          {isPositiveChange ? <FaArrowUp className="mr-1" /> : <FaArrowDown className="mr-1" />}
-                          {percentageChange}% since yesterday
-                        </p>
-                      )}
-                    </div>
-                    <div className="p-3 bg-blue-100 rounded-full">
-                      <FaUsers className="text-blue-500 text-xl" />
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Peak Hour Card */}
-                <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-purple-500 hover:shadow-lg transition-shadow">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="text-sm text-gray-500 mb-1">Peak Traffic Hour</p>
-                      <h2 className="text-3xl font-bold text-gray-800">
-                        {loading ? '...' : peakTrafficHour ? peakTrafficHour.hour : 'N/A'}
-                      </h2>
-                      <p className="text-sm text-gray-500 mt-2">
-                        {peakTrafficHour ? `${peakTrafficHour.count} visitors` : 'No data'}
-                      </p>
-                    </div>
-                    <div className="p-3 bg-purple-100 rounded-full">
-                      <FaClock className="text-purple-500 text-xl" />
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Top Referrer Card */}
-                <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500 hover:shadow-lg transition-shadow">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="text-sm text-gray-500 mb-1">Top Referrer</p>
-                      <h2 className="text-xl font-bold text-gray-800 truncate">
-                        {loading ? '...' : 
-                          Object.keys(referrerCounts).length > 0 ? 
-                            Object.keys(referrerCounts).reduce((a, b) => 
-                              (referrerCounts[a] || 0) > (referrerCounts[b] || 0) ? a : b
-                            ) : 'Direct'
-                        }
-                      </h2>
-                      <p className="text-sm text-gray-500 mt-2">Traffic source</p>
-                    </div>
-                    <div className="p-3 bg-green-100 rounded-full">
-                      <FaNetworkWired className="text-green-500 text-xl" />
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Top Page Card */}
-                <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-amber-500 hover:shadow-lg transition-shadow">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="text-sm text-gray-500 mb-1">Top Page</p>
-                      <h2 className="text-xl font-bold text-gray-800 truncate">
-                        {loading ? '...' : 
-                          visitorData.pathData.length > 0 ? 
-                            visitorData.pathData[0].path : '/'
-                        }
-                      </h2>
-                      <p className="text-sm text-gray-500 mt-2">Most visited page</p>
-                    </div>
-                    <div className="p-3 bg-amber-100 rounded-full">
-                      <FaMapMarkerAlt className="text-amber-500 text-xl" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Hourly Traffic Chart */}
-              <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4">Hourly Traffic Distribution</h2>
-                <div className="h-72">
-                  {loading ? (
-                    <div className="h-full w-full flex items-center justify-center">
-                      <div className="animate-pulse flex flex-col items-center">
-                        <div className="h-8 w-8 rounded-full bg-gray-300 mb-2"></div>
-                        <div className="h-4 w-32 bg-gray-300 rounded"></div>
-                      </div>
-                    </div>
-                  ) : (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart
-                        data={visitorData.hourlyData}
-                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="hour" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Line 
-                          type="monotone" 
-                          dataKey="count" 
-                          name="Visitors" 
-                          stroke="#3B82F6" 
-                          activeDot={{ r: 8 }} 
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  )}
-                </div>
-              </div>
-              
-              {/* Top Pages Chart */}
-              <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4">Top Pages</h2>
-                <div className="h-72">
-                  {loading ? (
-                    <div className="h-full w-full flex items-center justify-center">
-                      <div className="animate-pulse flex flex-col items-center">
-                        <div className="h-8 w-8 rounded-full bg-gray-300 mb-2"></div>
-                        <div className="h-4 w-32 bg-gray-300 rounded"></div>
-                      </div>
-                    </div>
-                  ) : (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={visitorData.pathData}
-                        layout="vertical"
-                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis type="number" />
-                        <YAxis 
-                          type="category" 
-                          dataKey="path" 
-                          width={150}
-                          tick={{ fontSize: 12 }}
-                        />
-                        <Tooltip />
-                        <Legend />
-                        <Bar 
-                          dataKey="count" 
-                          name="Visits" 
-                          fill="#10B981" 
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  )}
-                </div>
-              </div>
-            </>
-          )}
-          
-          {/* Traffic Tab */}
-          {activeTab === 'traffic' && (
-            <>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                {/* Referrer Breakdown */}
-                <div className="bg-white rounded-lg shadow-md p-6">
-                  <h2 className="text-xl font-semibold text-gray-800 mb-4">Traffic Sources</h2>
-                  {loading ? (
-                    <div className="animate-pulse space-y-2">
-                      {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="flex justify-between items-center">
-                          <div className="h-4 bg-gray-200 rounded w-24"></div>
-                          <div className="h-4 bg-gray-200 rounded w-16"></div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {Object.entries(referrerCounts).map(([referrer, count], index) => (
-                        <div key={index} className="flex justify-between items-center">
-                          <div className="flex items-center">
-                            <div className={`w-3 h-3 rounded-full mr-2 bg-blue-500`}></div>
-                            <span className="font-medium">{referrer}</span>
-                          </div>
-                          <div className="flex items-center">
-                            <span className="text-gray-600 font-medium">{count}</span>
-                            <span className="text-gray-400 text-sm ml-1">
-                              ({((count / visitorData.count) * 100).toFixed(1)}%)
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                
-                {/* Referrer Growth Chart */}
-                <div className="bg-white rounded-lg shadow-md p-6">
-                  <h2 className="text-xl font-semibold text-gray-800 mb-4">Referrer Growth</h2>
-                  <div className="h-72">
-                    <div className="flex items-center justify-center h-full">
-                      <p className="text-gray-500">Historical data available with time period comparison</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Detailed Referrer Table */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
-                <div className="px-6 py-4 border-b border-gray-200">
-                  <h2 className="text-xl font-semibold text-gray-800">Detailed Referrers</h2>
-                </div>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Source
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          URL
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Visitors
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Percentage
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {loading ? (
-                        Array(5).fill(0).map((_, index) => (
-                          <tr key={index} className="animate-pulse">
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="h-4 bg-gray-200 rounded w-24"></div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="h-4 bg-gray-200 rounded w-28"></div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="h-4 bg-gray-200 rounded w-12"></div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="h-4 bg-gray-200 rounded w-16"></div>
-                            </td>
-                          </tr>
-                        ))
-                      ) : (
-                        // Group by actual referrer URL
-                        Object.entries(
-                          visitorData.visitors.reduce((acc: Record<string, { count: number; category: string }>, visitor) => {
-                            const ref = visitor.referrer || 'Direct';
-                            if (!acc[ref]) acc[ref] = { count: 0, category: visitor.referrerCategory || 'Direct' };
-                            acc[ref].count++;
-                            return acc;
-                          }, {})
-                        ).sort((a, b) => b[1].count - a[1].count)
-                        .map(([url, data]: [string, { count: number; category: string }], index) => (
-                          <tr key={index} className="hover:bg-gray-50">
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                data.category === 'Organic Search' ? 'bg-green-100 text-green-800' :
-                                data.category === 'Social Media' ? 'bg-blue-100 text-blue-800' :
-                                data.category === 'Email' ? 'bg-purple-100 text-purple-800' :
-                                'bg-gray-100 text-gray-800'
-                              }`}>
-                                {data.category}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900 truncate max-w-xs">{url}</div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm font-medium text-gray-900">{data.count}</div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-500">
-                                {((data.count / visitorData.count) * 100).toFixed(1)}%
-                              </div>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </>
-          )}
-          
-          {/* Content Tab */}
-          {activeTab === 'content' && (
-            <>
-              {/* Page Performance Chart */}
-              <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4">Page Performance</h2>
-                <div className="h-72">
-                  {loading ? (
-                    <div className="h-full w-full flex items-center justify-center">
-                      <div className="animate-pulse flex flex-col items-center">
-                        <div className="h-8 w-8 rounded-full bg-gray-300 mb-2"></div>
-                        <div className="h-4 w-32 bg-gray-300 rounded"></div>
-                      </div>
-                    </div>
-                  ) : (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={visitorData.pathData}
-                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis 
-                          dataKey="path" 
-                          tick={(props) => {
-                            const { x, y, payload } = props;
-                            return (
-                              <text 
-                                x={x} 
-                                y={y} 
-                                dy={16} 
-                                textAnchor="end" 
-                                transform={`rotate(-45, ${x}, ${y})`} 
-                                fontSize={10}
-                              >
-                                {payload.value}
-                              </text>
-                            );
-                          }} 
-                          height={60} 
-                        />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="count" name="Visits" fill="#8884d8" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  )}
-                </div>
-              </div>
-              
-              {/* Entry & Exit Pages */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div className="bg-white rounded-lg shadow-md p-6">
-                  <h2 className="text-xl font-semibold text-gray-800 mb-4">Top Entry Pages</h2>
-                  {loading ? (
-                    <div className="animate-pulse space-y-3">
-                      {[1, 2, 3, 4, 5].map((i) => (
-                        <div key={i} className="h-6 bg-gray-200 rounded"></div>
-                      ))}
-                    </div>
-                  ) : (
-                    <ol className="list-decimal list-inside space-y-2">
-                      {visitorData.pathData.slice(0, 5).map((item, index) => (
-                        <li key={index} className="text-gray-800">
-                          <span className="font-medium">{item.path}</span>
-                          <span className="text-gray-500 text-sm ml-2">({item.count} visitors)</span>
-                        </li>
-                      ))}
-                    </ol>
-                  )}
-                </div>
-                
-                <div className="bg-white rounded-lg shadow-md p-6">
-                  <h2 className="text-xl font-semibold text-gray-800 mb-4">Page Engagement</h2>
-                  <p className="text-gray-500 mb-4">
-                    Enhanced tracking available with session duration metrics
-                  </p>
-                  <div className="bg-blue-50 rounded-lg p-4">
-                    <p className="text-sm text-blue-800">
-                      Tip: Track session duration to measure engagement on each page
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Page Contents Detail */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-200">
-                  <h2 className="text-xl font-semibold text-gray-800">Page Details</h2>
-                </div>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Page Path
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Visits
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Top Referrer
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          % of Total Traffic
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {loading ? (
-                        Array(5).fill(0).map((_, index) => (
-                          <tr key={index} className="animate-pulse">
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="h-4 bg-gray-200 rounded w-28"></div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="h-4 bg-gray-200 rounded w-12"></div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="h-4 bg-gray-200 rounded w-20"></div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="h-4 bg-gray-200 rounded w-16"></div>
-                            </td>
-                          </tr>
-                        ))
-                      ) : (
-                        visitorData.pathData.map((pathData, index) => {
-                          // Find top referrer for this path
-                          const pathVisitors = visitorData.visitors.filter(v => v.path === pathData.path);
-                          const referrerCounts: Record<string, number> = {};
-                          pathVisitors.forEach(v => {
-                            const ref = v.referrerCategory || 'Direct';
-                            referrerCounts[ref] = (referrerCounts[ref] || 0) + 1;
-                          });
-                          
-                          const topReferrer = Object.keys(referrerCounts).length > 0 
-                            ? Object.keys(referrerCounts).reduce((a, b) => 
-                                referrerCounts[a] > referrerCounts[b] ? a : b
-                              ) 
-                            : 'Direct';
-                            
-                          return (
-                            <tr key={index} className="hover:bg-gray-50">
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm font-medium text-gray-900">{pathData.path}</div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-gray-900">{pathData.count}</div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-gray-500">{topReferrer}</div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-gray-500">
-                                  {((pathData.count / visitorData.count) * 100).toFixed(1)}%
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </>
-          )}
-          
-          {/* Geographic Tab */}
-          {activeTab === 'geo' && (
-            <>
-              {/* Map Section */}
-              <div className="bg-white rounded-lg shadow-md p-4 mb-6">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4">Visitor Locations</h2>
-                <div className="rounded-lg overflow-hidden border border-gray-200" style={{ height: '500px' }}>
-                  {loading ? (
-                    <div className="h-full w-full flex items-center justify-center bg-gray-100">
-                      <div className="animate-pulse flex flex-col items-center">
-                        <div className="h-12 w-12 rounded-full bg-gray-300 mb-2"></div>
-                        <div className="h-4 w-32 bg-gray-300 rounded"></div>
-                      </div>
-                    </div>
-                  ) : (
-                    <MapView visitors={visitorData.visitors} />
-                  )}
-                </div>
-              </div>
-              
-              {/* Countries Breakdown */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                <div className="bg-white rounded-lg shadow-md p-6">
-                  <h2 className="text-xl font-semibold text-gray-800 mb-4">Top Countries</h2>
-                  {loading ? (
-                    <div className="animate-pulse space-y-2">
-                      {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="flex justify-between items-center">
-                          <div className="h-4 bg-gray-200 rounded w-24"></div>
-                          <div className="h-4 bg-gray-200 rounded w-16"></div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {uniqueCountries.slice(0, 5).map((country, index) => {
-                        const count = visitorData.visitors.filter(v => v.country === country).length;
-                        return (
-                          <div key={index} className="flex justify-between items-center">
-                            <div className="flex items-center">
-                              <div className={`w-3 h-3 rounded-full mr-2 bg-green-500`}></div>
-                              <span className="font-medium">{country}</span>
-                            </div>
-                            <div className="flex items-center">
-                              <span className="text-gray-600 font-medium">{count}</span>
-                              <span className="text-gray-400 text-sm ml-1">
-                                ({((count / visitorData.count) * 100).toFixed(1)}%)
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-                
-                {/* Cities Breakdown */}
-                <div className="bg-white rounded-lg shadow-md p-6">
-                  <h2 className="text-xl font-semibold text-gray-800 mb-4">Top Cities</h2>
-                  {loading ? (
-                    <div className="animate-pulse space-y-2">
-                      {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="flex justify-between items-center">
-                          <div className="h-4 bg-gray-200 rounded w-24"></div>
-                          <div className="h-4 bg-gray-200 rounded w-16"></div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {/* Group by city */}
-                      {Object.entries(
-                        visitorData.visitors.reduce<Record<string, number>>((acc, visitor) => {
-                          if (visitor.city) {
-                            const city = `${visitor.city}, ${visitor.country || 'Unknown'}`;
-                            acc[city] = (acc[city] || 0) + 1;
-                          }
-                          return acc;
-                        }, {})
-                      )
-                        .sort(([_, countA], [__, countB]) => countB - countA)
-                        .slice(0, 5)
-                        .map(([city, count], index) => (
-                          <div key={index} className="flex justify-between items-center">
-                            <div className="flex items-center">
-                              <div className={`w-3 h-3 rounded-full mr-2 bg-blue-500`}></div>
-                              <span className="font-medium">{city}</span>
-                            </div>
-                            <div className="flex items-center">
-                              <span className="text-gray-600 font-medium">{count}</span>
-                              <span className="text-gray-400 text-sm ml-1">
-                                ({((count / visitorData.count) * 100).toFixed(1)}%)
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              {/* Time Zone Analysis */}
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4">Timezone Distribution</h2>
-                <p className="text-gray-500 mb-4">
-                  Enhance visitor tracking to include timezone data for better global audience insights
-                </p>
-                <div className="bg-blue-50 rounded-lg p-4">
-                  <p className="text-sm text-blue-800">
-                    Tip: Adding timezone tracking can help optimize content publishing schedules
-                  </p>
-                </div>
-              </div>
-            </>
-          )}
-          
-          {/* Recent Visitors Table - Always shown at bottom */}
-          <div className="bg-white rounded-lg shadow-md overflow-hidden mt-6">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-800">Recent Visitors</h2>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Location
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Page
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Referrer
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Timestamp
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {loading ? (
-                    Array(5).fill(0).map((_, index) => (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Order ID
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Customer
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Total
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Date
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {loading ? (
+                  Array(5)
+                    .fill(0)
+                    .map((_, index) => (
                       <tr key={index} className="animate-pulse">
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="h-4 bg-gray-200 rounded w-24"></div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="h-4 bg-gray-200 rounded w-28"></div>
+                          <div className="h-4 bg-gray-200 rounded w-20"></div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="h-4 bg-gray-200 rounded w-32"></div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="h-4 bg-gray-200 rounded w-16"></div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
                           <div className="h-4 bg-gray-200 rounded w-20"></div>
                         </td>
-                      </tr>
-                    ))
-                  ) : (
-                    visitorData.visitors.slice(0, 10).map((visitor, index) => (
-                      <tr key={index} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">
-                            {visitor.city || 'Unknown'}, {visitor.country || 'Unknown'}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-500">{visitor.path || '/'}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            visitor.referrerCategory === 'Organic Search' ? 'bg-green-100 text-green-800' :
-                            visitor.referrerCategory === 'Social Media' ? 'bg-blue-100 text-blue-800' :
-                            visitor.referrerCategory === 'Email' ? 'bg-purple-100 text-purple-800' :
-                            'bg-gray-100 text-gray-800'
-                          }`}>
-                            {visitor.referrerCategory || 'Direct'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-500">
-                            {visitor.timestamp ? new Date(visitor.timestamp).toLocaleString() : 'N/A'}
-                          </div>
+                          <div className="h-4 bg-gray-200 rounded w-24"></div>
                         </td>
                       </tr>
                     ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+                ) : recentOrders.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                      No orders yet
+                    </td>
+                  </tr>
+                ) : (
+                  recentOrders.map((order) => (
+                    <tr key={order.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <Link href={`/admin/orders/${order.id}`} className="text-blue-600 hover:text-blue-800 font-medium">
+                          {order.id.slice(0, 8)}...
+                        </Link>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {order.user?.email || "Guest"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        £{(order.total || 0).toFixed(2)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            order.status === "completed"
+                              ? "bg-green-100 text-green-800"
+                              : order.status === "pending"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-gray-100 text-gray-800"
+                          }`}
+                        >
+                          {order.status || "pending"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(order.createdAt).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
+      </div>
     </div>
   );
 }

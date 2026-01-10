@@ -84,6 +84,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({
               <button
                 onClick={onCtaClick}
                 disabled={isLoading}
+                data-track-button="Pricing:Buy Now"
                 className="w-full max-w-xs bg-white text-primary font-bold py-4 px-8 rounded-lg shadow-lg transform transition hover:scale-105 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {isLoading ? (

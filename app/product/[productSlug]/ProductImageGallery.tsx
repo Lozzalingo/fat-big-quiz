@@ -97,6 +97,7 @@ export default function ProductImageGallery({
             <button
               key={img.id}
               onClick={() => setSelectedIndex(index)}
+              data-track-button="Product:Select Thumbnail"
               className={`aspect-square border-2 overflow-hidden transition-all flex-shrink-0 ${
                 selectedIndex === index
                   ? "border-primary"
@@ -129,6 +130,7 @@ export default function ProductImageGallery({
             <>
               <button
                 onClick={goToPrevious}
+                data-track-button="Product:Previous Image"
                 className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 hover:bg-white border border-gray-200 flex items-center justify-center transition-all hover:border-primary"
                 aria-label="Previous image"
               >
@@ -136,6 +138,7 @@ export default function ProductImageGallery({
               </button>
               <button
                 onClick={goToNext}
+                data-track-button="Product:Next Image"
                 className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 hover:bg-white border border-gray-200 flex items-center justify-center transition-all hover:border-primary"
                 aria-label="Next image"
               >
@@ -170,6 +173,7 @@ export default function ProductImageGallery({
             <>
               <button
                 onClick={goToPrevious}
+                data-track-button="Product:Previous Image"
                 className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 hover:bg-white border border-gray-200 flex items-center justify-center transition-all hover:border-primary"
                 aria-label="Previous image"
               >
@@ -177,6 +181,7 @@ export default function ProductImageGallery({
               </button>
               <button
                 onClick={goToNext}
+                data-track-button="Product:Next Image"
                 className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 hover:bg-white border border-gray-200 flex items-center justify-center transition-all hover:border-primary"
                 aria-label="Next image"
               >
@@ -199,6 +204,7 @@ export default function ProductImageGallery({
             <button
               key={img.id}
               onClick={() => setSelectedIndex(index)}
+              data-track-button="Product:Select Thumbnail Mobile"
               className={`aspect-square border-2 overflow-hidden transition-all ${
                 selectedIndex === index
                   ? "border-primary"

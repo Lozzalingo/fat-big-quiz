@@ -137,6 +137,7 @@ const RegisterPage = () => {
 
           <button
             type="submit"
+            data-track-button="Register:Create Account"
             className="w-full bg-primary text-white text-sm font-medium py-2.5 rounded-lg hover:bg-primary/90 transition"
           >
             Create account

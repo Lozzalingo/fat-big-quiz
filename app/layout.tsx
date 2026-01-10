@@ -38,11 +38,20 @@ export const metadata: Metadata = {
     siteName: "Fat Big Quiz",
     locale: "en_GB",
     type: "website",
+    images: [
+      {
+        url: "/fat-big-quiz-promo.jpg",
+        width: 1920,
+        height: 640,
+        alt: "Fat Big Quiz - Pub Quiz Packs & Downloads",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Fat Big Quiz - Pub Quiz Packs & Quiz Downloads",
     description: "Download ready-to-use pub quiz packs, music rounds, and picture quizzes.",
+    images: ["/fat-big-quiz-promo.jpg"],
   },
 };
 

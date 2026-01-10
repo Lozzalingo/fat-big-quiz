@@ -210,6 +210,7 @@ const EnhancedHeader = () => {
                   </Link>
                   <button
                     onClick={handleLogout}
+                    data-track-button="Header:Logout"
                     className="text-white/90 hover:text-white font-medium transition-colors"
                   >
                     Logout
@@ -226,6 +227,7 @@ const EnhancedHeader = () => {
             <button
               className="lg:hidden text-white p-2 rounded-lg hover:bg-white/10 transition"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              data-track-button="Header:Toggle Mobile Menu"
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? (
@@ -322,6 +324,7 @@ const EnhancedHeader = () => {
                       </Link>
                       <button
                         onClick={handleLogout}
+                        data-track-button="Header:Logout Mobile"
                         className="flex items-center gap-3 text-white/90 hover:text-white hover:bg-white/10 px-4 py-3 rounded-lg transition-all w-full"
                       >
                         <FaSignOutAlt />

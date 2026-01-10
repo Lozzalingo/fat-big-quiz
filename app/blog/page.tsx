@@ -204,6 +204,7 @@ export default function BlogSection() {
                 />
                 <button
                   type="submit"
+                  data-track-button="Blog:Search"
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-secondary hover:text-primary transition-colors"
                   aria-label="Search"
                 >
@@ -227,6 +228,7 @@ export default function BlogSection() {
             <div className="flex flex-wrap justify-center gap-2">
               <button
                 onClick={() => setFilter(null)}
+                data-track-button="Blog:Filter All"
                 className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
                   filter === null
                     ? "bg-primary text-white shadow-md"
@@ -239,6 +241,7 @@ export default function BlogSection() {
                 <button
                   key={category}
                   onClick={() => setFilter(category)}
+                  data-track-button={`Blog:Filter ${formatCategoryName(category)}`}
                   className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
                     filter === category
                       ? "bg-primary text-white shadow-md"
@@ -278,6 +281,7 @@ export default function BlogSection() {
                   <p className="mb-4">{error}</p>
                   <button
                     onClick={handleRetry}
+                    data-track-button="Blog:Retry"
                     className="bg-error text-white py-2 px-6 rounded-lg hover:bg-error/90 transition-colors"
                   >
                     Try Again
@@ -316,6 +320,7 @@ export default function BlogSection() {
                     onClick={() =>
                       window.scrollTo({ top: 0, behavior: "smooth" })
                     }
+                    data-track-button="Blog:Back to Top"
                     className="bg-primary text-white py-2 px-6 rounded-lg hover:bg-primary-dark transition-colors"
                   >
                     Back to Top

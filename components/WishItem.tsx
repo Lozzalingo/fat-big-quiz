@@ -111,6 +111,7 @@ const WishItem = ({
           <button
             className="text-xs uppercase tracking-wide px-3 py-2 border border-black hover:bg-black hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleAddToCart}
+            data-track-button="Wishlist:Add to Cart"
             disabled={!stockAvailabillity}
           >
             Add to Cart
@@ -118,6 +119,7 @@ const WishItem = ({
           <button
             className="p-2 text-gray-400 hover:text-gray-600"
             onClick={() => deleteItemFromWishlist(id)}
+            data-track-button="Wishlist:Remove Item"
             disabled={!userId}
           >
             <FaXmark className="h-4 w-4" />

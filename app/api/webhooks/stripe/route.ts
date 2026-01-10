@@ -107,6 +107,22 @@ export async function POST(request: NextRequest) {
               }
             );
           }
+
+          // Send admin notification
+          await fetch(
+            `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/send-admin-notification`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                customerEmail,
+                productName,
+                price: amountTotal,
+                productType,
+                sessionId: session.id,
+              }),
+            }
+          );
         } catch (error) {
           console.error("Error creating purchase:", error);
         }

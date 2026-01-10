@@ -63,14 +63,34 @@ const AddNewProduct = () => {
   const [tagInput, setTagInput] = useState("");
   const [draggedFileIndex, setDraggedFileIndex] = useState<number | null>(null);
   const [draggedImageIndex, setDraggedImageIndex] = useState<number | null>(null);
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const downloadFileInputRef = useRef<HTMLInputElement>(null);
+  const categoriesRef = useRef<HTMLDivElement>(null);
 
   const MAX_TITLE_LENGTH = 140;
   const MAX_DESCRIPTION_LENGTH = 5000;
   const MAX_IMAGES = 10;
-  const MAX_TAGS = 13;
+  const MAX_TAGS = 30;
   const MAX_DOWNLOAD_FILES = 10;
+
+  // Auto-generate slug from title
+  const handleTitleChange = (newTitle: string) => {
+    setProduct(prev => {
+      const updates: any = { title: newTitle };
+      // Auto-generate slug if not manually edited
+      if (!slugManuallyEdited) {
+        updates.slug = convertSlugToURLFriendly(newTitle);
+      }
+      return { ...prev, ...updates };
+    });
+  };
+
+  // Handle manual slug edits
+  const handleSlugChange = (newSlug: string) => {
+    setSlugManuallyEdited(true);
+    setProduct(prev => ({ ...prev, slug: convertSlugToURLFriendly(newSlug) }));
+  };
 
   // Handle multiple download file uploads
   const handleDownloadFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -175,9 +195,16 @@ const AddNewProduct = () => {
 
   // Tag handling
   const addTag = () => {
-    const trimmedTag = tagInput.trim().toLowerCase();
-    if (trimmedTag && !tags.includes(trimmedTag) && tags.length < MAX_TAGS) {
-      setTags([...tags, trimmedTag]);
+    // Split by comma to allow multiple tags at once
+    const newTags = tagInput
+      .split(',')
+      .map(t => t.trim().toLowerCase())
+      .filter(t => t && !tags.includes(t));
+
+    // Respect the MAX_TAGS limit
+    const tagsToAdd = newTags.slice(0, MAX_TAGS - tags.length);
+    if (tagsToAdd.length > 0) {
+      setTags([...tags, ...tagsToAdd]);
       setTagInput("");
     }
   };
@@ -201,6 +228,12 @@ const AddNewProduct = () => {
 
     if (uploadedImages.length === 0) {
       toast.error("Please add at least one photo");
+      return;
+    }
+
+    if (selectedCategoryIds.length === 0) {
+      toast.error("Please select at least one category");
+      categoriesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
 
@@ -241,6 +274,7 @@ const AddNewProduct = () => {
       ...productToSubmit,
       categoryIds: selectedCategoryIds,
       quizFormatId: product.quizFormatId || null,
+      tags: tags,
     };
 
     const requestOptions = {
@@ -295,6 +329,7 @@ const AddNewProduct = () => {
         setSelectedDownloadFiles([]);
         setSelectedCategoryIds([]);
         setTags([]);
+        setSlugManuallyEdited(false);
       })
       .catch((error) => {
         toast.error("There was an error while creating product");
@@ -413,7 +448,7 @@ const AddNewProduct = () => {
                   className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black"
                   placeholder="e.g. Ultimate Pub Quiz Pack - 100 Questions with Answers"
                   value={product.title}
-                  onChange={(e) => setProduct({ ...product, title: e.target.value })}
+                  onChange={(e) => handleTitleChange(e.target.value)}
                 />
                 <div className="text-right text-xs text-gray-400 mt-1">
                   {product.title.length}/{MAX_TITLE_LENGTH}
@@ -632,7 +667,7 @@ const AddNewProduct = () => {
                     <input
                       type="text"
                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black"
-                      placeholder="Add a tag..."
+                      placeholder="Add tags (comma-separated)..."
                       value={tagInput}
                       onChange={(e) => setTagInput(e.target.value)}
                       onKeyDown={handleTagKeyDown}
@@ -709,9 +744,9 @@ const AddNewProduct = () => {
                 </div>
 
                 {/* Categories (Multi-select) */}
-                <div className="sm:col-span-2">
+                <div ref={categoriesRef} className="sm:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Categories (Themes)
+                    Categories (Themes) <span className="text-red-500">*</span>
                   </label>
                   <p className="text-xs text-gray-500 mb-2">
                     Select all categories that apply to this product.
@@ -747,6 +782,9 @@ const AddNewProduct = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     URL Slug <span className="text-red-500">*</span>
+                    {!slugManuallyEdited && product.slug && (
+                      <span className="ml-2 text-xs text-green-600 font-normal">(auto-generated)</span>
+                    )}
                   </label>
                   <div className="flex">
                     <span className="inline-flex items-center px-3 bg-gray-50 border border-r-0 border-gray-300 rounded-l-lg text-sm text-gray-500">
@@ -756,10 +794,22 @@ const AddNewProduct = () => {
                       type="text"
                       className="flex-1 px-3 py-2.5 border border-gray-300 rounded-r-lg focus:ring-2 focus:ring-black focus:border-black"
                       placeholder="my-quiz-pack"
-                      value={convertSlugToURLFriendly(product.slug)}
-                      onChange={(e) => setProduct({ ...product, slug: convertSlugToURLFriendly(e.target.value) })}
+                      value={product.slug}
+                      onChange={(e) => handleSlugChange(e.target.value)}
                     />
                   </div>
+                  {slugManuallyEdited && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSlugManuallyEdited(false);
+                        setProduct(prev => ({ ...prev, slug: convertSlugToURLFriendly(prev.title) }));
+                      }}
+                      className="text-xs text-blue-600 hover:underline mt-1"
+                    >
+                      Reset to auto-generate from title
+                    </button>
+                  )}
                 </div>
 
                 {/* Manufacturer/Brand */}

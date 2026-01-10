@@ -304,6 +304,7 @@ const UserProfilePage = () => {
 
           <button
             type="button"
+            data-track-button="Profile:Save Changes"
             className="mt-4 uppercase px-6 py-3 text-white bg-blue-600 hover:bg-blue-700 rounded-xl font-semibold shadow transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
             onClick={updateUser}
             disabled={updateLoading}

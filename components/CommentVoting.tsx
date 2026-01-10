@@ -79,8 +79,9 @@ const CommentVoting: React.FC<VotingProps> = ({
 
   return (
     <div className="flex items-center space-x-2">
-      <button 
+      <button
         onClick={() => handleVote(true)}
+        data-track-button="Blog:Upvote Comment"
         className={`flex items-center transition-colors ${!userId ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:text-blue-600'} ${userVote === 'upvote' ? 'text-blue-600' : 'text-gray-500'}`}
         disabled={!userId || isLoading}
         aria-label="Upvote"
@@ -92,8 +93,9 @@ const CommentVoting: React.FC<VotingProps> = ({
         {voteScore}
       </span>
       
-      <button 
+      <button
         onClick={() => handleVote(false)}
+        data-track-button="Blog:Downvote Comment"
         className={`flex items-center transition-colors ${!userId ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:text-red-600'} ${userVote === 'downvote' ? 'text-red-600' : 'text-gray-500'}`}
         disabled={!userId || isLoading}
         aria-label="Downvote"

@@ -39,6 +39,7 @@ const Footer = () => {
             <nav className="flex flex-col items-center gap-2 text-sm">
               <button
                 onClick={scrollToProducts}
+                data-track-button="Footer:Browse Quizzes"
                 className="text-white/80 hover:text-white transition bg-transparent border-none p-0 m-0 cursor-pointer"
               >
                 Browse Quizzes
@@ -94,18 +95,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="border-t border-white/20 pt-6 text-center">
           <p className="text-white/60 text-sm">
-            © {currentYear} Fat Big Quiz. All rights reserved.
-          </p>
-          <p className="text-white/40 text-xs mt-2">
-            Built with passion by{" "}
-            <a
-              href="https://www.instagram.com/laurencedothow/"
-              className="text-white/60 hover:text-white underline"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Laurence Stephan
-            </a>
+            © {currentYear} BucketRace Ltd. 'Fat Big Quiz' is a trading name of BucketRace.
           </p>
         </div>
       </div>

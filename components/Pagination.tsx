@@ -19,6 +19,7 @@ const Pagination = () => {
       <button
         className="border border-primary bg-white text-primary text-xs font-medium uppercase tracking-wide px-4 py-2.5 hover:bg-primary hover:text-white transition-colors"
         onClick={() => decrementPage()}
+        data-track-button="Shop:Previous Page"
       >
         Prev
       </button>
@@ -28,6 +29,7 @@ const Pagination = () => {
       <button
         className="border border-primary bg-white text-primary text-xs font-medium uppercase tracking-wide px-4 py-2.5 hover:bg-primary hover:text-white transition-colors"
         onClick={() => incrementPage()}
+        data-track-button="Shop:Next Page"
       >
         Next
       </button>

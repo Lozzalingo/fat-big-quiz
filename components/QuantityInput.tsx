@@ -27,6 +27,7 @@ const QuantityInput = ({quantityCount, setQuantityCount} : QuantityInputProps) =
       <div className="flex items-center gap-1">
         <button
           type="button"
+          data-track-button="Product:Quantity Decrease"
           className="size-10 leading-10 text-gray-600 transition hover:opacity-75 flex justify-center items-center border"
           onClick={() => handleQuantityChange("minus")}
         >
@@ -43,6 +44,7 @@ const QuantityInput = ({quantityCount, setQuantityCount} : QuantityInputProps) =
 
         <button
           type="button"
+          data-track-button="Product:Quantity Increase"
           className="size-10 leading-10 text-gray-600 transition hover:opacity-75 flex justify-center items-center border"
           onClick={() => handleQuantityChange("plus")}
         >

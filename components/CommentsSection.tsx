@@ -218,7 +218,8 @@ const CommentForm: React.FC<CommentFormProps> = ({
       </div>
       
       <div className="flex items-center justify-between">
-        <button type="submit"   
+        <button type="submit"
+        data-track-button="Blog:Post Comment"
         className={`
           py-2.5 px-4
           text-sm font-semibold
@@ -239,9 +240,10 @@ const CommentForm: React.FC<CommentFormProps> = ({
         </button>
         
         {(isEdit || isReply) && (
-          <button 
-            type="button" 
-            onClick={isEdit ? onCancelEdit : onCancelReply} 
+          <button
+            type="button"
+            onClick={isEdit ? onCancelEdit : onCancelReply}
+            data-track-button="Blog:Cancel Comment"
             className="py-2 px-4 text-xs text-gray-800 bg-gray-100 rounded-lg hover:bg-gray-200"
           >
             Cancel
@@ -370,10 +372,10 @@ const CommentItem: React.FC<CommentItemProps> = ({
               </div>
               {userId === comment.userId && (
                 <div className="ml-auto flex space-x-2">
-                  <button onClick={() => setEditingId(comment.id)} className="text-gray-500 hover:text-blue-600">
+                  <button onClick={() => setEditingId(comment.id)} data-track-button="Blog:Edit Comment" className="text-gray-500 hover:text-blue-600">
                     <Edit size={14} />
                   </button>
-                  <button onClick={() => handleDelete(comment.id)} className="text-gray-500 hover:text-red-600">
+                  <button onClick={() => handleDelete(comment.id)} data-track-button="Blog:Delete Comment" className="text-gray-500 hover:text-red-600">
                     <Trash2 size={14} />
                   </button>
                 </div>
@@ -392,8 +394,9 @@ const CommentItem: React.FC<CommentItemProps> = ({
               />
               
               {userId && (
-                <button 
-                  onClick={() => setIsReplying(!isReplying)} 
+                <button
+                  onClick={() => setIsReplying(!isReplying)}
+                  data-track-button="Blog:Reply Comment"
                   className="flex items-center hover:text-blue-600"
                 >
                   <Reply size={14} className="mr-1" />
@@ -402,8 +405,9 @@ const CommentItem: React.FC<CommentItemProps> = ({
               )}
               
               {childComments.length > 0 && (
-                <button 
+                <button
                   onClick={() => setShowReplies(!showReplies)}
+                  data-track-button="Blog:Toggle Replies"
                   className="flex items-center hover:text-blue-600"
                 >
                   <CornerDownRight size={14} className="mr-1" />

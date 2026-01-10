@@ -52,3 +52,4 @@ export { default as DiscountCodeForm } from "./DiscountCodeForm";
 // MapView removed from barrel export - use dynamic import to avoid SSR issues with leaflet
 export { default as MainHeaderClient } from "./MainHeaderClient";
 export { default as VisitorTracker } from "./VisitorTracker";
+export { default as ShopSearch } from "./ShopSearch";

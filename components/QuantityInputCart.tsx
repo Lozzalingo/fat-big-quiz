@@ -32,6 +32,7 @@ const QuantityInputCart = ({ product } : { product: ProductInCart }) => {
       <div className="flex items-center justify-center rounded border border-gray-200 w-32">
         <button
           type="button"
+          data-track-button="Cart:Quantity Decrease"
           className="size-10 leading-10 text-gray-600 transition hover:opacity-75 flex items-center justify-center"
           onClick={() => handleQuantityChange("minus")}
         >
@@ -48,6 +49,7 @@ const QuantityInputCart = ({ product } : { product: ProductInCart }) => {
 
         <button
           type="button"
+          data-track-button="Cart:Quantity Increase"
           className="size-10 leading-10 text-gray-600 transition hover:opacity-75 flex items-center justify-center"
           onClick={() => handleQuantityChange("plus")}
         >

@@ -332,6 +332,7 @@ export default function DownloadPage() {
                     <button
                       key={index}
                       onClick={() => handleDownloadFile(file.downloadUrl)}
+                      data-track-button="Download:Download File"
                       className="w-full bg-white border-2 border-primary text-primary hover:bg-primary hover:text-white font-semibold py-3 px-4 rounded-lg transition flex items-center gap-3"
                     >
                       <FaDownload />
@@ -344,6 +345,7 @@ export default function DownloadPage() {
                 <button
                   onClick={handlePrepareDownloads}
                   disabled={downloading}
+                  data-track-button="Download:Show Files"
                   className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-4 px-6 rounded-lg shadow-lg transform transition hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
                 >
                   {downloading ? (

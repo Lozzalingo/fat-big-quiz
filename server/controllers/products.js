@@ -1,9 +1,69 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const { deleteFromSpaces, getKey } = require("../utils/spaces");
+const merchantApi = require("../services/merchantApi");
+const { formatProductForMerchant } = require("../utils/merchantFeed");
+
+/**
+ * Sync a product to Google Merchant Center (non-blocking)
+ * Call this after creating or updating a product
+ */
+async function syncProductToMerchant(productId) {
+  if (!merchantApi.isConfigured()) {
+    return; // Skip if not configured
+  }
+
+  try {
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+      include: {
+        category: true,
+        categories: { include: { category: true } },
+        quizFormat: true,
+        images: true,
+      },
+    });
+
+    if (!product || product.price <= 0) {
+      return; // Skip products without price
+    }
+
+    const formatted = formatProductForMerchant(product);
+    const result = await merchantApi.upsertProduct(formatted);
+
+    if (result.success) {
+      console.log(`[Merchant] Auto-synced product: ${product.title}`);
+    } else {
+      console.error(`[Merchant] Failed to auto-sync product ${product.title}:`, result.error);
+    }
+  } catch (error) {
+    console.error(`[Merchant] Error auto-syncing product ${productId}:`, error.message);
+  }
+}
+
+/**
+ * Remove a product from Google Merchant Center (non-blocking)
+ * Call this before deleting a product
+ */
+async function removeProductFromMerchant(productId) {
+  if (!merchantApi.isConfigured()) {
+    return;
+  }
+
+  try {
+    const result = await merchantApi.deleteProduct(productId);
+    if (result.success) {
+      console.log(`[Merchant] Removed product from Merchant Center: ${productId}`);
+    }
+  } catch (error) {
+    console.error(`[Merchant] Error removing product ${productId}:`, error.message);
+  }
+}
 
 async function getAllProducts(request, response) {
   const mode = request.query.mode || "";
+  const searchQuery = request.query.search || ""; // Search parameter
+
   // checking if we are on the admin products page because we don't want to have filtering, sorting and pagination there
   if(mode === "admin"){
     try {
@@ -15,6 +75,7 @@ async function getAllProducts(request, response) {
             include: { category: { select: { id: true, name: true } } },
           },
         },
+        orderBy: { displayOrder: "asc" },
       });
       return response.json(adminProducts);
     } catch (error) {
@@ -198,7 +259,7 @@ async function getAllProducts(request, response) {
       },
     };
 
-    // Build where clause with category and quizFormat filters
+    // Build where clause with category, quizFormat, and search filters
     const buildWhereClause = () => {
       let where = { ...whereClause };
 
@@ -220,10 +281,26 @@ async function getAllProducts(request, response) {
         };
       }
 
+      // Add search filter (searches title, description, tags, category names)
+      if (searchQuery) {
+        where.OR = [
+          { title: { contains: searchQuery } },
+          { description: { contains: searchQuery } },
+          { tags: { contains: searchQuery } },
+          { category: { name: { contains: searchQuery } } },
+          { categories: { some: { category: { name: { contains: searchQuery } } } } },
+          { quizFormat: { displayName: { contains: searchQuery } } },
+        ];
+      }
+
       return where;
     };
 
-    if (Object.keys(filterObj).length === 0) {
+    // Always use buildWhereClause to include search filter
+    const whereConditions = buildWhereClause();
+    const hasFilters = Object.keys(filterObj).length > 0 || searchQuery;
+
+    if (!hasFilters) {
       products = await prisma.product.findMany({
         skip: (page - 1) * 10,
         take: 12,
@@ -235,7 +312,7 @@ async function getAllProducts(request, response) {
         skip: (page - 1) * 10,
         take: 12,
         include: shopIncludes,
-        where: buildWhereClause(),
+        where: whereConditions,
         orderBy: sortObj,
       });
     }
@@ -280,6 +357,7 @@ async function createProduct(request, response) {
       downloadFile,
       features,
       videoUrl,
+      tags, // Array of tag strings
     } = request.body;
 
     const product = await prisma.product.create({
@@ -298,6 +376,7 @@ async function createProduct(request, response) {
         downloadFile: downloadFile || null,
         features: features || null,
         videoUrl: videoUrl || null,
+        tags: tags ? JSON.stringify(tags) : null,
         // Create many-to-many category relationships
         categories: categoryIds && categoryIds.length > 0 ? {
           create: categoryIds.map((catId) => ({
@@ -313,6 +392,9 @@ async function createProduct(request, response) {
         },
       },
     });
+    // Auto-sync to Google Merchant Center (non-blocking)
+    syncProductToMerchant(product.id).catch(() => {});
+
     return response.status(201).json(product);
   } catch (error) {
     console.error("Error creating product:", error);
@@ -340,6 +422,7 @@ async function updateProduct(request, response) {
       downloadFile,
       features,
       videoUrl,
+      tags, // Array of tag strings
     } = request.body;
 
     const existingProduct = await prisma.product.findUnique({
@@ -348,6 +431,12 @@ async function updateProduct(request, response) {
 
     if (!existingProduct) {
       return response.status(404).json({ error: "Product not found" });
+    }
+
+    // Handle categoryId - empty string means clear it, undefined means keep existing
+    let resolvedCategoryId = existingProduct.categoryId;
+    if (categoryId !== undefined) {
+      resolvedCategoryId = categoryId === "" || categoryId === null ? null : categoryId;
     }
 
     // Update the product
@@ -361,13 +450,14 @@ async function updateProduct(request, response) {
         rating,
         description,
         manufacturer,
-        categoryId,
+        categoryId: resolvedCategoryId,
         quizFormatId: quizFormatId !== undefined ? quizFormatId : existingProduct.quizFormatId,
         inStock,
         productType: productType || existingProduct.productType,
         downloadFile: downloadFile !== undefined ? downloadFile : existingProduct.downloadFile,
         features: features !== undefined ? features : existingProduct.features,
         videoUrl: videoUrl !== undefined ? videoUrl : existingProduct.videoUrl,
+        tags: tags !== undefined ? JSON.stringify(tags) : existingProduct.tags,
       },
     });
 
@@ -401,6 +491,9 @@ async function updateProduct(request, response) {
       },
     });
 
+    // Auto-sync to Google Merchant Center (non-blocking)
+    syncProductToMerchant(id).catch(() => {});
+
     return response.status(200).json(productWithRelations);
   } catch (error) {
     console.error("Error updating product:", error);
@@ -412,6 +505,7 @@ async function updateProduct(request, response) {
 async function deleteProduct(request, response) {
   try {
     const { id } = request.params;
+    const forceDelete = request.query.force === 'true';
 
     // Check for related records in order_product table
     const relatedOrderProductItems = await prisma.customer_order_product.findMany({
@@ -419,8 +513,18 @@ async function deleteProduct(request, response) {
         productId: id,
       },
     });
-    if (relatedOrderProductItems.length > 0) {
-      return response.status(400).json({ error: 'Cannot delete product because of foreign key constraint.' });
+    if (relatedOrderProductItems.length > 0 && !forceDelete) {
+      return response.status(400).json({ error: 'Cannot delete product because it has orders. Use ?force=true to delete anyway.' });
+    }
+
+    // Check for purchases
+    const relatedPurchases = await prisma.purchase.findMany({
+      where: { productId: id },
+    });
+    if (relatedPurchases.length > 0 && !forceDelete) {
+      return response.status(400).json({
+        error: `Cannot delete product because it has ${relatedPurchases.length} purchase(s). Use ?force=true to delete anyway.`
+      });
     }
 
     // Get the product first to clean up files
@@ -468,6 +572,17 @@ async function deleteProduct(request, response) {
         }
       }
     }
+
+    // Remove from Google Merchant Center before deleting (non-blocking)
+    removeProductFromMerchant(id).catch(() => {});
+
+    // Delete all related records first (in order to avoid FK constraints)
+    await prisma.productCategory.deleteMany({ where: { productId: id } });
+    await prisma.discountCodeProduct.deleteMany({ where: { productId: id } });
+    await prisma.wishlist.deleteMany({ where: { productId: id } });
+    await prisma.image.deleteMany({ where: { productID: id } });
+    await prisma.purchase.deleteMany({ where: { productId: id } });
+    await prisma.customer_order_product.deleteMany({ where: { productId: id } });
 
     // Delete the product from database
     await prisma.product.delete({
@@ -572,6 +687,7 @@ async function duplicateProduct(request, response) {
         downloadFile: original.downloadFile,
         features: original.features,
         videoUrl: original.videoUrl,
+        tags: original.tags, // Copy tags
         // Copy category relationships
         categories: original.categories.length > 0 ? {
           create: original.categories.map((cat) => ({
@@ -595,6 +711,44 @@ async function duplicateProduct(request, response) {
   }
 }
 
+// Reorder products by displayOrder
+async function reorderProducts(request, response) {
+  try {
+    const { orderedIds } = request.body;
+
+    if (!Array.isArray(orderedIds)) {
+      return response.status(400).json({ error: "orderedIds must be an array" });
+    }
+
+    // Update each product's displayOrder in a transaction
+    const updates = orderedIds.map((id, index) =>
+      prisma.product.update({
+        where: { id },
+        data: { displayOrder: index },
+      })
+    );
+
+    await prisma.$transaction(updates);
+
+    // Return updated products list
+    const products = await prisma.product.findMany({
+      include: {
+        category: { select: { name: true } },
+        quizFormat: { select: { id: true, name: true, displayName: true } },
+        categories: {
+          include: { category: { select: { id: true, name: true } } },
+        },
+      },
+      orderBy: { displayOrder: "asc" },
+    });
+
+    return response.status(200).json(products);
+  } catch (error) {
+    console.error("Error reordering products:", error);
+    return response.status(500).json({ error: "Error reordering products" });
+  }
+}
+
 module.exports = {
   getAllProducts,
   createProduct,
@@ -603,4 +757,5 @@ module.exports = {
   searchProducts,
   getProductById,
   duplicateProduct,
+  reorderProducts,
 };

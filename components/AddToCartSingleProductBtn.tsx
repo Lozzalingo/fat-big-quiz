@@ -21,6 +21,7 @@ const AddToCartSingleProductBtn = ({ product, quantityCount } : SingleProductBtn
   return (
     <button
       onClick={handleAddToCart}
+      data-track-button="Product:Add to Cart"
       className="btn w-[200px] text-lg border border-gray-300 border-1 font-normal bg-white text-blue-500 hover:bg-blue-500 hover:text-white hover:border-blue-500 hover:scale-110 transition-all uppercase ease-in max-[500px]:w-full"
     >
       Add to cart

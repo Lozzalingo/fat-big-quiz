@@ -27,17 +27,21 @@ const Products = async ({ slug }: any) => {
     stockMode = "gt";
   }
 
-  // Extract quiz format and category filters from URL params
+  // Extract quiz format, category, and search filters from URL params
   const quizFormatFilter = slug?.searchParams?.quizFormat || "";
   const categoryFilter = slug?.searchParams?.category || slug?.params?.slug || "";
+  const searchFilter = slug?.searchParams?.search || "";
 
-  // Build query string for quiz format and category filters
+  // Build query string for quiz format, category, and search filters
   let extraFilters = "";
   if (quizFormatFilter) {
     extraFilters += `filters[quizFormat][$equals]=${quizFormatFilter}&`;
   }
   if (categoryFilter) {
     extraFilters += `filters[category][$equals]=${categoryFilter}&`;
+  }
+  if (searchFilter) {
+    extraFilters += `search=${encodeURIComponent(searchFilter)}&`;
   }
 
   // sending API request with filtering, sorting and pagination for getting all products

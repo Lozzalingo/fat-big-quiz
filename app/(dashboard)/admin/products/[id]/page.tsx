@@ -44,6 +44,7 @@ const DashboardProductDetails = ({
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const downloadFileInputRef = useRef<HTMLInputElement>(null);
+  const categoriesRef = useRef<HTMLDivElement>(null);
 
   const [product, setProduct] = useState<{
     title: string;
@@ -86,12 +87,31 @@ const DashboardProductDetails = ({
   const [tagInput, setTagInput] = useState("");
   const [draggedFileIndex, setDraggedFileIndex] = useState<number | null>(null);
   const [draggedImageIndex, setDraggedImageIndex] = useState<number | null>(null);
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(true); // Start true for existing products
 
   const MAX_TITLE_LENGTH = 140;
   const MAX_DESCRIPTION_LENGTH = 5000;
   const MAX_IMAGES = 10;
-  const MAX_TAGS = 13;
+  const MAX_TAGS = 30;
   const MAX_DOWNLOAD_FILES = 10;
+
+  // Auto-generate slug from title
+  const handleTitleChange = (newTitle: string) => {
+    setProduct(prev => {
+      const updates: any = { title: newTitle };
+      // Auto-generate slug if not manually edited
+      if (!slugManuallyEdited) {
+        updates.slug = convertSlugToURLFriendly(newTitle);
+      }
+      return { ...prev, ...updates };
+    });
+  };
+
+  // Handle manual slug edits
+  const handleSlugChange = (newSlug: string) => {
+    setSlugManuallyEdited(true);
+    setProduct(prev => ({ ...prev, slug: convertSlugToURLFriendly(newSlug) }));
+  };
 
   // Fetch product data
   useEffect(() => {
@@ -123,6 +143,18 @@ const DashboardProductDetails = ({
         if (productData.categories && Array.isArray(productData.categories)) {
           const catIds = productData.categories.map((pc: any) => pc.categoryId || pc.category?.id);
           setSelectedCategoryIds(catIds.filter((id: string) => id));
+        }
+
+        // Set tags
+        if (productData.tags) {
+          try {
+            const parsedTags = JSON.parse(productData.tags);
+            if (Array.isArray(parsedTags)) {
+              setTags(parsedTags);
+            }
+          } catch {
+            // If not valid JSON, ignore
+          }
         }
 
         // Set main image and additional images
@@ -316,9 +348,16 @@ const DashboardProductDetails = ({
 
   // Tag handling
   const addTag = () => {
-    const trimmedTag = tagInput.trim().toLowerCase();
-    if (trimmedTag && !tags.includes(trimmedTag) && tags.length < MAX_TAGS) {
-      setTags([...tags, trimmedTag]);
+    // Split by comma to allow multiple tags at once
+    const newTags = tagInput
+      .split(',')
+      .map(t => t.trim().toLowerCase())
+      .filter(t => t && !tags.includes(t));
+
+    // Respect the MAX_TAGS limit
+    const tagsToAdd = newTags.slice(0, MAX_TAGS - tags.length);
+    if (tagsToAdd.length > 0) {
+      setTags([...tags, ...tagsToAdd]);
       setTagInput("");
     }
   };
@@ -379,6 +418,12 @@ const DashboardProductDetails = ({
       return;
     }
 
+    if (selectedCategoryIds.length === 0) {
+      toast.error("Please select at least one category");
+      categoriesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
     setIsSubmitting(true);
 
     let productToSubmit = { ...product };
@@ -397,23 +442,32 @@ const DashboardProductDetails = ({
       productToSubmit = { ...productToSubmit, mainImage: primaryImage.filename };
     }
 
-    // Handle download files for digital products
+    // Handle download files for digital products - upload in parallel
     if (product.productType === "DIGITAL_DOWNLOAD") {
-      const uploadedFileNames: string[] = [];
-
-      for (const file of downloadFiles) {
+      const uploadPromises = downloadFiles.map(async (file, index) => {
         if (file.isExisting && file.filename) {
-          uploadedFileNames.push(file.filename);
+          return { index, filename: file.filename };
         } else if (file.file) {
           const downloadFileName = await uploadFile(file.file, "downloads");
-          if (downloadFileName) {
-            uploadedFileNames.push(downloadFileName);
-          } else {
-            setIsSubmitting(false);
-            return;
-          }
+          return { index, filename: downloadFileName };
         }
+        return { index, filename: null };
+      });
+
+      const results = await Promise.all(uploadPromises);
+
+      // Check for failed uploads
+      const failedUpload = results.find(r => r.filename === null && downloadFiles[r.index]?.file);
+      if (failedUpload) {
+        setIsSubmitting(false);
+        return;
       }
+
+      // Sort by original index to maintain order, filter out nulls
+      const uploadedFileNames = results
+        .sort((a, b) => a.index - b.index)
+        .map(r => r.filename)
+        .filter((f): f is string => f !== null);
 
       productToSubmit = { ...productToSubmit, downloadFile: JSON.stringify(uploadedFileNames) };
     }
@@ -422,6 +476,7 @@ const DashboardProductDetails = ({
       ...productToSubmit,
       categoryIds: selectedCategoryIds,
       quizFormatId: product.quizFormatId || null,
+      tags: tags,
     };
 
     try {
@@ -437,9 +492,9 @@ const DashboardProductDetails = ({
           method: "DELETE",
         });
 
-        // Upload and save additional images (non-primary)
+        // Upload additional images in parallel (non-primary)
         const additionalImages = uploadedImages.filter(img => !img.isPrimary);
-        for (const img of additionalImages) {
+        const imageUploadPromises = additionalImages.map(async (img) => {
           let fileName = img.filename;
 
           // If it's a new image, upload it first
@@ -447,6 +502,13 @@ const DashboardProductDetails = ({
             fileName = await uploadFile(img.file, "products/images");
           }
 
+          return fileName;
+        });
+
+        const uploadedImageNames = await Promise.all(imageUploadPromises);
+
+        // Save image records sequentially to maintain order
+        for (const fileName of uploadedImageNames) {
           if (fileName) {
             await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/images`, {
               method: "POST",
@@ -555,7 +617,7 @@ const DashboardProductDetails = ({
                 className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black"
                 placeholder="e.g. Ultimate Pub Quiz Pack - 100 Questions with Answers"
                 value={product.title}
-                onChange={(e) => setProduct({ ...product, title: e.target.value })}
+                onChange={(e) => handleTitleChange(e.target.value)}
               />
               <div className="text-right text-xs text-gray-400 mt-1">
                 {product.title.length}/{MAX_TITLE_LENGTH}
@@ -752,7 +814,7 @@ const DashboardProductDetails = ({
             </div>
 
             {/* Features */}
-            <div>
+            <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Features
               </label>
@@ -766,6 +828,56 @@ const DashboardProductDetails = ({
                 value={product.features}
                 onChange={(e) => setProduct({ ...product, features: e.target.value })}
               />
+            </div>
+
+            {/* Tags */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Tags
+              </label>
+              <p className="text-xs text-gray-500 mb-2">
+                Add up to {MAX_TAGS} tags to help people find your listing.
+              </p>
+
+              <div className="flex flex-wrap gap-2 mb-2">
+                {tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 rounded-full text-sm"
+                  >
+                    {tag}
+                    <button onClick={() => removeTag(tag)} className="hover:text-red-500">
+                      <FaTimes className="text-xs" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+
+              {tags.length < MAX_TAGS && (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black"
+                    placeholder="Add tags (comma-separated)..."
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyDown={handleTagKeyDown}
+                  />
+                  <button
+                    type="button"
+                    onClick={addTag}
+                    className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
+                  >
+                    Add
+                  </button>
+                </div>
+              )}
+
+              {tags.length > 0 && (
+                <p className="text-xs text-gray-400 mt-2">
+                  {tags.length}/{MAX_TAGS} tags
+                </p>
+              )}
             </div>
           </div>
 
@@ -812,9 +924,9 @@ const DashboardProductDetails = ({
               </div>
 
               {/* Categories (Multi-select) */}
-              <div className="sm:col-span-2">
+              <div ref={categoriesRef} className="sm:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Categories (Themes)
+                  Categories (Themes) <span className="text-red-500">*</span>
                 </label>
                 <p className="text-xs text-gray-500 mb-2">
                   Select all categories that apply to this product.
@@ -850,6 +962,9 @@ const DashboardProductDetails = ({
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   URL Slug <span className="text-red-500">*</span>
+                  {!slugManuallyEdited && product.slug && (
+                    <span className="ml-2 text-xs text-green-600 font-normal">(auto-generated)</span>
+                  )}
                 </label>
                 <div className="flex">
                   <span className="inline-flex items-center px-3 bg-gray-50 border border-r-0 border-gray-300 rounded-l-lg text-sm text-gray-500">
@@ -859,10 +974,20 @@ const DashboardProductDetails = ({
                     type="text"
                     className="flex-1 px-3 py-2.5 border border-gray-300 rounded-r-lg focus:ring-2 focus:ring-black focus:border-black"
                     placeholder="my-quiz-pack"
-                    value={convertSlugToURLFriendly(product.slug)}
-                    onChange={(e) => setProduct({ ...product, slug: convertSlugToURLFriendly(e.target.value) })}
+                    value={product.slug}
+                    onChange={(e) => handleSlugChange(e.target.value)}
                   />
                 </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSlugManuallyEdited(false);
+                    setProduct(prev => ({ ...prev, slug: convertSlugToURLFriendly(prev.title) }));
+                  }}
+                  className="text-xs text-blue-600 hover:underline mt-1"
+                >
+                  Generate from title
+                </button>
               </div>
 
               {/* Manufacturer/Brand */}

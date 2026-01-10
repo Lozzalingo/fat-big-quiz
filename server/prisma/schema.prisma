@@ -21,13 +21,15 @@ model Product {
   categoryId      String?                  // Legacy field - kept for migration, use categories relation instead
   viewCount       Int?
   productType     ProductType              @default(PHYSICAL)
-  downloadFile    String?                  // Path to downloadable file for digital products
+  downloadFile    String?                  @db.Text // JSON array of download files
   downloadLimit   Int?                     // Max downloads allowed per purchase
   stripeProductId String?                  // Stripe product ID
   stripePriceId   String?                  // Stripe price ID
   features        String?                  @db.LongText // JSON array of features for landing page
   videoUrl        String?                  // YouTube or video embed URL
+  displayOrder    Int                      @default(0)  // Sort order for admin listing
   quizFormatId    String?                  // Reference to QuizFormat
+  tags            String?                  @db.Text // JSON array of tag strings
   discountCodes   DiscountCodeProduct[]
   images          Image[]                  @relation("ProductImages")
   category        Category?                @relation("ProductCategory", fields: [categoryId], references: [id])
@@ -110,16 +112,80 @@ model Visitor {
   referrerCategory String?
   city             String?
   country          String?
+  region           String?   // State/province
   latitude         Float?
   longitude        Float?
   timestamp        DateTime  @default(now())
+
+  // Session tracking
   sessionId        String?   // Tracks user session across pages
-  userAgent        String?   // Raw user agent string
-  deviceType       String?   // Mobile, desktop, tablet, etc.
-  browser          String?   // Browser name
-  os               String?   // Operating system
+  sessionPageCount Int?      // Pages visited in this session
+  isNewVisitor     Boolean   @default(true)
+
+  // Device & Browser info
+  userAgent        String?   @db.Text
+  deviceType       String?   // mobile, tablet, desktop, tv, bot
+  deviceBrand      String?   // Apple, Samsung, Google, etc.
+  deviceConfidence Float?    // Detection confidence 0-100
+  browser          String?   // Chrome, Safari, Firefox, etc.
+  browserVersion   String?
+  os               String?   // Windows, macOS, iOS, Android, Linux
+  osVersion        String?
+
+  // Screen & Hardware
+  screenWidth      Int?
+  screenHeight     Int?
+  viewportWidth    Int?
+  viewportHeight   Int?
+  pixelRatio       Float?
+  colorDepth       Int?
+  touchPoints      Int?      // Max touch points (0 = no touch)
+  orientation      String?   // portrait, landscape
+  hardwareCores    Int?      // CPU cores
+  deviceMemory     Float?    // RAM in GB
+  connectionType   String?   // 4g, 3g, wifi, etc.
+
+  // Fingerprinting
+  fingerprint      String?   // Hashed device fingerprint
+  canvasHash       String?   // Canvas fingerprint
+  webglHash        String?   // WebGL fingerprint
+
+  // Bot detection
+  isBot            Boolean   @default(false)
+  botType          String?   // googlebot, bingbot, crawler, etc.
+  jsEnabled        Boolean   @default(true)
+
+  // Page timing
+  pageLoadTime     Int?      // Page load time in ms
   timeOnPage       Int?      // Duration in seconds
+
+  // UTM & Campaign tracking
+  utmSource        String?
+  utmMedium        String?
+  utmCampaign      String?
+  utmContent       String?
+  utmTerm          String?
+
+  // Event tracking
+  eventType        String?   // page_view, click, form_submit, etc.
+  eventData        Json?     // Additional event data
+
+  // E-commerce tracking
+  productViewed    String?   // Product ID if viewing product
+  addedToCart      Boolean   @default(false)
+  checkoutStarted  Boolean   @default(false)
+  purchaseComplete Boolean   @default(false)
+  orderValue       Float?
+
+  // Legacy field
   actions          Json?     // Store actions as JSON array
+
+  @@index([timestamp])
+  @@index([sessionId])
+  @@index([fingerprint])
+  @@index([country])
+  @@index([eventType])
+  @@index([isBot])
 }
 
 model User {

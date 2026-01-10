@@ -5,7 +5,7 @@ import { MdDashboard } from "react-icons/md";
 import { FaTable } from "react-icons/fa6";
 import { FaRegUser } from "react-icons/fa6";
 import { FaGear } from "react-icons/fa6";
-import { FaBook, FaEnvelope, FaHome, FaGift } from "react-icons/fa";
+import { FaBook, FaEnvelope, FaHome, FaGift, FaGoogle, FaChartLine } from "react-icons/fa";
 import { FaBagShopping } from "react-icons/fa6";
 import { MdCategory, MdQuiz } from "react-icons/md";
 import { FaBars } from "react-icons/fa6";
@@ -115,6 +115,7 @@ const DashboardSidebar = () => {
   // Sidebar Navigation Items - base definition
   const baseNavItems = [
     { path: "/admin", icon: <MdDashboard className="text-2xl" />, label: "Dashboard" },
+    { path: "/admin/analytics", icon: <FaChartLine className="text-2xl" />, label: "Analytics" },
     { path: "/admin/orders", icon: <FaBagShopping className="text-2xl" />, label: "Orders", visibilitySetting: "orders" },
     {
       icon: <FaTable className="text-2xl" />,
@@ -141,6 +142,7 @@ const DashboardSidebar = () => {
     },
     { path: "/admin/users", icon: <FaRegUser className="text-2xl" />, label: "Users", visibilitySetting: "users" },
     { path: "/admin/homepage-cards", icon: <FaHome className="text-2xl" />, label: "Homepage Cards" },
+    { path: "/admin/google-merchant", icon: <FaGoogle className="text-2xl" />, label: "Google Merchant" },
     { path: "/admin/emails", icon: <FaEnvelope className="text-2xl" />, label: "Emails" },
     { path: "/admin/settings", icon: <FaGear className="text-2xl" />, label: "Settings" },
   ];
@@ -169,6 +171,7 @@ const DashboardSidebar = () => {
     <div className="md:hidden fixed top-4 left-4 z-50">
       <button
         onClick={toggleSidebar}
+        data-track-button="Admin:Toggle Sidebar"
         className="p-2 rounded-md bg-gray-900 text-gray-200 hover:bg-gray-800 transition-all"
       >
         {isOpen ? <IoClose className="text-xl" /> : <FaBars className="text-xl" />}

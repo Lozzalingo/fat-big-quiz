@@ -48,6 +48,7 @@ export default function MainHeader({ onShopClick }: MainHeaderProps) {
           {/* Scroll CTA */}
           <button
             onClick={handleScrollClick}
+            data-track-button="MainHeader:Explore Products"
             className="mt-4 flex flex-col items-center gap-2 text-white/70 hover:text-white transition group"
           >
             <span className="text-sm font-medium">Explore Our Products</span>

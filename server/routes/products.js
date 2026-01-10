@@ -9,9 +9,12 @@ const {
   searchProducts,
   getProductById,
   duplicateProduct,
+  reorderProducts,
 } = require("../controllers/products");
 
 router.route("/").get(getAllProducts).post(createProduct);
+
+router.route("/reorder").put(reorderProducts);
 
 router.route("/:id/duplicate").post(duplicateProduct);
 

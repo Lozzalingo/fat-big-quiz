@@ -106,6 +106,7 @@ export default function PurchasesPage() {
             <p className="text-red-600 mb-4">{error}</p>
             <button
               onClick={() => window.location.reload()}
+              data-track-button="Purchases:Retry"
               className="text-primary hover:underline"
             >
               Try again

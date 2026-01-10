@@ -663,11 +663,14 @@ const CheckoutPage = () => {
               <button
                 type="button"
                 onClick={makePurchase}
-                className="w-full mb-6 rounded-md border border-transparent bg-blue-500 px-20 py-2 text-lg font-medium text-white shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 focus:ring-offset-gray-50 sm:order-last"
-                      
+                data-track-button="Checkout:Pay Now"
+                className="w-full mb-4 rounded-md border border-transparent bg-blue-500 px-20 py-2 text-lg font-medium text-white shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 focus:ring-offset-gray-50 sm:order-last"
               >
                 Pay Now
               </button>
+              <p className="text-center text-xs text-gray-500 mb-6">
+                You're purchasing from BucketRace Ltd
+              </p>
             </div>
           </div>
         </form>

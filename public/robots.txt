@@ -1,5 +1,19 @@
 User-agent: *
 Allow: /
 
-# Block download pages from crawlers
+# Public pages
+Allow: /shop
+Allow: /product/
+Allow: /blog
+
+# Block private/admin pages
+Disallow: /admin/
 Disallow: /download/
+Disallow: /checkout
+Disallow: /cart
+Disallow: /api/
+Disallow: /account/
+Disallow: /auth/
+
+# Sitemap
+Sitemap: https://fatbigquiz.com/sitemap.xml

@@ -43,6 +43,7 @@ const FAQSection: React.FC<FAQSectionProps> = ({
             >
               <button
                 onClick={() => setOpenIndex(openIndex === index ? null : index)}
+                data-track-button="FAQ:Toggle Question"
                 className="w-full flex items-center justify-between p-5 text-left bg-background hover:bg-background/80 transition"
               >
                 <span className="font-semibold text-text-primary pr-4">

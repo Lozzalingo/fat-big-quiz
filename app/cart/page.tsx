@@ -77,6 +77,7 @@ const CartPage = () => {
                         <button
                           onClick={() => handleRemoveItem(product.id)}
                           type="button"
+                          data-track-button="Cart:Remove Item"
                           className="text-gray-400 hover:text-gray-600"
                         >
                           <span className="sr-only">Remove</span>
@@ -94,7 +95,7 @@ const CartPage = () => {
             </div>
 
             {/* Order Summary */}
-            <div className="lg:col-span-5">
+            <div className="lg:col-span-5 pb-8">
               <div className="border border-gray-200 p-6">
                 <h3 className="text-sm font-medium uppercase tracking-wide mb-4">
                   Order Summary
@@ -116,6 +117,7 @@ const CartPage = () => {
 
                 <Link
                   href="/checkout"
+                  data-track-button="Cart:Proceed to Checkout"
                   className="mt-6 block w-full bg-black text-white text-center text-xs font-medium uppercase tracking-wide py-3 hover:bg-gray-800 transition-colors"
                 >
                   Checkout

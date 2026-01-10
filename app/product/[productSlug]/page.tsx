@@ -14,6 +14,49 @@ import ProductPageClient from "./ProductPageClient";
 import ProductImageGallery from "./ProductImageGallery";
 import { getProductImageUrl } from "@/utils/cdn";
 import { Metadata } from "next";
+import Script from "next/script";
+
+// Generate JSON-LD structured data for product
+function generateProductSchema(product: any, productSlug: string) {
+  const imageUrl = getProductImageUrl(product.mainImage);
+  const productUrl = `https://fatbigquiz.com/product/${productSlug}`;
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": product.title,
+    "description": product.description?.slice(0, 500) || `Get ${product.title} from Fat Big Quiz`,
+    "image": imageUrl,
+    "url": productUrl,
+    "brand": {
+      "@type": "Brand",
+      "name": "Fat Big Quiz"
+    },
+    "offers": {
+      "@type": "Offer",
+      "url": productUrl,
+      "priceCurrency": "GBP",
+      "price": product.price,
+      "availability": product.inStock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      "seller": {
+        "@type": "Organization",
+        "name": "Fat Big Quiz"
+      }
+    },
+    ...(product.rating > 0 && {
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": product.rating,
+        "bestRating": 5,
+        "worstRating": 1,
+        "ratingCount": 1
+      }
+    }),
+    ...(product.quizFormat && {
+      "category": product.quizFormat.displayName
+    })
+  };
+}
 
 interface SingleProductPageProps {
   params: Promise<{
@@ -125,12 +168,22 @@ const SingleProductPage = async ({ params }: SingleProductPageProps) => {
     return getProductImageUrl(imageName);
   };
 
+  // Generate structured data
+  const productSchema = generateProductSchema(product, productSlug);
+
   // For landing page style products
   if (isLandingPageStyle) {
     const productImages = product.images || [];
 
     return (
       <div className="bg-white">
+        {/* Structured Data */}
+        <Script
+          id="product-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+        />
+
         {/* Breadcrumb */}
         <div className="max-w-screen-xl mx-auto px-4 md:px-8 py-4">
           <nav className="flex items-center gap-2 text-xs text-gray-500">
@@ -331,6 +384,13 @@ const SingleProductPage = async ({ params }: SingleProductPageProps) => {
   // Traditional product page for physical products
   return (
     <div className="bg-white">
+      {/* Structured Data */}
+      <Script
+        id="product-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+      />
+
       <div className="max-w-screen-2xl mx-auto">
         <div className="flex justify-center gap-x-16 pt-10 max-lg:flex-col items-center gap-y-5 px-5">
           <div>

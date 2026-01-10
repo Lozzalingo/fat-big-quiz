@@ -36,11 +36,14 @@ const purchasesRouter = require('./routes/purchases');
 const quizFormatsRouter = require('./routes/quizFormats');
 const homepageCardsRouter = require('./routes/homepageCards');
 const globalDownloadFilesRouter = require('./routes/globalDownloadFiles');
+const merchantRouter = require('./routes/merchant');
+const indexingRouter = require('./routes/indexing');
 const {
   sendPurchaseConfirmationEmail,
   sendOrderConfirmationEmail,
   sendWelcomeEmail,
-  sendPasswordResetEmail
+  sendPasswordResetEmail,
+  sendAdminSaleNotification
 } = require('./services/email');
 
 const app = express();
@@ -94,6 +97,8 @@ app.use('/api/purchases', purchasesRouter);
 app.use('/api/quiz-formats', quizFormatsRouter);
 app.use('/api/homepage-cards', homepageCardsRouter);
 app.use('/api/global-files', globalDownloadFilesRouter);
+app.use('/api/merchant', merchantRouter);
+app.use('/api/indexing', indexingRouter);
 
 // File download route - streams file from S3 to user
 const { getFromSpaces, getKey, FOLDER } = require('./utils/spaces');
@@ -228,6 +233,30 @@ app.post('/api/send-order-email', async (req, res) => {
   }
 });
 
+// Send admin notification for new sales (called by webhook)
+app.post('/api/send-admin-notification', async (req, res) => {
+  try {
+    const { customerEmail, productName, price, productType, sessionId } = req.body;
+    const success = await sendAdminSaleNotification({
+      customerEmail,
+      productName,
+      price,
+      productType,
+      sessionId,
+    });
+    if (success) {
+      return res.json({ success: true });
+    } else {
+      console.log('[Admin Notification] Failed to send, but continuing');
+      return res.json({ success: false, message: 'Failed to send admin notification' });
+    }
+  } catch (error) {
+    console.error('Send admin notification error:', error);
+    // Don't fail the sale if admin notification fails
+    return res.json({ success: false, error: error.message });
+  }
+});
+
 // Test email endpoint
 app.post('/api/test-email', async (req, res) => {
   try {
@@ -264,6 +293,15 @@ app.post('/api/test-email', async (req, res) => {
           expiresIn: '1 hour',
         });
         break;
+      case 'admin-notification':
+        success = await sendAdminSaleNotification({
+          customerEmail: 'test@example.com',
+          productName: 'Test Quiz Pack',
+          price: '4.99',
+          productType: 'DIGITAL_DOWNLOAD',
+          sessionId: 'test_session_123',
+        });
+        break;
       default:
         return res.status(400).json({ error: 'Invalid email type' });
     }
@@ -283,19 +321,35 @@ app.post('/api/test-email', async (req, res) => {
 io.on("connection", (socket) => {
   console.log("A user connected");
 
-  const sendVisitorUpdate = async () => {
+  const sendVisitorUpdate = async (timeRange = 'today') => {
     try {
-      // Create a Date object for the start of today
-      const startOfToday = new Date();
-      startOfToday.setHours(0, 0, 0, 0);
-      
+      // Calculate date range based on timeRange parameter
+      const now = new Date();
+      let startDate = new Date();
+
+      switch (timeRange) {
+        case 'week':
+          startDate.setDate(now.getDate() - 7);
+          startDate.setHours(0, 0, 0, 0);
+          break;
+        case 'month':
+          startDate.setMonth(now.getMonth() - 1);
+          startDate.setHours(0, 0, 0, 0);
+          break;
+        case 'today':
+        default:
+          startDate.setHours(0, 0, 0, 0);
+          break;
+      }
+
       const count = await prisma.visitor.count({
-        where: { timestamp: { gte: startOfToday } },
+        where: { timestamp: { gte: startDate } },
       });
-      
+
       const visitors = await prisma.visitor.findMany({
-        where: { timestamp: { gte: startOfToday } },
+        where: { timestamp: { gte: startDate } },
         select: {
+          id: true,
           ip: true,
           referrer: true,
           referrerCategory: true,
@@ -303,23 +357,30 @@ io.on("connection", (socket) => {
           country: true,
           latitude: true,
           longitude: true,
-          timestamp: true, // Added timestamp for sorting/displaying most recent
-          path: true, // Include the path they visited
+          timestamp: true,
+          path: true,
         },
         orderBy: {
-          timestamp: 'desc', // Sort by most recent first
+          timestamp: 'desc',
         },
       });
-      
+
       socket.emit("visitorUpdate", { count, visitors });
     } catch (error) {
       console.error("Error sending visitor update:", error);
     }
   };
 
+  // Send initial data
   sendVisitorUpdate();
 
-  socket.on("newVisitor", sendVisitorUpdate);
+  // Handle getVisitorData requests from client
+  socket.on("getVisitorData", (data) => {
+    const timeRange = data?.timeRange || 'today';
+    sendVisitorUpdate(timeRange);
+  });
+
+  socket.on("newVisitor", () => sendVisitorUpdate());
 
   socket.on("disconnect", () => {
     console.log("A user disconnected");

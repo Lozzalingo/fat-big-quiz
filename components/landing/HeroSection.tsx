@@ -71,7 +71,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
       }
       // Internal link
       return (
-        <Link href={cta.href} className={className}>
+        <Link href={cta.href} data-track-button={`Hero:${cta.text}`} className={className}>
           {cta.icon}
           {cta.text}
         </Link>
@@ -79,7 +79,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
     }
 
     return (
-      <button onClick={cta.onClick} className={className}>
+      <button onClick={cta.onClick} data-track-button={`Hero:${cta.text}`} className={className}>
         {cta.icon}
         {cta.text}
       </button>

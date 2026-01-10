@@ -1,5 +1,5 @@
 const { PrismaClient } = require("@prisma/client");
-const { uploadToSpaces, deleteFromSpaces } = require("../utils/spaces");
+const { uploadToSpaces, deleteFromSpaces, getKey } = require("../utils/spaces");
 
 const prisma = new PrismaClient();
 
@@ -134,7 +134,8 @@ async function deleteGlobalFile(request, response) {
     // Delete file from CDN if exists
     if (existingFile.fileName) {
       try {
-        await deleteFromSpaces(existingFile.fileName, "global-bonus");
+        const fileKey = getKey(existingFile.fileName, "global-bonus");
+        await deleteFromSpaces(fileKey);
       } catch (err) {
         console.error("Error deleting file from CDN:", err);
         // Continue with database deletion even if CDN delete fails
@@ -188,19 +189,21 @@ async function uploadGlobalFile(request, response) {
     // Delete old file if exists
     if (existingFile.fileName) {
       try {
-        await deleteFromSpaces(existingFile.fileName, "global-bonus");
+        const oldFileKey = getKey(existingFile.fileName, "global-bonus");
+        await deleteFromSpaces(oldFileKey);
       } catch (err) {
         console.error("Error deleting old file:", err);
       }
     }
 
-    // Upload new file - convert express-fileupload format to expected format
-    const fileForUpload = {
-      buffer: uploadedFile.data,
-      originalname: uploadedFile.name,
-      mimetype: uploadedFile.mimetype,
-    };
-    const fileName = await uploadToSpaces(fileForUpload, "global-bonus");
+    // Upload new file
+    const result = await uploadToSpaces(
+      uploadedFile.data,
+      uploadedFile.name,
+      "global-bonus",
+      uploadedFile.mimetype
+    );
+    const fileName = result.fileName;
 
     // Update database
     const file = await prisma.globalDownloadFile.update({
