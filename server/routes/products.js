@@ -10,9 +10,12 @@ const {
   getProductById,
   duplicateProduct,
   reorderProducts,
+  getEmbedProducts,
 } = require("../controllers/products");
 
 router.route("/").get(getAllProducts).post(createProduct);
+
+router.route("/embed").get(getEmbedProducts);
 
 router.route("/reorder").put(reorderProducts);
 

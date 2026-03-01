@@ -781,6 +781,64 @@ async function reorderProducts(request, response) {
   }
 }
 
+/**
+ * GET /api/products/embed?limit=3
+ * Returns random in-stock products in a lightweight format for embedding on external sites.
+ */
+async function getEmbedProducts(request, response) {
+  try {
+    const limit = Math.min(parseInt(request.query.limit) || 3, 10);
+
+    const CDN_ENDPOINT = process.env.DO_SPACES_CDN_ENDPOINT ||
+      "https://aitshirts-laurence-dot-computer.sfo3.cdn.digitaloceanspaces.com";
+    const FOLDER = process.env.DO_SPACES_FOLDER || "fat-big-quiz";
+    const SITE_URL = process.env.FRONTEND_URL || "https://fatbigquiz.com";
+
+    // Get all in-stock products
+    const allProducts = await prisma.product.findMany({
+      where: { inStock: { gte: 1 } },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        description: true,
+        price: true,
+        mainImage: true,
+        quizFormat: { select: { displayName: true } },
+      },
+    });
+
+    // Shuffle and take `limit`
+    const shuffled = allProducts.sort(() => Math.random() - 0.5).slice(0, limit);
+
+    const products = shuffled.map((p) => {
+      let imageUrl = p.mainImage || "";
+      if (imageUrl && !imageUrl.startsWith("http")) {
+        imageUrl = `${CDN_ENDPOINT}/${FOLDER}/products/images/${imageUrl}`;
+      }
+
+      return {
+        id: p.id,
+        name: p.title,
+        description: (p.description || "").replace(/\r?\n/g, " ").slice(0, 120),
+        price_display: `£${p.price.toFixed(2)}`,
+        image_url: imageUrl,
+        product_url: `${SITE_URL}/product/${p.slug}`,
+        limited_edition: false,
+        is_preorder: false,
+        category: p.quizFormat?.displayName || "Quiz Pack",
+        shop_name: "Fat Big Quiz",
+      };
+    });
+
+    console.log(`[Embed] Returning ${products.length} products for external embed`);
+    return response.status(200).json({ success: true, count: products.length, products });
+  } catch (error) {
+    console.error("[Embed] Error fetching embed products:", error.message);
+    return response.status(500).json({ success: false, error: "Error fetching products" });
+  }
+}
+
 module.exports = {
   getAllProducts,
   createProduct,
@@ -790,4 +848,5 @@ module.exports = {
   getProductById,
   duplicateProduct,
   reorderProducts,
+  getEmbedProducts,
 };
