@@ -23,10 +23,10 @@ const ProductItem = ({ product, color }: { product: Product; color: string }) =>
     <div className="bg-white border border-gray-200 overflow-hidden transition-all duration-150 hover:border-primary group h-full flex flex-col">
       {/* Image Container */}
       <Link href={`/product/${product.slug}`} className="block relative overflow-hidden">
-        <div className="bg-gray-50">
+        <div className="bg-gray-50 aspect-[4/3] overflow-hidden">
           <img
             src={getProductImageUrl(product.mainImage)}
-            className="w-full h-auto transition-transform duration-300 group-hover:scale-102"
+            className="w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-102"
             alt={product.title || "Quiz pack"}
           />
         </div>
