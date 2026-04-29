@@ -133,6 +133,42 @@ async function sendAdminSaleNotification({ customerEmail, productName, price, pr
   return sendEmail({ to: adminEmail, subject: `[Fat Big Quiz] New Sale: ${productName} - ${priceDisplay}`, html, text });
 }
 
+/**
+ * Send admin notification when someone joins a list (subscriber, coming soon, etc.)
+ */
+async function sendAdminListNotification({ email, name, source }) {
+  console.log('[Email] Sending admin list notification - source:', source, 'email:', email);
+  const adminEmail = process.env.ADMIN_EMAIL || 'laurencedotcomputer@gmail.com';
+  const timestamp = new Date().toLocaleString('en-GB', { timeZone: 'Europe/London', dateStyle: 'medium', timeStyle: 'short' });
+
+  const sourceLabels = {
+    'subscriber': 'Newsletter Signup',
+    'quiz-pack': 'Quiz Pack (Coming Soon)',
+    'quiz-database': 'Quiz Database (Coming Soon)',
+    'quiz-app': 'Quiz App Beta Access',
+  };
+  const sourceLabel = sourceLabels[source] || source;
+
+  const html = buildEmailTemplate({
+    title: 'New List Signup!',
+    body: `
+      <h2>Someone joined a list</h2>
+      <div class="summary">
+        <div class="summary-row"><span>List:</span><span><strong>${sourceLabel}</strong></span></div>
+        ${name ? `<div class="summary-row"><span>Name:</span><span>${name}</span></div>` : ''}
+        <div class="summary-row"><span>Email:</span><span>${email}</span></div>
+        <div class="summary-row"><span>Time:</span><span>${timestamp}</span></div>
+      </div>
+    `,
+    brandName: 'Fat Big Quiz Admin',
+    style: { primary: '#7c3aed', headerBg: '#7c3aed' },
+  });
+
+  const text = `New List Signup!\n\nList: ${sourceLabel}\n${name ? `Name: ${name}\n` : ''}Email: ${email}\nTime: ${timestamp}\n\nFat Big Quiz`;
+
+  return sendEmail({ to: adminEmail, subject: `[FBQ] New signup: ${sourceLabel} - ${email}`, html, text });
+}
+
 module.exports = {
   emailService,
   sendEmail,
@@ -141,4 +177,5 @@ module.exports = {
   sendWelcomeEmail,
   sendPasswordResetEmail,
   sendAdminSaleNotification,
+  sendAdminListNotification,
 };

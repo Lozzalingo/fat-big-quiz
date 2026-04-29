@@ -1,7 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const crypto = require('crypto');
 const prisma = new PrismaClient();
-const { sendWelcomeEmail, sendEmail } = require('../services/email');
+const { sendWelcomeEmail, sendEmail, sendAdminListNotification } = require('../services/email');
 const { buildEmailTemplate } = require('@lozzalingo/email/server/templates');
 
 const DOUBLE_OPT_IN = process.env.SUBSCRIBER_DOUBLE_OPT_IN === 'true';
@@ -132,6 +132,12 @@ async function createSubscriber(request, response) {
           data: { optIn: true },
         });
         console.log("[Subscriber] Reactivated:", normalisedEmail);
+
+        // Notify admin of reactivation
+        sendAdminListNotification({ email: normalisedEmail, source: 'subscriber' })
+          .then((sent) => console.log("[Subscriber] Admin notification (reactivation) sent, success:", sent))
+          .catch((err) => console.error("[Subscriber] Admin notification error:", err.message));
+
         return response.status(200).json({ message: 'Subscription reactivated', subscriber: updatedSubscriber });
       }
       console.log("[Subscriber] Already subscribed:", normalisedEmail);
@@ -185,6 +191,11 @@ async function createSubscriber(request, response) {
     sendWelcomeEmail(normalisedEmail)
       .then((sent) => console.log("[Subscriber] Welcome email sent:", normalisedEmail, "success:", sent))
       .catch((err) => console.error("[Subscriber] Welcome email error:", err.message));
+
+    // Notify admin of new signup
+    sendAdminListNotification({ email: normalisedEmail, source: 'subscriber' })
+      .then((sent) => console.log("[Subscriber] Admin notification sent, success:", sent))
+      .catch((err) => console.error("[Subscriber] Admin notification error:", err.message));
 
     return response.status(201).json({ message: 'Subscribed successfully', subscriber });
   } catch (error) {
