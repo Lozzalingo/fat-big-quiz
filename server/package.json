@@ -27,7 +27,19 @@
     "prisma": "^5.12.1",
     "request-ip": "^3.3.0",
     "socket.io": "^4.8.3",
+    "@lozzalingo/analytics": "*",
+    "@lozzalingo/auth": "*",
+    "@lozzalingo/calendar": "*",
+    "@lozzalingo/config": "*",
+    "@lozzalingo/email": "*",
     "@lozzalingo/game-engine": "*",
+    "@lozzalingo/logging": "*",
+    "@lozzalingo/merchandise": "*",
+    "@lozzalingo/ops": "*",
+    "@lozzalingo/orders": "*",
+    "@lozzalingo/settings": "*",
+    "@lozzalingo/storage": "*",
+    "@lozzalingo/subscribers": "*",
     "zod": "^3.23.8"
   }
 }
