@@ -27,6 +27,7 @@
     "prisma": "^5.12.1",
     "request-ip": "^3.3.0",
     "socket.io": "^4.8.3",
-    "@lozzalingo/game-engine": "*"
+    "@lozzalingo/game-engine": "*",
+    "zod": "^3.23.8"
   }
 }
