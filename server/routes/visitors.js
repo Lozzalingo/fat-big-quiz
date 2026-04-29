@@ -1,27 +1,14 @@
 /**
- * Visitor Analytics Routes
- * Comprehensive analytics API endpoints
+ * Visitor Analytics Routes - Uses shared @lozzalingo/analytics package
  */
-const express = require("express");
-const router = express.Router();
-const visitorController = require("../controllers/visitors");
+const { PrismaClient } = require("@prisma/client");
+const { createVisitorRoutes } = require("@lozzalingo/analytics/server");
 
-// Tracking endpoints
-router.post("/track", visitorController.trackView);
-router.post("/update", visitorController.updateVisitor);
-router.post("/event", visitorController.trackEvent);
+const prisma = new PrismaClient();
 
-// Analytics data endpoints
-router.get("/change", visitorController.getVisitorChange);
-router.get("/overview", visitorController.getOverviewStats);
-router.get("/devices", visitorController.getDeviceStats);
-router.get("/geographic", visitorController.getGeographicStats);
-router.get("/timeline", visitorController.getTrafficTimeline);
-router.get("/referrers", visitorController.getReferrerStats);
-router.get("/pages", visitorController.getTopPages);
-router.get("/ecommerce", visitorController.getEcommerceFunnel);
-router.get("/activity", visitorController.getRecentActivity);
-router.get("/bots", visitorController.getBotStats);
-router.get("/interactions", visitorController.getInteractionStats);
+const router = createVisitorRoutes(prisma, {
+  siteDomain: 'fatbigquiz.com',
+  features: { ecommerce: true },
+});
 
 module.exports = router;

@@ -101,9 +101,9 @@ async function getBlogPostBySlug(request, response) {
         author: {
           select: {
             firstName: true,
+            lastName: true,
             avatar: true,
             bio: true,
-            name: true,
           },
         },
         category: {

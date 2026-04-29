@@ -21,6 +21,7 @@ export async function POST(request: NextRequest) {
   const signature = request.headers.get("stripe-signature");
 
   if (!signature) {
+    console.log("[Stripe] Webhook rejected — missing signature header");
     return NextResponse.json(
       { error: "Missing stripe-signature header" },
       { status: 400 }
@@ -31,8 +32,9 @@ export async function POST(request: NextRequest) {
 
   try {
     event = getStripe().webhooks.constructEvent(body, signature, getWebhookSecret());
+    console.log("[Stripe] Webhook event received:", event.type, event.id);
   } catch (err: any) {
-    console.error("Webhook signature verification failed:", err.message);
+    console.error("[Stripe] Webhook signature verification failed:", err.message);
     return NextResponse.json(
       { error: `Webhook Error: ${err.message}` },
       { status: 400 }
@@ -51,6 +53,8 @@ export async function POST(request: NextRequest) {
       // Get product name and amount from line items
       const productName = session.line_items?.data?.[0]?.description || "Quiz Pack";
       const amountTotal = session.amount_total ? (session.amount_total / 100).toFixed(2) : "0.00";
+
+      console.log("[Stripe] Checkout completed:", { productId, productType, email: customerEmail, amount: amountTotal });
 
       if (productId && customerEmail) {
         // Create purchase record in database
@@ -72,7 +76,9 @@ export async function POST(request: NextRequest) {
           );
 
           if (!response.ok) {
-            console.error("Failed to create purchase record");
+            console.error("[Stripe] Failed to create purchase record:", response.status);
+          } else {
+            console.log("[Stripe] Purchase record created for:", customerEmail);
           }
 
           // Send confirmation email
@@ -124,28 +130,28 @@ export async function POST(request: NextRequest) {
             }
           );
         } catch (error) {
-          console.error("Error creating purchase:", error);
+          console.error("[Stripe] Error processing purchase:", error);
         }
       }
 
-      console.log(`Payment completed for session: ${session.id}`);
+      console.log(`[Stripe] Payment completed for session: ${session.id}`);
       break;
     }
 
     case "payment_intent.succeeded": {
       const paymentIntent = event.data.object as Stripe.PaymentIntent;
-      console.log(`PaymentIntent succeeded: ${paymentIntent.id}`);
+      console.log(`[Stripe] PaymentIntent succeeded: ${paymentIntent.id}`);
       break;
     }
 
     case "payment_intent.payment_failed": {
       const paymentIntent = event.data.object as Stripe.PaymentIntent;
-      console.log(`Payment failed: ${paymentIntent.id}`);
+      console.log(`[Stripe] Payment failed: ${paymentIntent.id}`);
       break;
     }
 
     default:
-      console.log(`Unhandled event type: ${event.type}`);
+      console.log(`[Stripe] Unhandled event type: ${event.type}`);
   }
 
   return NextResponse.json({ received: true });

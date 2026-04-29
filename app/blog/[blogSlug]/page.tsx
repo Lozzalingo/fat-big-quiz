@@ -2,9 +2,39 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Calendar, User, Tag, Clock, Eye, MessageCircle } from "lucide-react";
+import type { Metadata } from "next";
+import { Calendar, User, Tag, Clock, Eye, MessageCircle, Share2 } from "lucide-react";
 import BlogPostClient from "@/components/Blog/BlogPostClient";
+import SocialShare from "@/components/Blog/SocialShare";
 import { getBlogImageUrl, getUserAvatarUrl } from "@/utils/cdn";
+import Script from "next/script";
+
+function generateArticleSchema(post: BlogPost) {
+  const imageUrl = post.coverImage ? getBlogImageUrl(post.coverImage) : undefined;
+  return {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": post.title,
+    "description": post.excerpt || post.metaDescription || `Read ${post.title} on Fat Big Quiz`,
+    "url": `https://fatbigquiz.com/blog/${post.slug}`,
+    ...(imageUrl && { "image": imageUrl }),
+    "datePublished": post.createdAt,
+    "dateModified": post.updatedAt,
+    "author": {
+      "@type": "Person",
+      "name": post.author?.firstName || "Fat Big Quiz",
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Fat Big Quiz",
+      "url": "https://fatbigquiz.com",
+    },
+    ...(post.category && { "articleSection": post.category.name }),
+    ...(post.tags && post.tags.length > 0 && {
+      "keywords": post.tags.map((t: { name: string }) => t.name).join(", "),
+    }),
+  };
+}
 
 type BlogPost = {
   id: string;
@@ -33,17 +63,67 @@ type BlogPost = {
   viewCount?: number;
 };
 
+/* --- Metadata ------------------------------------------------------------- */
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { blogSlug: string };
+}): Promise<Metadata> {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/blog/slug/${params.blogSlug}`,
+      { next: { revalidate: 3600 } }
+    );
+    if (!res.ok) return { title: "Post Not Found | Fat Big Quiz" };
+
+    const post: BlogPost = await res.json();
+    const description =
+      post.metaDescription ||
+      post.excerpt ||
+      `Read ${post.title} on the Fat Big Quiz blog.`;
+
+    return {
+      title: `${post.metaTitle || post.title} | Fat Big Quiz`,
+      description,
+      openGraph: {
+        title: post.metaTitle || post.title,
+        description,
+        url: `https://fatbigquiz.com/blog/${post.slug}`,
+        siteName: "Fat Big Quiz",
+        images: post.coverImage
+          ? [{ url: getBlogImageUrl(post.coverImage) }]
+          : undefined,
+        type: "article",
+        publishedTime: post.createdAt,
+        modifiedTime: post.updatedAt,
+        locale: "en_GB",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: post.metaTitle || post.title,
+        description,
+        images: post.coverImage
+          ? [getBlogImageUrl(post.coverImage)]
+          : undefined,
+      },
+    };
+  } catch {
+    return { title: "Blog | Fat Big Quiz" };
+  }
+}
+
+/* --- Page ----------------------------------------------------------------- */
+
 export default async function BlogPostPage({ params }: { params: { blogSlug: string } }) {
   const slug = params.blogSlug;
-  const postsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/blog`, {
+  const postResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/blog/slug/${slug}`, {
     next: { revalidate: 3600 }
   });
 
-  if (!postsResponse.ok) return notFound();
+  if (!postResponse.ok) return notFound();
 
-  const data = await postsResponse.json();
-  const posts = data.posts || [];
-  const post = posts.find((p: BlogPost) => p.slug === slug);
+  const post = await postResponse.json();
   if (!post) return notFound();
 
   const formatDate = (dateString: string) => {
@@ -58,8 +138,15 @@ export default async function BlogPostPage({ params }: { params: { blogSlug: str
   const readTime = post.readTime || Math.ceil(post.content.split(/\s+/).length / 200);
   const imageSrc = getBlogImageUrl(post.coverImage);
 
+  const articleSchema = generateArticleSchema(post);
+
   return (
     <main className="bg-background min-h-screen pb-16">
+      <Script
+        id="article-jsonld"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
       {/* Hero Header */}
       <div className="relative w-full h-96 md:h-[500px]">
         <img
@@ -68,7 +155,7 @@ export default async function BlogPostPage({ params }: { params: { blogSlug: str
           style={{ objectFit: "cover", width: "100%", height: "100%" }}
           className="brightness-75"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/30 via-primary-dark/40 to-primary-dark/80" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/70" />
         <div className="absolute bottom-0 left-0 w-full p-8 md:p-16 text-white">
           <div className="max-w-4xl mx-auto">
             {post.category && (
@@ -139,6 +226,13 @@ export default async function BlogPostPage({ params }: { params: { blogSlug: str
           )}
           <div className="p-8 prose prose-lg max-w-none prose-headings:text-text-primary prose-p:text-text-secondary prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-strong:text-text-primary" dangerouslySetInnerHTML={{ __html: post.content }} />
         </div>
+
+        {/* Social Sharing */}
+        <SocialShare
+          title={post.title}
+          slug={post.slug}
+          excerpt={post.excerpt || post.metaDescription || ""}
+        />
 
         {/* Back to Blog Link */}
         <div className="mt-8 text-center">

@@ -20,7 +20,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { productId, productName, price, email, productType, slug, imageUrl } = body;
 
+    console.log("[Stripe] Checkout request:", { productId, productName, price, productType, email: email ? "provided" : "guest" });
+
     if (!productId || !productName || !price) {
+      console.log("[Stripe] Checkout rejected — missing required fields");
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -82,9 +85,10 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    console.log("[Stripe] Checkout session created:", session.id);
     return NextResponse.json({ sessionId: session.id, url: session.url });
   } catch (error: any) {
-    console.error("Stripe checkout error:", error);
+    console.error("[Stripe] Checkout error:", error.message);
     return NextResponse.json(
       { error: error.message || "Error creating checkout session" },
       { status: 500 }

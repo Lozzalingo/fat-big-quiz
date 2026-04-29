@@ -1,24 +1,39 @@
 # syntax=docker/dockerfile:1.4
-# Build stage
+# Build stage - builds from lozzalingo-js workspace root
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Copy workspace root package files
+COPY package.json package-lock.json ./
 
-# Install dependencies with cache mount (keeps npm cache between builds)
+# Copy all workspace package.json files for dependency resolution
+COPY packages/analytics/package.json ./packages/analytics/
+COPY packages/auth/package.json ./packages/auth/
+COPY packages/config/package.json ./packages/config/
+COPY packages/email/package.json ./packages/email/
+COPY packages/logging/package.json ./packages/logging/
+COPY packages/merchandise/package.json ./packages/merchandise/
+COPY packages/ops/package.json ./packages/ops/
+COPY packages/orders/package.json ./packages/orders/
+COPY packages/settings/package.json ./packages/settings/
+COPY packages/storage/package.json ./packages/storage/
+COPY packages/subscribers/package.json ./packages/subscribers/
+COPY fat-big-quiz/package.json ./fat-big-quiz/
+
+# Install dependencies
 RUN --mount=type=cache,target=/root/.npm \
-    npm ci
+    npm install --workspace=fat-big-quiz --include-workspace-root
 
-# Copy prisma schema from server folder for generate
-COPY server/prisma ./prisma
+# Copy prisma schema and generate client
+COPY fat-big-quiz/server/prisma ./fat-big-quiz/server/prisma
+RUN npx prisma generate --schema=fat-big-quiz/server/prisma/schema.prisma
 
-# Generate Prisma client
-RUN npx prisma generate
+# Copy all workspace packages source
+COPY packages/ ./packages/
 
-# Copy source files
-COPY . .
+# Copy fat-big-quiz source files
+COPY fat-big-quiz/ ./fat-big-quiz/
 
 # Build-time environment variables for Next.js
 ENV NEXT_PUBLIC_API_BASE_URL=https://fatbigquiz.com
@@ -26,9 +41,9 @@ ENV NEXT_PUBLIC_BASE_URL=https://fatbigquiz.com
 ENV NEXT_PUBLIC_DO_SPACES_CDN_ENDPOINT=https://aitshirts-laurence-dot-computer.sfo3.cdn.digitaloceanspaces.com
 ENV NEXT_PUBLIC_DO_SPACES_FOLDER=fat-big-quiz
 
-# Build the Next.js app with cache mount (keeps .next/cache between builds)
-RUN --mount=type=cache,target=/app/.next/cache \
-    npm run build
+# Build the Next.js app
+RUN --mount=type=cache,target=/app/fat-big-quiz/.next/cache \
+    cd fat-big-quiz && npm run build
 
 # Production stage
 FROM node:20-slim AS runner
@@ -37,27 +52,35 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Install OpenSSL for Prisma and sharp dependencies
+# Install OpenSSL for Prisma
 RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
 RUN groupadd --system --gid 1001 nodejs
 RUN useradd --system --uid 1001 nextjs
 
-# Copy built assets
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
+# Copy the standalone output
+COPY --from=builder /app/fat-big-quiz/.next/standalone ./
 
-# Copy Prisma client for NextAuth
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+# Copy public and static assets
+# Standalone server.js expects these relative to /app/ (the WORKDIR)
+COPY --from=builder /app/fat-big-quiz/public ./public
+COPY --from=builder /app/fat-big-quiz/.next/static ./.next/static
+# Also copy to fat-big-quiz/ paths for any workspace-relative lookups
+COPY --from=builder /app/fat-big-quiz/public ./fat-big-quiz/public
+COPY --from=builder /app/fat-big-quiz/.next/static ./fat-big-quiz/.next/static
 
-# Install sharp for image optimization
-RUN npm install sharp
+# Copy all node_modules from workspace (standalone tracing misses deps with workspaces)
+COPY --from=builder /app/node_modules ./node_modules
 
-# Create cache directory with proper permissions
-RUN mkdir -p .next/cache && chown -R nextjs:nodejs .next
+# Install sharp in a clean tmp dir then copy
+RUN cd /tmp && npm init -y > /dev/null 2>&1 && npm install sharp --no-package-lock && \
+    mkdir -p /app/node_modules && cp -r /tmp/node_modules/sharp /app/node_modules/sharp 2>/dev/null; \
+    rm -rf /tmp/node_modules /tmp/package.json
+
+# Create cache directories and fix permissions
+RUN mkdir -p fat-big-quiz/.next/cache .next/cache && \
+    chown -R nextjs:nodejs fat-big-quiz/.next .next
 
 USER nextjs
 
@@ -65,4 +88,5 @@ EXPOSE 3000
 
 ENV PORT=3000
 
+# server.js is at the root of standalone output
 CMD ["node", "server.js"]

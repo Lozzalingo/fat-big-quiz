@@ -8,7 +8,7 @@ import { FaGear } from "react-icons/fa6";
 import { FaBook, FaEnvelope, FaHome, FaGift, FaGoogle, FaChartLine } from "react-icons/fa";
 import { FaBagShopping } from "react-icons/fa6";
 import { MdCategory, MdQuiz } from "react-icons/md";
-import { FaBars } from "react-icons/fa6";
+import { FaBars, FaHeartPulse, FaFileLines, FaCloud, FaWrench } from "react-icons/fa6";
 import { IoClose } from "react-icons/io5";
 import { PiReadCvLogoDuotone } from "react-icons/pi";
 import { FaPlus } from "react-icons/fa6";
@@ -144,6 +144,11 @@ const DashboardSidebar = () => {
     { path: "/admin/homepage-cards", icon: <FaHome className="text-2xl" />, label: "Homepage Cards" },
     { path: "/admin/google-merchant", icon: <FaGoogle className="text-2xl" />, label: "Google Merchant" },
     { path: "/admin/emails", icon: <FaEnvelope className="text-2xl" />, label: "Emails" },
+    { path: "/admin/campaigns", icon: <FaEnvelope className="text-2xl" />, label: "Campaigns" },
+    { path: "/admin/ops", icon: <FaHeartPulse className="text-2xl" />, label: "Ops/Health" },
+    { path: "/admin/logs", icon: <FaFileLines className="text-2xl" />, label: "Logs" },
+    { path: "/admin/storage", icon: <FaCloud className="text-2xl" />, label: "Storage" },
+    { path: "/admin/config", icon: <FaWrench className="text-2xl" />, label: "Config" },
     { path: "/admin/settings", icon: <FaGear className="text-2xl" />, label: "Settings" },
   ];
 

@@ -1,6 +1,26 @@
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
+  // Set to workspace root so standalone traces node_modules from the monorepo
+  outputFileTracingRoot: path.join(__dirname, '../'),
+  transpilePackages: [
+    '@lozzalingo/analytics',
+    '@lozzalingo/auth',
+    '@lozzalingo/config',
+    '@lozzalingo/email',
+    '@lozzalingo/logging',
+    '@lozzalingo/merchandise',
+    '@lozzalingo/ops',
+    '@lozzalingo/orders',
+    '@lozzalingo/settings',
+    '@lozzalingo/storage',
+    '@lozzalingo/subscribers',
+  ],
   eslint: {
     // Ignore ESLint errors during production builds
     ignoreDuringBuilds: true,

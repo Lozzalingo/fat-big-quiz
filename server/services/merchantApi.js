@@ -44,9 +44,15 @@
  * =============================================================================
  */
 
-const { ProductInputsServiceClient } = require("@google-shopping/products").v1beta;
-const { DataSourcesServiceClient } = require("@google-shopping/datasources").v1beta;
-const { google } = require("googleapis");
+// Lazy-loaded to avoid crash when credentials file is missing
+let ProductInputsServiceClient, DataSourcesServiceClient, google;
+function loadMerchantSDK() {
+  if (!ProductInputsServiceClient) {
+    ProductInputsServiceClient = require("@google-shopping/products").v1beta.ProductInputsServiceClient;
+    DataSourcesServiceClient = require("@google-shopping/datasources").v1beta.DataSourcesServiceClient;
+    google = require("googleapis").google;
+  }
+}
 const { TARGET_MARKETS } = require("../utils/merchantFeed");
 
 const MERCHANT_ID = process.env.GOOGLE_MERCHANT_ID;
@@ -81,6 +87,8 @@ async function initClient() {
   if (!CREDENTIALS_PATH) {
     throw new Error("GOOGLE_APPLICATION_CREDENTIALS not configured");
   }
+
+  loadMerchantSDK();
 
   try {
     const clientOptions = {

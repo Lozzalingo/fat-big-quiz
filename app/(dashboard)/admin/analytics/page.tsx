@@ -303,6 +303,20 @@ export default function AnalyticsDashboard() {
         return <FaFirefox className="text-orange-500" />;
       case "edge":
         return <FaEdge className="text-blue-400" />;
+      case "instagram":
+        return <FaInstagram className="text-pink-500" />;
+      case "facebook":
+        return <FaFacebook className="text-blue-600" />;
+      case "tiktok":
+        return <FaTiktok className="text-black" />;
+      case "snapchat":
+        return <FaSnapchat className="text-yellow-400" />;
+      case "twitter":
+        return <FaTwitter className="text-blue-400" />;
+      case "linkedin":
+        return <FaLinkedin className="text-blue-700" />;
+      case "pinterest":
+        return <FaPinterest className="text-red-500" />;
       default:
         return <FaGlobe className="text-gray-500" />;
     }

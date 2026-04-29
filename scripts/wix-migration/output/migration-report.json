@@ -1,0 +1,2008 @@
+{
+  "generatedAt": "2026-04-08T23:15:52.105Z",
+  "summary": {
+    "totalWixPosts": 337,
+    "quizPostsMigrated": 216,
+    "nonQuizPostsRemaining": 121
+  },
+  "quizCategories": [
+    {
+      "wixId": "c99d0ef4-a757-40e8-ab77-56dd7addc640",
+      "name": "Sports Quiz",
+      "postCount": 63
+    },
+    {
+      "wixId": "11bce909-55ba-4f60-b5cf-d3cd7fbe3047",
+      "name": "Weekly News Quiz",
+      "postCount": 58
+    },
+    {
+      "wixId": "3b14a2de-29f8-4f29-bff2-d67e77e73083",
+      "name": "Football Quiz",
+      "postCount": 15
+    },
+    {
+      "wixId": "08d8f069-c2f5-4b0d-b603-58451b76ae4d",
+      "name": "Dingbats Quiz",
+      "postCount": 14
+    },
+    {
+      "wixId": "dac89b2a-a545-4cea-b2ce-4601f4fd15df",
+      "name": "General Knowledge Quiz",
+      "postCount": 4
+    },
+    {
+      "wixId": "2c78bc45-27ed-4b1a-8789-68cfc6e1775f",
+      "name": "Flag Quiz",
+      "postCount": 1
+    },
+    {
+      "wixId": "0501117f-7395-4853-aa2f-db84a247ec48",
+      "name": "Music Quiz",
+      "postCount": 7
+    },
+    {
+      "wixId": "6600ca04-e841-4d34-8cad-bcb8b9ad8985",
+      "name": "Music Quiz",
+      "postCount": 5
+    },
+    {
+      "wixId": "b9eb4434-e475-4934-9fdf-69edae8744b2",
+      "name": "Picture Quiz",
+      "postCount": 8
+    },
+    {
+      "wixId": "ffb87e5e-5305-4a11-8f2a-ee197797ba2e",
+      "name": "Picture Quiz",
+      "postCount": 29
+    }
+  ],
+  "nonQuizPosts": [
+    {
+      "title": "The Biggest Weekly Football Quiz Questions: 26/02/2025 – Everton’s Historic First Goal, Arsenal’s Red Card Record, and St Mirren’s Stunning Streak!",
+      "slug": "the-biggest-weekly-football-quiz-questions-26-02-2025-everton-s-historic-first-goal-arsenal-s-re",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/the-biggest-weekly-football-quiz-questions-26-02-2025-everton-s-historic-first-goal-arsenal-s-re",
+      "categoryIds": []
+    },
+    {
+      "title": "The Ultimate Weekly Sports Quiz: 26/02/2025 – Ice Hockey Chaos, Record-Breaking Runs, and More!",
+      "slug": "the-ultimate-weekly-sports-quiz-26-02-2025-ice-hockey-chaos-record-breaking-runs-and-more",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/the-ultimate-weekly-sports-quiz-26-02-2025-ice-hockey-chaos-record-breaking-runs-and-more",
+      "categoryIds": []
+    },
+    {
+      "title": "Weekly News Quiz: Bridget Jones, Political Upheavals, and Surprising Political Moments – 25/02/2025",
+      "slug": "weekly-news-quiz-bridget-jones-political-upheavals-and-surprising-political-moments-25-02-2025",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/weekly-news-quiz-bridget-jones-political-upheavals-and-surprising-political-moments-25-02-2025",
+      "categoryIds": []
+    },
+    {
+      "title": "Printable Spring Character Picture Quiz Pack",
+      "slug": "printable-spring-character-picture-quiz-pack",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/printable-spring-character-picture-quiz-pack",
+      "categoryIds": []
+    },
+    {
+      "title": "The Biggest Weekly Football Quiz Questions: 10/02/2025 – Character Assassinations, FA Cup Upsets, and Record-Breaking Premier League Moments!",
+      "slug": "the-biggest-weekly-football-quiz-questions-10-02-2025-character-assassinations-fa-cup-upsets-an",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/the-biggest-weekly-football-quiz-questions-10-02-2025-character-assassinations-fa-cup-upsets-an",
+      "categoryIds": []
+    },
+    {
+      "title": "The Ultimate Weekly Sports Quiz: 10/02/2025 – Super Bowl Showdown, Historic Boxing Feats, and More!",
+      "slug": "the-ultimate-weekly-sports-quiz-10-02-2025-super-bowl-showdown-historic-boxing-feats-and-more",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/the-ultimate-weekly-sports-quiz-10-02-2025-super-bowl-showdown-historic-boxing-feats-and-more",
+      "categoryIds": []
+    },
+    {
+      "title": "Weekly News Quiz: Grammy Winners, Yeezy Swastikas, and Super Bowl 59 – How Well Do You Remember the Headlines? – 10/02/2025",
+      "slug": "weekly-news-quiz-grammy-winners-yeezy-swastikas-and-super-bowl-59-how-well-do-you-remember-the",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/weekly-news-quiz-grammy-winners-yeezy-swastikas-and-super-bowl-59-how-well-do-you-remember-the",
+      "categoryIds": []
+    },
+    {
+      "title": "The Biggest Weekly Football Quiz Questions: 27/01/2025 – Whittaker’s £6 Million Move, the Rashford-Barcelona Buzz, and the Rise of New Football Legends!",
+      "slug": "the-biggest-weekly-football-quiz-questions-27-01-2025-whittaker-s-6-million-move-the-rashford-b",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/the-biggest-weekly-football-quiz-questions-27-01-2025-whittaker-s-6-million-move-the-rashford-b",
+      "categoryIds": []
+    },
+    {
+      "title": "The Ultimate Weekly Sports Quiz: 27/01/2025 – Australian Open, Super Bowl Showdown, and More!",
+      "slug": "the-ultimate-weekly-sports-quiz-27-01-2025-australian-open-super-bowl-showdown-and-more",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/the-ultimate-weekly-sports-quiz-27-01-2025-australian-open-super-bowl-showdown-and-more",
+      "categoryIds": []
+    },
+    {
+      "title": "Weekly News Quiz: Major Contracts, Celebrity Nods, and Unexpected Weather – How Well Do You Remember the Headlines? – 27/01/2025",
+      "slug": "weekly-news-quiz-major-contracts-celebrity-nods-and-unexpected-weather-how-well-do-you-remember",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/weekly-news-quiz-major-contracts-celebrity-nods-and-unexpected-weather-how-well-do-you-remember",
+      "categoryIds": []
+    },
+    {
+      "title": "Printable Penny Sweets Quiz Download",
+      "slug": "printable-penny-sweets-quiz-download",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/printable-penny-sweets-quiz-download",
+      "categoryIds": []
+    },
+    {
+      "title": "Christmas Supermarket Opening Times Quiz!!!",
+      "slug": "christmas-supermarket-opening-times-quiz",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/christmas-supermarket-opening-times-quiz",
+      "categoryIds": []
+    },
+    {
+      "title": "Weekly 2024 Summer Olympic Quiz Questions: Closing Ceremony",
+      "slug": "weekly-2024-summer-olympic-quiz-questions-closing-ceremony",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/weekly-2024-summer-olympic-quiz-questions-closing-ceremony",
+      "categoryIds": []
+    },
+    {
+      "title": "Weekly 2024 Summer Olympic Quiz Questions: Week 2",
+      "slug": "weekly-2024-summer-olympic-quiz-questions-week-2",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/weekly-2024-summer-olympic-quiz-questions-week-2",
+      "categoryIds": []
+    },
+    {
+      "title": "Weekly 2024 Summer Olympic Quiz Questions: Week 1",
+      "slug": "weekly-2024-summer-olympic-quiz-questions-week-1",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/weekly-2024-summer-olympic-quiz-questions-week-1",
+      "categoryIds": []
+    },
+    {
+      "title": "Weekly 2024 Summer Olympic Quiz Questions: Opening Ceremony",
+      "slug": "weekly-2024-summer-olympic-quiz-questions-opening-ceremony",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/weekly-2024-summer-olympic-quiz-questions-opening-ceremony",
+      "categoryIds": []
+    },
+    {
+      "title": "100+ Summer Olympics Quiz Questions",
+      "slug": "100-summer-olympics-quiz-questions",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/100-summer-olympics-quiz-questions",
+      "categoryIds": []
+    },
+    {
+      "title": "Weekly Euro 2024 Quiz Questions: The Final",
+      "slug": "weekly-euro-2024-quiz-questions-the-final",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/weekly-euro-2024-quiz-questions-the-final",
+      "categoryIds": []
+    },
+    {
+      "title": "Weekly Euro 2024 Quiz Questions: Semi-Finals",
+      "slug": "weekly-euro-2024-quiz-questions-semi-finals",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/weekly-euro-2024-quiz-questions-semi-finals",
+      "categoryIds": []
+    },
+    {
+      "title": "Weekly Euro 2024 Quiz Questions: Quarter-Finals",
+      "slug": "weekly-euro-2024-quiz-questions-quarter-finals",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/weekly-euro-2024-quiz-questions-quarter-finals",
+      "categoryIds": []
+    },
+    {
+      "title": "Weekly Euro 2024 Quiz Questions: Last 16",
+      "slug": "weekly-euro-2024-quiz-questions-last-16",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/weekly-euro-2024-quiz-questions-last-16",
+      "categoryIds": []
+    },
+    {
+      "title": "Weekly Euro 2024 Quiz Questions: Round 3",
+      "slug": "weekly-euro-2024-quiz-questions-round-3",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/weekly-euro-2024-quiz-questions-round-3",
+      "categoryIds": []
+    },
+    {
+      "title": "Weekly Euro 2024 Quiz Questions: Round 2",
+      "slug": "weekly-euro-2024-quiz-questions-round-2",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/weekly-euro-2024-quiz-questions-round-2",
+      "categoryIds": []
+    },
+    {
+      "title": "Weekly Euro 2024 Quiz Questions: Round 1",
+      "slug": "weekly-euro-2024-quiz-questions-round-1",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/weekly-euro-2024-quiz-questions-round-1",
+      "categoryIds": []
+    },
+    {
+      "title": "Elevate Your Spring Adventures with BucketRace",
+      "slug": "elevate-your-spring-adventures-with-bucketrace",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/elevate-your-spring-adventures-with-bucketrace",
+      "categoryIds": []
+    },
+    {
+      "title": "100+ Christmas Quiz Questions",
+      "slug": "100-christmas-quiz-questions",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/100-christmas-quiz-questions",
+      "categoryIds": []
+    },
+    {
+      "title": "2022 Picture Dingbats Quiz",
+      "slug": "2022-picture-dingbats-quiz",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/2022-picture-dingbats-quiz",
+      "categoryIds": []
+    },
+    {
+      "title": "Free Monthly Entertainment Quiz Questions: October/November 2023",
+      "slug": "free-monthly-entertainment-quiz-questions-october-november-2023",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/free-monthly-entertainment-quiz-questions-october-november-2023",
+      "categoryIds": []
+    },
+    {
+      "title": "BucketRace's Halloween Scavenger Hunt - The Story of Team 'ThrillUs'",
+      "slug": "bucketrace-s-halloween-scavenger-hunt-the-story-of-team-thrillus",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/bucketrace-s-halloween-scavenger-hunt-the-story-of-team-thrillus",
+      "categoryIds": [
+        "576e4e68-12e2-4e77-b738-a4102b8ca659"
+      ]
+    },
+    {
+      "title": "Free Monthly Music Quiz Questions: October 2023",
+      "slug": "free-monthly-music-quiz-questions-october-2023",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/free-monthly-music-quiz-questions-october-2023",
+      "categoryIds": []
+    },
+    {
+      "title": "Halloween Scavenger Hunt",
+      "slug": "halloween-scavenger-hunt",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/halloween-scavenger-hunt",
+      "categoryIds": [
+        "576e4e68-12e2-4e77-b738-a4102b8ca659",
+        "52c55fc5-1be8-4b1d-9a1b-f4790ac06d3d"
+      ]
+    },
+    {
+      "title": "The Fat Big Quiz On Stage",
+      "slug": "the-fat-big-quiz-on-stage",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/the-fat-big-quiz-on-stage",
+      "categoryIds": [
+        "967f16ba-63c5-4c86-9a20-1f6b6a12e357"
+      ]
+    },
+    {
+      "title": "Free Monthly Technology Quiz Questions: September/October 2023",
+      "slug": "free-monthly-technology-quiz-questions-september-october-2023",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/free-monthly-technology-quiz-questions-september-october-2023",
+      "categoryIds": []
+    },
+    {
+      "title": "Sten Party Ideas",
+      "slug": "sten-party-ideas",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/sten-party-ideas",
+      "categoryIds": [
+        "190466f6-52fa-42ea-bb9d-c4fc1ea76e7e"
+      ]
+    },
+    {
+      "title": "Fun Activities For The Office",
+      "slug": "fun-activities-for-the-office",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/fun-activities-for-the-office",
+      "categoryIds": [
+        "2b94d819-73d0-4611-8904-42c674dc8dc4"
+      ]
+    },
+    {
+      "title": "100+ Good Quiz Team Names",
+      "slug": "100-good-quiz-team-names",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/100-good-quiz-team-names",
+      "categoryIds": []
+    },
+    {
+      "title": "Free Monthly Music Quiz Questions: September 2023",
+      "slug": "free-monthly-music-quiz-questions-september-2023",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/free-monthly-music-quiz-questions-september-2023",
+      "categoryIds": []
+    },
+    {
+      "title": "100 Easy Quiz Questions and Answers",
+      "slug": "100-easy-quiz-questions-and-answers",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/100-easy-quiz-questions-and-answers",
+      "categoryIds": []
+    },
+    {
+      "title": "What is a Stag Do? A comprehensive guide",
+      "slug": "what-is-a-stag-do-a-comprehensive-guide",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/what-is-a-stag-do-a-comprehensive-guide",
+      "categoryIds": [
+        "e4254443-e822-4e5b-b7b7-3199370f3504"
+      ]
+    },
+    {
+      "title": "Free Monthly Politics Quiz Questions: September 2023",
+      "slug": "free-monthly-politics-quiz-questions-september-2023",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/free-monthly-politics-quiz-questions-september-2023",
+      "categoryIds": []
+    },
+    {
+      "title": "Science Quiz Questions and Answers",
+      "slug": "science-quiz-questions-and-answers",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/science-quiz-questions-and-answers",
+      "categoryIds": []
+    },
+    {
+      "title": "100+ Geography Quiz Questions",
+      "slug": "100-geography-quiz-questions",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/100-geography-quiz-questions",
+      "categoryIds": []
+    },
+    {
+      "title": "Literature Quiz Questions and Answers",
+      "slug": "literature-quiz-questions-and-answers",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/literature-quiz-questions-and-answers",
+      "categoryIds": []
+    },
+    {
+      "title": "100+ Friends Quiz Questions (TV Show)",
+      "slug": "100-friends-quiz-questions-tv-show",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/100-friends-quiz-questions-tv-show",
+      "categoryIds": []
+    },
+    {
+      "title": "007/11: James Bond and Supermarket Quiz ",
+      "slug": "007-11-james-bond-and-supermarket-quiz",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/007-11-james-bond-and-supermarket-quiz",
+      "categoryIds": []
+    },
+    {
+      "title": "Unlocking Holiday Harmony: 15 Christmas Team Building Activities",
+      "slug": "unlocking-holiday-harmony-15-christmas-team-building-activities",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/unlocking-holiday-harmony-15-christmas-team-building-activities",
+      "categoryIds": []
+    },
+    {
+      "title": "Technology Quiz Questions and Answers",
+      "slug": "technology-quiz-questions-and-answers",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/technology-quiz-questions-and-answers",
+      "categoryIds": []
+    },
+    {
+      "title": "Mythical Creatures Halloween Picture Quiz With Answers",
+      "slug": "mythical-creatures-picture-quiz-with-answers",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/mythical-creatures-picture-quiz-with-answers",
+      "categoryIds": [
+        "52c55fc5-1be8-4b1d-9a1b-f4790ac06d3d"
+      ]
+    },
+    {
+      "title": "Food and Drink Quiz Questions and Answers",
+      "slug": "food-and-drink-quiz-questions-and-answers",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/food-and-drink-quiz-questions-and-answers",
+      "categoryIds": []
+    },
+    {
+      "title": "Free Monthly Music Quiz Questions: August 2023",
+      "slug": "free-monthly-music-quiz-questions-august-2023",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/free-monthly-music-quiz-questions-august-2023",
+      "categoryIds": []
+    },
+    {
+      "title": "The Power of Icebreakers: Indoor Activities to Kickstart Team Interaction",
+      "slug": "the-power-of-icebreakers-indoor-activities-to-kickstart-team-interaction",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/the-power-of-icebreakers-indoor-activities-to-kickstart-team-interaction",
+      "categoryIds": []
+    },
+    {
+      "title": "The Ultimate Guide: Top 10 Stag Do Destinations in Europe",
+      "slug": "the-ultimate-guide-top-10-stag-do-destinations-in-europe",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/the-ultimate-guide-top-10-stag-do-destinations-in-europe",
+      "categoryIds": [
+        "e4254443-e822-4e5b-b7b7-3199370f3504"
+      ]
+    },
+    {
+      "title": "Entertainment Quiz Questions and Answers",
+      "slug": "entertainment-quiz-questions-and-answers",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/entertainment-quiz-questions-and-answers",
+      "categoryIds": []
+    },
+    {
+      "title": "Free Monthly Politics Quiz Questions: August 2023",
+      "slug": "free-monthly-politics-quiz-questions-august-2023",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/free-monthly-politics-quiz-questions-august-2023",
+      "categoryIds": []
+    },
+    {
+      "title": "The Ultimate Guide to Hosting a Virtual Pub Quiz: Tips and Tricks",
+      "slug": "the-ultimate-guide-to-hosting-a-virtual-pub-quiz-tips-and-tricks",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/the-ultimate-guide-to-hosting-a-virtual-pub-quiz-tips-and-tricks",
+      "categoryIds": []
+    },
+    {
+      "title": "The Definitive Guide to Indoor Team Building Activities for Elevating Workplace Collaboration",
+      "slug": "the-definitive-guide-to-indoor-team-building-activities-for-elevating-workplace-collaboration",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/the-definitive-guide-to-indoor-team-building-activities-for-elevating-workplace-collaboration",
+      "categoryIds": [
+        "2b94d819-73d0-4611-8904-42c674dc8dc4"
+      ]
+    },
+    {
+      "title": "Free Monthly Technology Quiz Questions: July/August 2023",
+      "slug": "free-monthly-technology-quiz-questions-july-august-2023",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/free-monthly-technology-quiz-questions-july-august-2023",
+      "categoryIds": []
+    },
+    {
+      "title": "Stag Do Ideas: Outdoor Adventures in and Around London",
+      "slug": "stag-do-ideas-outdoor-adventures-in-and-around-london",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/stag-do-ideas-outdoor-adventures-in-and-around-london",
+      "categoryIds": [
+        "e4254443-e822-4e5b-b7b7-3199370f3504"
+      ]
+    },
+    {
+      "title": "It's In Their Blood (Link the Celebrity Child with their Parent)",
+      "slug": "it-s-in-their-blood-link-the-celebrity-child-with-their-parent",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/it-s-in-their-blood-link-the-celebrity-child-with-their-parent",
+      "categoryIds": []
+    },
+    {
+      "title": "Funny Stag Do Ideas",
+      "slug": "funny-stag-do-ideas",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/funny-stag-do-ideas",
+      "categoryIds": [
+        "e4254443-e822-4e5b-b7b7-3199370f3504"
+      ]
+    },
+    {
+      "title": "Scavenger Hunt Clues for Schools, Families and Children!",
+      "slug": "scavenger-hunt-clues-for-schools-families-and-children",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/scavenger-hunt-clues-for-schools-families-and-children",
+      "categoryIds": [
+        "576e4e68-12e2-4e77-b738-a4102b8ca659"
+      ]
+    },
+    {
+      "title": "Land Barks: Dog Breed Quiz and Capital City Quiz ",
+      "slug": "land-barks-dog-breed-quiz-and-capital-city-quiz",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/land-barks-dog-breed-quiz-and-capital-city-quiz",
+      "categoryIds": []
+    },
+    {
+      "title": "Hen Do Ideas London",
+      "slug": "hen-do-ideas-london",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/hen-do-ideas-london",
+      "categoryIds": [
+        "2b94d819-73d0-4611-8904-42c674dc8dc4"
+      ]
+    },
+    {
+      "title": "History Quiz Questions and Answers",
+      "slug": "history-quiz-questions-and-answers",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/history-quiz-questions-and-answers",
+      "categoryIds": []
+    },
+    {
+      "title": "The Best 36 Games for a Stag Do",
+      "slug": "the-best-36-games-for-a-stag-do",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/the-best-36-games-for-a-stag-do",
+      "categoryIds": [
+        "e4254443-e822-4e5b-b7b7-3199370f3504"
+      ]
+    },
+    {
+      "title": "Hen Party Ideas for Small Groups: The Advantages of Small and Intimate Hen Parties",
+      "slug": "hen-party-ideas-for-small-groups-the-advantages-of-small-and-intimate-hen-parties",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/hen-party-ideas-for-small-groups-the-advantages-of-small-and-intimate-hen-parties",
+      "categoryIds": []
+    },
+    {
+      "title": "Virtual Team Building Activities for 2023",
+      "slug": "virtual-team-building-activities-for-2023",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/virtual-team-building-activities-for-2023",
+      "categoryIds": [
+        "2b94d819-73d0-4611-8904-42c674dc8dc4"
+      ]
+    },
+    {
+      "title": "10+ Epic Stag Do Locations Across the UK and Europe",
+      "slug": "10-unforgettable-stag-do-locations-across-the-uk-and-europe",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/10-unforgettable-stag-do-locations-across-the-uk-and-europe",
+      "categoryIds": [
+        "e4254443-e822-4e5b-b7b7-3199370f3504"
+      ]
+    },
+    {
+      "title": "46+ Wild & Whacky Stag Do Activities!!!",
+      "slug": "46-wild-whacky-stag-do-activities",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/46-wild-whacky-stag-do-activities",
+      "categoryIds": [
+        "e4254443-e822-4e5b-b7b7-3199370f3504"
+      ]
+    },
+    {
+      "title": "34 Unforgettable Hen Party Ideas in London - From Glamorous Brunch to Spa Bliss",
+      "slug": "34-unforgettable-hen-party-ideas-in-london-from-glamorous-brunch-to-spa-bliss",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/34-unforgettable-hen-party-ideas-in-london-from-glamorous-brunch-to-spa-bliss",
+      "categoryIds": []
+    },
+    {
+      "title": "Unlocking the Power of Adventure: Transformative Team Building Events That Redefine Success",
+      "slug": "unlocking-the-power-of-adventure-transformative-team-building-events-that-redefine-success",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/unlocking-the-power-of-adventure-transformative-team-building-events-that-redefine-success",
+      "categoryIds": [
+        "2b94d819-73d0-4611-8904-42c674dc8dc4"
+      ]
+    },
+    {
+      "title": "Exciting Outdoor Team Building Activities to Ignite Collaboration and Fun",
+      "slug": "exciting-outdoor-team-building-activities-to-ignite-collaboration-and-fun",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/exciting-outdoor-team-building-activities-to-ignite-collaboration-and-fun",
+      "categoryIds": [
+        "2b94d819-73d0-4611-8904-42c674dc8dc4"
+      ]
+    },
+    {
+      "title": "10 Hen Do Ideas London: Unforgettable Celebrations in the Capital",
+      "slug": "10-hen-do-ideas-in-london-unforgettable-celebrations-in-the-capital",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/10-hen-do-ideas-in-london-unforgettable-celebrations-in-the-capital",
+      "categoryIds": [
+        "2b94d819-73d0-4611-8904-42c674dc8dc4"
+      ]
+    },
+    {
+      "title": "London Scavenger Hunt Routes By BucketRace",
+      "slug": "london-scavenger-hunt-routes-by-bucketrace",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/london-scavenger-hunt-routes-by-bucketrace",
+      "categoryIds": [
+        "2b94d819-73d0-4611-8904-42c674dc8dc4"
+      ]
+    },
+    {
+      "title": "9 Hassle Free Stag Do Games",
+      "slug": "9-hassle-free-stag-do-games",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/9-hassle-free-stag-do-games",
+      "categoryIds": [
+        "e4254443-e822-4e5b-b7b7-3199370f3504"
+      ]
+    },
+    {
+      "title": "Halloween Office Games and Spooky Scavenger Hunts for Thrilling Halloween Team Building",
+      "slug": "halloween-office-games-and-spooky-scavenger-hunts-for-thrilling-halloween-team-building",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/halloween-office-games-and-spooky-scavenger-hunts-for-thrilling-halloween-team-building",
+      "categoryIds": [
+        "2b94d819-73d0-4611-8904-42c674dc8dc4",
+        "52c55fc5-1be8-4b1d-9a1b-f4790ac06d3d"
+      ]
+    },
+    {
+      "title": "Quirky and Creative Hen Party Themes for an Unforgettable Weekend",
+      "slug": "quirky-and-creative-hen-party-themes-for-an-unforgettable-weekend",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/quirky-and-creative-hen-party-themes-for-an-unforgettable-weekend",
+      "categoryIds": [
+        "2b94d819-73d0-4611-8904-42c674dc8dc4"
+      ]
+    },
+    {
+      "title": "Embrace the Spooky Spirit: 30 Halloween Scavenger Hunt Ideas to Thrill and Delight!",
+      "slug": "embrace-the-spooky-spirit-30-halloween-scavenger-hunt-ideas-to-thrill-and-delight",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/embrace-the-spooky-spirit-30-halloween-scavenger-hunt-ideas-to-thrill-and-delight",
+      "categoryIds": [
+        "52c55fc5-1be8-4b1d-9a1b-f4790ac06d3d"
+      ]
+    },
+    {
+      "title": "BucketRace Presents the Ultimate Summer Scavenger Hunt: 26/08/23 | 12:00 | London",
+      "slug": "bucketrace-presents-the-ultimate-summer-scavenger-hunt-26-08-23-12-00-london",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/bucketrace-presents-the-ultimate-summer-scavenger-hunt-26-08-23-12-00-london",
+      "categoryIds": []
+    },
+    {
+      "title": "100+ Summer Scavenger Hunt Ideas",
+      "slug": "100-summer-scavenger-hunt-ideas",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/100-summer-scavenger-hunt-ideas",
+      "categoryIds": [
+        "2b94d819-73d0-4611-8904-42c674dc8dc4"
+      ]
+    },
+    {
+      "title": "London Team Building: Unlocking the Power of Collaboration. ",
+      "slug": "london-team-building-unlocking-the-power-of-collaboration",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/london-team-building-unlocking-the-power-of-collaboration",
+      "categoryIds": [
+        "2b94d819-73d0-4611-8904-42c674dc8dc4"
+      ]
+    },
+    {
+      "title": "12 Outrageous, Bizarre, and Hilarious Stag Do Ideas!!!",
+      "slug": "12-outrageous-bizarre-and-hilarious-stag-do-ideas",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/12-outrageous-bizarre-and-hilarious-stag-do-ideas",
+      "categoryIds": [
+        "e4254443-e822-4e5b-b7b7-3199370f3504"
+      ]
+    },
+    {
+      "title": "Stag Do Manchester. A Top Destination for an Epic Stag Do Experience.",
+      "slug": "stag-do-manchester-a-top-destination-for-an-epic-stag-do-experience",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/stag-do-manchester-a-top-destination-for-an-epic-stag-do-experience",
+      "categoryIds": [
+        "e4254443-e822-4e5b-b7b7-3199370f3504"
+      ]
+    },
+    {
+      "title": "Team Building Activities Bristol!",
+      "slug": "team-building-activities-bristol",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/team-building-activities-bristol",
+      "categoryIds": [
+        "2b94d819-73d0-4611-8904-42c674dc8dc4"
+      ]
+    },
+    {
+      "title": "A Virtual Team Building Activity: Ignite Remote Working!",
+      "slug": "a-virtual-team-building-activity-ignite-remote-working",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/a-virtual-team-building-activity-ignite-remote-working",
+      "categoryIds": [
+        "2b94d819-73d0-4611-8904-42c674dc8dc4"
+      ]
+    },
+    {
+      "title": "Creating an Engaging Hen Do Quiz!",
+      "slug": "creating-an-engaging-hen-do-quiz",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/creating-an-engaging-hen-do-quiz",
+      "categoryIds": [
+        "2b94d819-73d0-4611-8904-42c674dc8dc4"
+      ]
+    },
+    {
+      "title": "Discover 11 Unusual Stag Do Destinations for Unforgettable Adventures",
+      "slug": "discover-11-unusual-stag-do-destinations-for-unforgettable-adventures",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/discover-11-unusual-stag-do-destinations-for-unforgettable-adventures",
+      "categoryIds": [
+        "e4254443-e822-4e5b-b7b7-3199370f3504"
+      ]
+    },
+    {
+      "title": "Quick, Fun and Fabulous Hen Do Games!",
+      "slug": "quick-fun-and-fabulous-hen-do-games",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/quick-fun-and-fabulous-hen-do-games",
+      "categoryIds": [
+        "2b94d819-73d0-4611-8904-42c674dc8dc4"
+      ]
+    },
+    {
+      "title": "Abstract, Artistic, and Captivating Photo Scavenger Hunt Ideas to Ignite Your Creativity",
+      "slug": "abstract-artistic-and-captivating-photo-scavenger-hunt-ideas-to-ignite-your-creativity",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/abstract-artistic-and-captivating-photo-scavenger-hunt-ideas-to-ignite-your-creativity",
+      "categoryIds": []
+    },
+    {
+      "title": "Experience a Quirky New Scavenger Hunt Route in Newcastle with BucketRace",
+      "slug": "experience-a-quirky-new-scavenger-hunt-route-in-newcastle-with-bucketrace",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/experience-a-quirky-new-scavenger-hunt-route-in-newcastle-with-bucketrace",
+      "categoryIds": [
+        "2b94d819-73d0-4611-8904-42c674dc8dc4",
+        "576e4e68-12e2-4e77-b738-a4102b8ca659"
+      ]
+    },
+    {
+      "title": "10 + Exciting Challenges for a Memorable Stag Do Adventure",
+      "slug": "10-exciting-challenges-for-a-memorable-stag-do-adventure",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/10-exciting-challenges-for-a-memorable-stag-do-adventure",
+      "categoryIds": [
+        "e4254443-e822-4e5b-b7b7-3199370f3504"
+      ]
+    },
+    {
+      "title": "Team Building in London: Strengthening Bonds and Fostering Collaboration",
+      "slug": "team-building-in-london-strengthening-bonds-and-fostering-collaboration",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/team-building-in-london-strengthening-bonds-and-fostering-collaboration",
+      "categoryIds": [
+        "2b94d819-73d0-4611-8904-42c674dc8dc4"
+      ]
+    },
+    {
+      "title": "Scavenger Hunt for Adults",
+      "slug": "scavenger-hunt-for-adults",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/scavenger-hunt-for-adults",
+      "categoryIds": [
+        "576e4e68-12e2-4e77-b738-a4102b8ca659"
+      ]
+    },
+    {
+      "title": "Best Hen Do Ideas 20+ ideas with a Creative Twist",
+      "slug": "best-hen-do-ideas-with-a-creative-twist",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/best-hen-do-ideas-with-a-creative-twist",
+      "categoryIds": [
+        "2b94d819-73d0-4611-8904-42c674dc8dc4"
+      ]
+    },
+    {
+      "title": "Celebrating Love and Friendship Together: The Rise of Joint Hen and Stag Dos",
+      "slug": "celebrating-love-and-friendship-together-the-rise-of-joint-hen-and-stag-dos",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/celebrating-love-and-friendship-together-the-rise-of-joint-hen-and-stag-dos",
+      "categoryIds": [
+        "e4254443-e822-4e5b-b7b7-3199370f3504"
+      ]
+    },
+    {
+      "title": "50+ Dares for a Stag Do!",
+      "slug": "50-dares-for-a-stag-do",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/50-dares-for-a-stag-do",
+      "categoryIds": [
+        "e4254443-e822-4e5b-b7b7-3199370f3504"
+      ]
+    },
+    {
+      "title": "Mastering the Art of a Scavenger Hunt with Photos: A Captivating Journey Through the Lens",
+      "slug": "mastering-the-art-of-a-scavenger-hunt-with-photos-a-captivating-journey-through-the-lens",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/mastering-the-art-of-a-scavenger-hunt-with-photos-a-captivating-journey-through-the-lens",
+      "categoryIds": [
+        "576e4e68-12e2-4e77-b738-a4102b8ca659",
+        "2b94d819-73d0-4611-8904-42c674dc8dc4"
+      ]
+    },
+    {
+      "title": "Smells Like Team Spirit: A Guide to a Memorable Summer Scavenger Hunt and Team Building Event",
+      "slug": "smells-like-team-spirit-a-guide-to-a-memorable-summer-scavenger-hunt-and-team-building-event",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/smells-like-team-spirit-a-guide-to-a-memorable-summer-scavenger-hunt-and-team-building-event",
+      "categoryIds": [
+        "2b94d819-73d0-4611-8904-42c674dc8dc4"
+      ]
+    },
+    {
+      "title": "Games for Hen Do: Crafting the Perfect Personalised Celebration for the bride to be!",
+      "slug": "games-for-hen-do-crafting-the-perfect-personalised-celebration-for-the-bride-to-be",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/games-for-hen-do-crafting-the-perfect-personalised-celebration-for-the-bride-to-be",
+      "categoryIds": [
+        "2b94d819-73d0-4611-8904-42c674dc8dc4"
+      ]
+    },
+    {
+      "title": " Unforgettable Stag Do Ideas",
+      "slug": "unforgettable-stag-do-ideas",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/unforgettable-stag-do-ideas",
+      "categoryIds": [
+        "e4254443-e822-4e5b-b7b7-3199370f3504"
+      ]
+    },
+    {
+      "title": "Elevate Your Team Building Activities in Bristol with BucketRace's New Scavenger Hunt Route",
+      "slug": "elevate-your-team-building-activities-in-bristol-with-bucketrace-s-new-scavenger-hunt-route",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/elevate-your-team-building-activities-in-bristol-with-bucketrace-s-new-scavenger-hunt-route",
+      "categoryIds": [
+        "2b94d819-73d0-4611-8904-42c674dc8dc4",
+        "576e4e68-12e2-4e77-b738-a4102b8ca659"
+      ]
+    },
+    {
+      "title": "The Ultimate Guide to Corporate Team Building Activities in London",
+      "slug": "the-ultimate-guide-to-corporate-team-building-activities-in-london",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/the-ultimate-guide-to-corporate-team-building-activities-in-london",
+      "categoryIds": []
+    },
+    {
+      "title": "Unleashing the Fun: Hens Scavenger Hunt Ideas to Create Unforgettable Memories",
+      "slug": "unleashing-the-fun-hens-scavenger-hunt-ideas-to-create-unforgettable-memories",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/unleashing-the-fun-hens-scavenger-hunt-ideas-to-create-unforgettable-memories",
+      "categoryIds": [
+        "576e4e68-12e2-4e77-b738-a4102b8ca659"
+      ]
+    },
+    {
+      "title": "Elevate Your Team Building Activities in London with BucketRace",
+      "slug": "elevate-your-team-building-activities-in-london-with-bucketrace",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/elevate-your-team-building-activities-in-london-with-bucketrace",
+      "categoryIds": [
+        "2b94d819-73d0-4611-8904-42c674dc8dc4"
+      ]
+    },
+    {
+      "title": "Elevate Your Team Building Activities in Manchester with BucketRace's New Scavenger Hunt Route",
+      "slug": "elevate-your-team-building-activities-in-manchester-with-bucketrace-s-new-scavenger-hunt-route",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/elevate-your-team-building-activities-in-manchester-with-bucketrace-s-new-scavenger-hunt-route",
+      "categoryIds": [
+        "576e4e68-12e2-4e77-b738-a4102b8ca659",
+        "2b94d819-73d0-4611-8904-42c674dc8dc4"
+      ]
+    },
+    {
+      "title": "10 Sapiosexual Hen Do Ideas in London",
+      "slug": "10-sapiosexual-hen-do-ideas-in-london",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/10-sapiosexual-hen-do-ideas-in-london",
+      "categoryIds": []
+    },
+    {
+      "title": "Discover unusual team building activities with BucketRace",
+      "slug": "discover-unusual-team-building-activities-with-bucketrace",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/discover-unusual-team-building-activities-with-bucketrace",
+      "categoryIds": [
+        "2b94d819-73d0-4611-8904-42c674dc8dc4"
+      ]
+    },
+    {
+      "title": "Hen Do Scavenger Hunt",
+      "slug": "hen-do-scavenger-hunt",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/hen-do-scavenger-hunt",
+      "categoryIds": []
+    },
+    {
+      "title": "Spring Scavenger Hunt Ideas",
+      "slug": "spring-scavenger-hunt-ideas",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/spring-scavenger-hunt-ideas",
+      "categoryIds": [
+        "2b94d819-73d0-4611-8904-42c674dc8dc4",
+        "576e4e68-12e2-4e77-b738-a4102b8ca659"
+      ]
+    },
+    {
+      "title": "Hen Party Scavenger Hunt",
+      "slug": "hen-party-scavenger-hunt",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/hen-party-scavenger-hunt",
+      "categoryIds": [
+        "2b94d819-73d0-4611-8904-42c674dc8dc4",
+        "576e4e68-12e2-4e77-b738-a4102b8ca659"
+      ]
+    },
+    {
+      "title": "Uncovering London's Hidden Gems: Scavenger Hunt locations in the City of London",
+      "slug": "uncovering-london-s-hidden-gems-scavenger-hunt-locations-in-the-city-of-london",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/uncovering-london-s-hidden-gems-scavenger-hunt-locations-in-the-city-of-london",
+      "categoryIds": [
+        "2b94d819-73d0-4611-8904-42c674dc8dc4"
+      ]
+    },
+    {
+      "title": "Easter Hunts In London",
+      "slug": "easter-hunts-in-london",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/easter-hunts-in-london",
+      "categoryIds": [
+        "967f16ba-63c5-4c86-9a20-1f6b6a12e357",
+        "576e4e68-12e2-4e77-b738-a4102b8ca659"
+      ]
+    },
+    {
+      "title": "Easter Egg Scavenger Hunt Riddles For Around The House And Outside",
+      "slug": "easter-egg-scavenger-hunt-riddles-for-around-the-house-and-outside",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/easter-egg-scavenger-hunt-riddles-for-around-the-house-and-outside",
+      "categoryIds": [
+        "2b94d819-73d0-4611-8904-42c674dc8dc4",
+        "576e4e68-12e2-4e77-b738-a4102b8ca659"
+      ]
+    },
+    {
+      "title": "Scavenger Hunt Ideas",
+      "slug": "scavenger-hunt-ideas",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/scavenger-hunt-ideas",
+      "categoryIds": [
+        "2b94d819-73d0-4611-8904-42c674dc8dc4",
+        "576e4e68-12e2-4e77-b738-a4102b8ca659"
+      ]
+    },
+    {
+      "title": "Team Building Activities London",
+      "slug": "team-building-activities-london",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/team-building-activities-london",
+      "categoryIds": [
+        "2b94d819-73d0-4611-8904-42c674dc8dc4"
+      ]
+    },
+    {
+      "title": "Christmas Virtual Team Building Activities",
+      "slug": "christmas-virtual-team-building-activities",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/christmas-virtual-team-building-activities",
+      "categoryIds": [
+        "2b94d819-73d0-4611-8904-42c674dc8dc4"
+      ]
+    },
+    {
+      "title": "The Fat Big Quiz of... Halloween",
+      "slug": "the-fat-big-quiz-of-halloween",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/the-fat-big-quiz-of-halloween",
+      "categoryIds": [
+        "967f16ba-63c5-4c86-9a20-1f6b6a12e357",
+        "52c55fc5-1be8-4b1d-9a1b-f4790ac06d3d"
+      ]
+    },
+    {
+      "title": "A year on from the Virtual Escape Room Boom!",
+      "slug": "a-year-on-from-the-virtual-escape-room-boom",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/a-year-on-from-the-virtual-escape-room-boom",
+      "categoryIds": [
+        "2b94d819-73d0-4611-8904-42c674dc8dc4"
+      ]
+    },
+    {
+      "title": "Virtual Events, Team Building and The Future",
+      "slug": "virtual-events-team-building-and-the-future",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/virtual-events-team-building-and-the-future",
+      "categoryIds": [
+        "2b94d819-73d0-4611-8904-42c674dc8dc4"
+      ]
+    },
+    {
+      "title": "The Fat Big Quiz of... Europe",
+      "slug": "the-fat-big-quiz-of-europe",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/the-fat-big-quiz-of-europe",
+      "categoryIds": [
+        "967f16ba-63c5-4c86-9a20-1f6b6a12e357"
+      ]
+    },
+    {
+      "title": "Virtual Team Building Activities",
+      "slug": "virtual-team-building-activities",
+      "wixUrl": "https://laurencestephan.wixsite.com/bucketrace/post/virtual-team-building-activities",
+      "categoryIds": [
+        "2b94d819-73d0-4611-8904-42c674dc8dc4"
+      ]
+    }
+  ],
+  "urlMapping": [
+    {
+      "title": "Christmas Name That Tune Quiz (Powerpoint)",
+      "oldUrl": "https://www.bucketrace.com/post/christmas-name-that-tune-quiz-powerpoint",
+      "newUrl": "https://fatbigquiz.com/blog/christmas-name-that-tune-quiz-powerpoint"
+    },
+    {
+      "title": "Christmas Music Quiz Song In Reverse (Powerpoint)",
+      "oldUrl": "https://www.bucketrace.com/post/christmas-music-quiz-song-in-reverse-powerpoint",
+      "newUrl": "https://fatbigquiz.com/blog/christmas-music-quiz-song-in-reverse-powerpoint"
+    },
+    {
+      "title": "Christmas Music Quiz Name The Theme Tune (Powerpoint)",
+      "oldUrl": "https://www.bucketrace.com/post/christmas-music-quiz-name-the-theme-tune-powerpoint",
+      "newUrl": "https://fatbigquiz.com/blog/christmas-music-quiz-name-the-theme-tune-powerpoint"
+    },
+    {
+      "title": "Halloween Music Quiz Name That Tune and Artist (Powerpoint)",
+      "oldUrl": "https://www.bucketrace.com/post/halloween-music-quiz-name-that-tune-and-artist-powerpoint",
+      "newUrl": "https://fatbigquiz.com/blog/halloween-music-quiz-name-that-tune-and-artist-powerpoint"
+    },
+    {
+      "title": "Halloween Music Quiz Name The Theme Tune (Powerpoint)",
+      "oldUrl": "https://www.bucketrace.com/post/halloween-music-quiz-name-the-theme-tune-powerpoint",
+      "newUrl": "https://fatbigquiz.com/blog/halloween-music-quiz-name-the-theme-tune-powerpoint"
+    },
+    {
+      "title": "The Ultimate Weekly Sports Quiz: 20/01/2025 – Djokovic’s Milestone, UFC Drama, and More!",
+      "oldUrl": "https://www.bucketrace.com/post/the-ultimate-weekly-sports-quiz-20-01-2025-djokovic-s-milestone-ufc-drama-and-more",
+      "newUrl": "https://fatbigquiz.com/blog/the-ultimate-weekly-sports-quiz-20-01-2025-djokovic-s-milestone-ufc-drama-and-more"
+    },
+    {
+      "title": "The Biggest Weekly Football Quiz Questions: 20/01/2025 – Bayern Your Time and Take the Quiz!",
+      "oldUrl": "https://www.bucketrace.com/post/the-biggest-weekly-football-quiz-questions-20-01-2025-bayern-your-time-and-take-the-quiz",
+      "newUrl": "https://fatbigquiz.com/blog/the-biggest-weekly-football-quiz-questions-20-01-2025-bayern-your-time-and-take-the-quiz"
+    },
+    {
+      "title": "Weekly News Quiz: Alien Sequel, Political Resignations, and UK Weather Warnings – How Well Do You Remember the Headlines? – 20/01/2025",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-news-quiz-alien-sequel-political-resignations-and-uk-weather-warnings-how-well-do-you-re",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-news-quiz-alien-sequel-political-resignations-and-uk-weather-warnings-how-well-do-you-re"
+    },
+    {
+      "title": "Printable Ice Cream Quiz Download",
+      "oldUrl": "https://www.bucketrace.com/post/printable-ice-cream-quiz-downloads",
+      "newUrl": "https://fatbigquiz.com/blog/printable-ice-cream-quiz-downloads"
+    },
+    {
+      "title": "The Ultimate Printable World Flag Quiz! 🌍",
+      "oldUrl": "https://www.bucketrace.com/post/the-ultimate-printable-world-flag-quiz",
+      "newUrl": "https://fatbigquiz.com/blog/the-ultimate-printable-world-flag-quiz"
+    },
+    {
+      "title": "Printable Cereal Quiz Downloads",
+      "oldUrl": "https://www.bucketrace.com/post/printable-cereal-quiz-downloads",
+      "newUrl": "https://fatbigquiz.com/blog/printable-cereal-quiz-downloads"
+    },
+    {
+      "title": "The Ultimate Weekly Sports Quiz: 13/01/2025 – Women’s Ashes, Djokovic’s Quest, and More!",
+      "oldUrl": "https://www.bucketrace.com/post/the-ultimate-weekly-sports-quiz-13-01-2025-women-s-ashes-djokovic-s-quest-and-more",
+      "newUrl": "https://fatbigquiz.com/blog/the-ultimate-weekly-sports-quiz-13-01-2025-women-s-ashes-djokovic-s-quest-and-more"
+    },
+    {
+      "title": "The Biggest Weekly Football Quiz Questions: 06/01/2025 – Bowen Arrow",
+      "oldUrl": "https://www.bucketrace.com/post/the-biggest-weekly-football-quiz-questions-06-01-2025-bowen-arrow",
+      "newUrl": "https://fatbigquiz.com/blog/the-biggest-weekly-football-quiz-questions-06-01-2025-bowen-arrow"
+    },
+    {
+      "title": "Weekly News Quiz: Golden Globes, Political Resignations, and Tech Controversies – How Well Do You Remember the Headlines? – 06/01/2025",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-news-quiz-golden-globes-political-resignations-and-tech-controversies-how-well-do-you-re",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-news-quiz-golden-globes-political-resignations-and-tech-controversies-how-well-do-you-re"
+    },
+    {
+      "title": "Printable Crisps Quiz Downloads",
+      "oldUrl": "https://www.bucketrace.com/post/printable-crisps-quiz-downloads",
+      "newUrl": "https://fatbigquiz.com/blog/printable-crisps-quiz-downloads"
+    },
+    {
+      "title": "The Biggest Weekly Football Quiz Questions: 30/12/2024 – Soucek Yourself before you wreck yourself!",
+      "oldUrl": "https://www.bucketrace.com/post/the-biggest-weekly-football-quiz-questions-30-12-2024-soucek-yourself-before-you-wreck-yourself",
+      "newUrl": "https://fatbigquiz.com/blog/the-biggest-weekly-football-quiz-questions-30-12-2024-soucek-yourself-before-you-wreck-yourself"
+    },
+    {
+      "title": "The Ultimate Weekly Sports Quiz: 30/12/2024 – Dabrowski’s Triumph, LeBron’s Milestone, and More!",
+      "oldUrl": "https://www.bucketrace.com/post/the-ultimate-weekly-sports-quiz-30-12-2024-dabrowski-s-triumph-lebron-s-milestone-and-more",
+      "newUrl": "https://fatbigquiz.com/blog/the-ultimate-weekly-sports-quiz-30-12-2024-dabrowski-s-triumph-lebron-s-milestone-and-more"
+    },
+    {
+      "title": "The Biggest Weekly News Quiz: Dinosaur Discoveries, Solar Close-Ups, and Nightmare Difficulty – How Sharp Is Your Memory? – 30/12/2024",
+      "oldUrl": "https://www.bucketrace.com/post/the-biggest-weekly-news-quiz-dinosaur-discoveries-solar-close-ups-and-nightmare-difficulty-how",
+      "newUrl": "https://fatbigquiz.com/blog/the-biggest-weekly-news-quiz-dinosaur-discoveries-solar-close-ups-and-nightmare-difficulty-how"
+    },
+    {
+      "title": "The Biggest Weekly Football Quiz Questions: 22/12/2024 – Stranger Mings",
+      "oldUrl": "https://www.bucketrace.com/post/the-biggest-weekly-football-quiz-questions-22-12-2024-stranger-mings",
+      "newUrl": "https://fatbigquiz.com/blog/the-biggest-weekly-football-quiz-questions-22-12-2024-stranger-mings"
+    },
+    {
+      "title": "The Ultimate Weekly Sports Quiz: 22/12/2024 – Hodgkinson’s Triumph, Fury’s Revenge, and More!",
+      "oldUrl": "https://www.bucketrace.com/post/the-ultimate-weekly-sports-quiz-22-12-2024-hodgkinson-s-triumph-fury-s-revenge-and-more",
+      "newUrl": "https://fatbigquiz.com/blog/the-ultimate-weekly-sports-quiz-22-12-2024-hodgkinson-s-triumph-fury-s-revenge-and-more"
+    },
+    {
+      "title": "The Biggest Weekly News Quiz: Judi Dench, Solar Snow, and Bird Flu – How Well Were You Paying Attention? – 22/12/2024",
+      "oldUrl": "https://www.bucketrace.com/post/this-week-in-headlines-news-quiz-15-12-2024-1",
+      "newUrl": "https://fatbigquiz.com/blog/this-week-in-headlines-news-quiz-15-12-2024-1"
+    },
+    {
+      "title": "Printable Sweet Quiz Downloads",
+      "oldUrl": "https://www.bucketrace.com/post/printable-sweet-quiz-downloads",
+      "newUrl": "https://fatbigquiz.com/blog/printable-sweet-quiz-downloads"
+    },
+    {
+      "title": "The Biggest Weekly Football Quiz Questions: 15/12/2024 – Absolutely Fabregasted",
+      "oldUrl": "https://www.bucketrace.com/post/the-biggest-weekly-football-quiz-questions-15-12-2024-absolutely-fabregasted",
+      "newUrl": "https://fatbigquiz.com/blog/the-biggest-weekly-football-quiz-questions-15-12-2024-absolutely-fabregasted"
+    },
+    {
+      "title": "The Ultimate Weekly Sports Quiz: 15/12/2024 – Raygun's Return and Scorigami Surprises!",
+      "oldUrl": "https://www.bucketrace.com/post/the-ultimate-weekly-sports-quiz-15-12-2024-raygun-s-return-and-scorigami-surprises",
+      "newUrl": "https://fatbigquiz.com/blog/the-ultimate-weekly-sports-quiz-15-12-2024-raygun-s-return-and-scorigami-surprises"
+    },
+    {
+      "title": "The Biggest Weekly News Quiz: Quirky, Curious, and Unforgettable News Quiz – 15/12/2024",
+      "oldUrl": "https://www.bucketrace.com/post/this-week-in-headlines-news-quiz-15-12-2024",
+      "newUrl": "https://fatbigquiz.com/blog/this-week-in-headlines-news-quiz-15-12-2024"
+    },
+    {
+      "title": "The Biggest Weekly Football Quiz Questions: 08/12/2024 – Antonio’s Areolas Out Of Commission",
+      "oldUrl": "https://www.bucketrace.com/post/the-biggest-weekly-football-quiz-questions-08-12-2024-antonio-s-areolas-out-of-commission",
+      "newUrl": "https://fatbigquiz.com/blog/the-biggest-weekly-football-quiz-questions-08-12-2024-antonio-s-areolas-out-of-commission"
+    },
+    {
+      "title": "The Ultimate Weekly Sports Quiz Questions: 08/12/2024 – Barcelona’s Bold Move!",
+      "oldUrl": "https://www.bucketrace.com/post/the-ultimate-weekly-sports-quiz-questions-08-12-2024-barcelona-s-bold-move",
+      "newUrl": "https://fatbigquiz.com/blog/the-ultimate-weekly-sports-quiz-questions-08-12-2024-barcelona-s-bold-move"
+    },
+    {
+      "title": "The Ultimate Weekly News Quiz: 08/12/2024 – A Moment of Truth!",
+      "oldUrl": "https://www.bucketrace.com/post/the-ultimate-weekly-news-quiz-08-12-2024-a-moment-of-truth",
+      "newUrl": "https://fatbigquiz.com/blog/the-ultimate-weekly-news-quiz-08-12-2024-a-moment-of-truth"
+    },
+    {
+      "title": "The Biggest Weekly Football Quiz Questions: 01/12/2024 – Don't be a Crouch Potato",
+      "oldUrl": "https://www.bucketrace.com/post/the-biggest-weekly-football-quiz-questions-01-12-2024-dont-be-a-crouch-potato",
+      "newUrl": "https://fatbigquiz.com/blog/the-biggest-weekly-football-quiz-questions-01-12-2024-dont-be-a-crouch-potato"
+    },
+    {
+      "title": "The Ultimate Weekly Sports Quiz Questions: 01/12/2024 – Marathon Marvels!",
+      "oldUrl": "https://www.bucketrace.com/post/the-ultimate-weekly-sports-quiz-questions-01-12-2024-marathon-marvels",
+      "newUrl": "https://fatbigquiz.com/blog/the-ultimate-weekly-sports-quiz-questions-01-12-2024-marathon-marvels"
+    },
+    {
+      "title": "Weekly News Quiz: 01/12/2024 | The Countdown to Christmas Begins!",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-news-quiz-01-12-2024-the-countdown-to-christmas-begins",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-news-quiz-01-12-2024-the-countdown-to-christmas-begins"
+    },
+    {
+      "title": "Football Dingbats Quiz vol 2",
+      "oldUrl": "https://www.bucketrace.com/post/football-dingbats-quiz-vol-2",
+      "newUrl": "https://fatbigquiz.com/blog/football-dingbats-quiz-vol-2"
+    },
+    {
+      "title": "Football Dingbats Quiz vol 1",
+      "oldUrl": "https://www.bucketrace.com/post/football-dingbats-quiz-vol-1",
+      "newUrl": "https://fatbigquiz.com/blog/football-dingbats-quiz-vol-1"
+    },
+    {
+      "title": "The Biggest Weekly Football Quiz Questions: 24/11/2024 – No Kane, No Gain!",
+      "oldUrl": "https://www.bucketrace.com/post/the-biggest-weekly-football-quiz-questions-24-11-2024-no-kane-no-gain",
+      "newUrl": "https://fatbigquiz.com/blog/the-biggest-weekly-football-quiz-questions-24-11-2024-no-kane-no-gain"
+    },
+    {
+      "title": "The Biggest Weekly Sports Quiz Questions: 24/11/2024 – Nadalvida!",
+      "oldUrl": "https://www.bucketrace.com/post/the-biggest-weekly-sports-quiz-questions-24-11-2024-nadalvida",
+      "newUrl": "https://fatbigquiz.com/blog/the-biggest-weekly-sports-quiz-questions-24-11-2024-nadalvida"
+    },
+    {
+      "title": "The Biggest Weekly News Quiz Questions: 24/11/2024 | This weeks biggest story: A banana duct-taped to a wall!",
+      "oldUrl": "https://www.bucketrace.com/post/the-biggest-weekly-news-quiz-questions-24-11-2024-this-weeks-biggest-story-a-banana-duct-taped-t",
+      "newUrl": "https://fatbigquiz.com/blog/the-biggest-weekly-news-quiz-questions-24-11-2024-this-weeks-biggest-story-a-banana-duct-taped-t"
+    },
+    {
+      "title": "The Biggest Weekly Sports Quiz Questions: 17/11/2024 – Are You Roy Keen To Play?",
+      "oldUrl": "https://www.bucketrace.com/post/the-biggest-weekly-sports-quiz-questions-17-11-2024-are-you-roy-keen",
+      "newUrl": "https://fatbigquiz.com/blog/the-biggest-weekly-sports-quiz-questions-17-11-2024-are-you-roy-keen"
+    },
+    {
+      "title": "The Biggest Weekly News Quiz Questions: 17/11/2024 | Snow Warning Ahead, Stay In And Quiz Instead! ",
+      "oldUrl": "https://www.bucketrace.com/post/the-biggest-weekly-news-quiz-questions-17-11-2024-snow-warning-ahead-stay-in-and-quiz-instead",
+      "newUrl": "https://fatbigquiz.com/blog/the-biggest-weekly-news-quiz-questions-17-11-2024-snow-warning-ahead-stay-in-and-quiz-instead"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 10/11/2024 – The Big One, Folks!",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-10-11-2024-the-big-one-folks",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-10-11-2024-the-big-one-folks"
+    },
+    {
+      "title": "Weekly News Quiz Questions: 10/11/2024 | Believe Me, You’ve Never Seen Anything Like It",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-news-quiz-questions-10-11-2024-believe-me-you-ve-never-seen-anything-like-it",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-news-quiz-questions-10-11-2024-believe-me-you-ve-never-seen-anything-like-it"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 03/11/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-03-11-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-03-11-2024"
+    },
+    {
+      "title": "Weekly News Quiz Questions: 03/11/2024 | Halloween & The US Election",
+      "oldUrl": "https://www.bucketrace.com/post/news-quiz-of-the-week-2024-03-11-24",
+      "newUrl": "https://fatbigquiz.com/blog/news-quiz-of-the-week-2024-03-11-24"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 20/10/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-20-10-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-20-10-2024"
+    },
+    {
+      "title": "News Quiz of the Week 2024: 20/10/24",
+      "oldUrl": "https://www.bucketrace.com/post/news-quiz-of-the-week-2024-20-10-24",
+      "newUrl": "https://fatbigquiz.com/blog/news-quiz-of-the-week-2024-20-10-24"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 13/10/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-13-10-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-13-10-2024"
+    },
+    {
+      "title": "News Quiz of the Week 2024: 13/10/24",
+      "oldUrl": "https://www.bucketrace.com/post/news-quiz-of-the-week-2024-13-10-24",
+      "newUrl": "https://fatbigquiz.com/blog/news-quiz-of-the-week-2024-13-10-24"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 07/10/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-07-10-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-07-10-2024"
+    },
+    {
+      "title": "News Quiz of the Week 2024: 07/10/24",
+      "oldUrl": "https://www.bucketrace.com/post/news-quiz-of-the-week-2024-07-10-24",
+      "newUrl": "https://fatbigquiz.com/blog/news-quiz-of-the-week-2024-07-10-24"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 30/09/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-30-09-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-30-09-2024"
+    },
+    {
+      "title": "News Quiz of the Week 2024: 30/09/24",
+      "oldUrl": "https://www.bucketrace.com/post/news-quiz-of-the-week-2024-30-09-24",
+      "newUrl": "https://fatbigquiz.com/blog/news-quiz-of-the-week-2024-30-09-24"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 23/09/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-23-09-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-23-09-2024"
+    },
+    {
+      "title": "News Quiz of the Week 2024: 23/09/24",
+      "oldUrl": "https://www.bucketrace.com/post/news-quiz-of-the-week-2024-23-09-24",
+      "newUrl": "https://fatbigquiz.com/blog/news-quiz-of-the-week-2024-23-09-24"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 16/09/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-16-09-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-16-09-2024"
+    },
+    {
+      "title": "News Quiz of the Week 2024: 16/09/24",
+      "oldUrl": "https://www.bucketrace.com/post/news-quiz-of-the-week-2024-16-09-24",
+      "newUrl": "https://fatbigquiz.com/blog/news-quiz-of-the-week-2024-16-09-24"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 02/09/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-02-09-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-02-09-2024"
+    },
+    {
+      "title": "News Quiz of the Week 2024: 02/09/24",
+      "oldUrl": "https://www.bucketrace.com/post/news-quiz-of-the-week-2024-02-09-24",
+      "newUrl": "https://fatbigquiz.com/blog/news-quiz-of-the-week-2024-02-09-24"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 26/08/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-26-08-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-26-08-2024"
+    },
+    {
+      "title": "News Quiz of the Week 2024: 26/08/24",
+      "oldUrl": "https://www.bucketrace.com/post/news-quiz-of-the-week-2024-26-08-24",
+      "newUrl": "https://fatbigquiz.com/blog/news-quiz-of-the-week-2024-26-08-24"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 19/08/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-19-08-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-19-08-2024"
+    },
+    {
+      "title": "News Quiz of the Week 2024: 19/08/24",
+      "oldUrl": "https://www.bucketrace.com/post/news-quiz-of-the-week-2024-19-08-24",
+      "newUrl": "https://fatbigquiz.com/blog/news-quiz-of-the-week-2024-19-08-24"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 12/08/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-12-08-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-12-08-2024"
+    },
+    {
+      "title": "News Quiz of the Week 2024: 12/08/24",
+      "oldUrl": "https://www.bucketrace.com/post/news-quiz-of-the-week-2024-12-08-24",
+      "newUrl": "https://fatbigquiz.com/blog/news-quiz-of-the-week-2024-12-08-24"
+    },
+    {
+      "title": "News Quiz of the Week 2024: 05/08/24",
+      "oldUrl": "https://www.bucketrace.com/post/news-quiz-of-the-week-2024-05-08-24",
+      "newUrl": "https://fatbigquiz.com/blog/news-quiz-of-the-week-2024-05-08-24"
+    },
+    {
+      "title": "News Quiz of the Week 2024: 29/07/24",
+      "oldUrl": "https://www.bucketrace.com/post/news-quiz-of-the-week-2024-29-07-24",
+      "newUrl": "https://fatbigquiz.com/blog/news-quiz-of-the-week-2024-29-07-24"
+    },
+    {
+      "title": "Printable Summer Olympian Picture Quiz Download (Mixed)",
+      "oldUrl": "https://www.bucketrace.com/post/printable-summer-olympian-picture-quiz-download-mixed",
+      "newUrl": "https://fatbigquiz.com/blog/printable-summer-olympian-picture-quiz-download-mixed"
+    },
+    {
+      "title": "Printable Summer Olympian Picture Quiz Download (Easy)",
+      "oldUrl": "https://www.bucketrace.com/post/printable-summer-olympian-picture-quiz-download-easy",
+      "newUrl": "https://fatbigquiz.com/blog/printable-summer-olympian-picture-quiz-download-easy"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 15/07/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-15-07-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-15-07-2024"
+    },
+    {
+      "title": "News Quiz of the Week 2024: 15/07/24",
+      "oldUrl": "https://www.bucketrace.com/post/news-quiz-of-the-week-2024-15-07-24",
+      "newUrl": "https://fatbigquiz.com/blog/news-quiz-of-the-week-2024-15-07-24"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 08/07/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-08-07-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-08-07-2024"
+    },
+    {
+      "title": "News Quiz of the Week 2024: 08/07/24",
+      "oldUrl": "https://www.bucketrace.com/post/news-quiz-of-the-week-2024-08-07-24",
+      "newUrl": "https://fatbigquiz.com/blog/news-quiz-of-the-week-2024-08-07-24"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 01/07/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-01-07-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-01-07-2024"
+    },
+    {
+      "title": "News Quiz of the Week 2024: 01/07/24",
+      "oldUrl": "https://www.bucketrace.com/post/news-quiz-of-the-week-2024-01-07-24",
+      "newUrl": "https://fatbigquiz.com/blog/news-quiz-of-the-week-2024-01-07-24"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 24/06/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-24-06-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-24-06-2024"
+    },
+    {
+      "title": "News Quiz of the Week 2024: 24/06/24",
+      "oldUrl": "https://www.bucketrace.com/post/news-quiz-of-the-week-2024-24-06-24",
+      "newUrl": "https://fatbigquiz.com/blog/news-quiz-of-the-week-2024-24-06-24"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 17/06/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-17-06-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-17-06-2024"
+    },
+    {
+      "title": "News Quiz of the Week 2024: 17/06/24",
+      "oldUrl": "https://www.bucketrace.com/post/news-quiz-of-the-week-2024-17-06-24",
+      "newUrl": "https://fatbigquiz.com/blog/news-quiz-of-the-week-2024-17-06-24"
+    },
+    {
+      "title": "50+ Euro Football Quiz Questions",
+      "oldUrl": "https://www.bucketrace.com/post/50-euro-football-quiz-questions",
+      "newUrl": "https://fatbigquiz.com/blog/50-euro-football-quiz-questions"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 10/06/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-10-06-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-10-06-2024"
+    },
+    {
+      "title": "News Quiz of the Week 2024: 10/06/24",
+      "oldUrl": "https://www.bucketrace.com/post/news-quiz-of-the-week-2024-10-06-24",
+      "newUrl": "https://fatbigquiz.com/blog/news-quiz-of-the-week-2024-10-06-24"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 03/06/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-03-06-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-03-06-2024"
+    },
+    {
+      "title": "News Quiz of the Week 2024: 03/06/24",
+      "oldUrl": "https://www.bucketrace.com/post/news-quiz-of-the-week-2024-27-05-24-1",
+      "newUrl": "https://fatbigquiz.com/blog/news-quiz-of-the-week-2024-27-05-24-1"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 27/05/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-27-05-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-27-05-2024"
+    },
+    {
+      "title": "News Quiz of the Week 2024: 27/05/24",
+      "oldUrl": "https://www.bucketrace.com/post/news-quiz-of-the-week-2024-27-05-24",
+      "newUrl": "https://fatbigquiz.com/blog/news-quiz-of-the-week-2024-27-05-24"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 20/05/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-20-05-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-20-05-2024"
+    },
+    {
+      "title": "Free News Quiz of the Week 2024: 20/05/24",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-2024-20-05-24",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-2024-20-05-24"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 13/05/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-13-05-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-13-05-2024"
+    },
+    {
+      "title": "Free News Quiz of the Week 2024: 13/05/24",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-2024-13-05-24",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-2024-13-05-24"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 06/05/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-06-05-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-06-05-2024"
+    },
+    {
+      "title": "Free News Quiz of the Week 2024: 06/05/24",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-2024-06-05-24",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-2024-06-05-24"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 29/04/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-29-04-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-29-04-2024"
+    },
+    {
+      "title": "Free News Quiz of the Week 2024: 29/04/24",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-2024-29-04-24",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-2024-29-04-24"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 22/04/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-22-04-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-22-04-2024"
+    },
+    {
+      "title": "Free News Quiz of the Week 2024: 22/04/24",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-2024-22-04-24",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-2024-22-04-24"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 15/04/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-15-04-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-15-04-2024"
+    },
+    {
+      "title": "Free News Quiz of the Week 2024: 15/04/24",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-2024-15-04-24",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-2024-15-04-24"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 08/04/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-08-04-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-08-04-2024"
+    },
+    {
+      "title": "Free News Quiz of the Week 2024: 08/04/24",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-2024-08-04-24",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-2024-08-04-24"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 01/04/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-01-04-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-01-04-2024"
+    },
+    {
+      "title": "Free News Quiz of the Week 2024: 01/04/24",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-2024-01-04-24",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-2024-01-04-24"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 25/03/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-25-03-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-25-03-2024"
+    },
+    {
+      "title": "Free News Quiz of the Week 2024: 25/03/24",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-2024-25-03-24",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-2024-25-03-24"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 18/03/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-18-03-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-18-03-2024"
+    },
+    {
+      "title": "Free News Quiz of the Week 2024: 18/03/24",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-2024-18-03-24",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-2024-18-03-24"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 11/03/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-11-03-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-11-03-2024"
+    },
+    {
+      "title": "Free News Quiz of the Week 2024: 11/03/24",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-2024-11-03-24",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-2024-11-03-24"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 04/03/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-04-03-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-04-03-2024"
+    },
+    {
+      "title": "Free News Quiz of the Week 2024: 04/03/24",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-2024-04-03-24",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-2024-04-03-24"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 25/02/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-25-02-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-25-02-2024"
+    },
+    {
+      "title": "Free News Quiz of the Week 2024: 25/02/24",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-2024-25-02-24",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-2024-25-02-24"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 18/02/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-18-02-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-18-02-2024"
+    },
+    {
+      "title": "Free News Quiz of the Week 2024: 18/02/24",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-2024-18-02-24",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-2024-18-02-24"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 11/02/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-11-02-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-11-02-2024"
+    },
+    {
+      "title": "Free News Quiz of the Week 2024: 11/02/24",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-2024-11-02-24",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-2024-11-02-24"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 05/02/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-05-01-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-05-01-2024"
+    },
+    {
+      "title": "Free News Quiz of the Week 2024: 04/02/24",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-2024-04-02-24",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-2024-04-02-24"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 29/01/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-29-01-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-29-01-2024"
+    },
+    {
+      "title": "Free News Quiz of the Week 2024: 29/01/24",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-2024-29-01-24",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-2024-29-01-24"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 22/01/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-22-01-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-22-01-2024"
+    },
+    {
+      "title": "Free News Quiz of the Week 2024: 22/01/24",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-2024-22-01-24",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-2024-22-01-24"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 15/01/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-15-01-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-15-01-2024"
+    },
+    {
+      "title": "Free News Quiz of the Week 2024: 15/01/24",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-2024-15-01-24",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-2024-15-01-24"
+    },
+    {
+      "title": "Weekly Sports Quiz Questions: 08/01/2024",
+      "oldUrl": "https://www.bucketrace.com/post/weekly-sports-quiz-questions-08-01-2024",
+      "newUrl": "https://fatbigquiz.com/blog/weekly-sports-quiz-questions-08-01-2024"
+    },
+    {
+      "title": "Free News Quiz of the Week 2024: 08/01/24",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-2023-08-01-24",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-2023-08-01-24"
+    },
+    {
+      "title": "Free News Quiz of the Week 2023: 18/12/23",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-2023-18-12-23",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-2023-18-12-23"
+    },
+    {
+      "title": "Free Weekly Sports Quiz Questions: 11/12/2023",
+      "oldUrl": "https://www.bucketrace.com/post/free-weekly-sports-quiz-questions-11-12-2023",
+      "newUrl": "https://fatbigquiz.com/blog/free-weekly-sports-quiz-questions-11-12-2023"
+    },
+    {
+      "title": "Free News Quiz of the Week 2023: 11/12/23",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-2023-11-12-23",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-2023-11-12-23"
+    },
+    {
+      "title": "Free Weekly Sports Quiz Questions: 04/12/2023",
+      "oldUrl": "https://www.bucketrace.com/post/free-weekly-sports-quiz-questions-04-12-2023",
+      "newUrl": "https://fatbigquiz.com/blog/free-weekly-sports-quiz-questions-04-12-2023"
+    },
+    {
+      "title": "Free News Quiz of the Week 2023: 27/11/23",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-2023-27-11-23-1",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-2023-27-11-23-1"
+    },
+    {
+      "title": "Free Weekly Sports Quiz Questions: 27/11/2023",
+      "oldUrl": "https://www.bucketrace.com/post/free-weekly-sports-quiz-questions-27-11-2023",
+      "newUrl": "https://fatbigquiz.com/blog/free-weekly-sports-quiz-questions-27-11-2023"
+    },
+    {
+      "title": "Free News Quiz of the Week 2023: 27/11/23",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-2023-27-11-23",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-2023-27-11-23"
+    },
+    {
+      "title": "2021 Picture Dingbats Quiz",
+      "oldUrl": "https://www.bucketrace.com/post/2021-picture-dingbats-quiz",
+      "newUrl": "https://fatbigquiz.com/blog/2021-picture-dingbats-quiz"
+    },
+    {
+      "title": "Free News Quiz of the Week 2023: 20/11/23",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-2023-20-11-23",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-2023-20-11-23"
+    },
+    {
+      "title": "Free Weekly Sports Quiz Questions: 20/11/2023",
+      "oldUrl": "https://www.bucketrace.com/post/free-weekly-sports-quiz-questions-20-11-2023",
+      "newUrl": "https://fatbigquiz.com/blog/free-weekly-sports-quiz-questions-20-11-2023"
+    },
+    {
+      "title": "Printable Christmas Picture Quiz Download (Easy)",
+      "oldUrl": "https://www.bucketrace.com/post/printable-christmas-picture-quiz-download-easy",
+      "newUrl": "https://fatbigquiz.com/blog/printable-christmas-picture-quiz-download-easy"
+    },
+    {
+      "title": "Free Weekly Sports Quiz Questions: 13/11/2023",
+      "oldUrl": "https://www.bucketrace.com/post/free-weekly-sports-quiz-questions-13-11-2023",
+      "newUrl": "https://fatbigquiz.com/blog/free-weekly-sports-quiz-questions-13-11-2023"
+    },
+    {
+      "title": "Free News Quiz of the Week 2023: 13/11/23",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-2023-13-11-23",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-2023-13-11-23"
+    },
+    {
+      "title": "Printable Christmas Picture Quiz Download (Mixed)",
+      "oldUrl": "https://www.bucketrace.com/post/printable-christmas-picture-quiz-download-mixed",
+      "newUrl": "https://fatbigquiz.com/blog/printable-christmas-picture-quiz-download-mixed"
+    },
+    {
+      "title": "Free News Quiz of the Week 2023: 6/11/23",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-2023-6-11-23",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-2023-6-11-23"
+    },
+    {
+      "title": "Christmas Dingbats Quiz",
+      "oldUrl": "https://www.bucketrace.com/post/christmas-dingbats-quiz",
+      "newUrl": "https://fatbigquiz.com/blog/christmas-dingbats-quiz"
+    },
+    {
+      "title": "Free Monthly Sports Quiz Questions: October 2023",
+      "oldUrl": "https://www.bucketrace.com/post/free-monthly-sports-quiz-questions-october-2023",
+      "newUrl": "https://fatbigquiz.com/blog/free-monthly-sports-quiz-questions-october-2023"
+    },
+    {
+      "title": "Free News Quiz of the Week 2023: 30/10/23",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-2023-30-10-23",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-2023-30-10-23"
+    },
+    {
+      "title": "Free News Quiz of the Week 2023: 23/10/23",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-2023-23-10-23",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-2023-23-10-23"
+    },
+    {
+      "title": "Printable Halloween Picture Quiz Download (Medium)",
+      "oldUrl": "https://www.bucketrace.com/post/printable-halloween-picture-quiz-download-medium",
+      "newUrl": "https://fatbigquiz.com/blog/printable-halloween-picture-quiz-download-medium"
+    },
+    {
+      "title": "Free News Quiz of the Week 2023: 16/10/23",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-2023-16-10-23",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-2023-16-10-23"
+    },
+    {
+      "title": "Printable Halloween Picture Quiz Download (Hard)",
+      "oldUrl": "https://www.bucketrace.com/post/printable-halloween-picture-quiz-download-hard",
+      "newUrl": "https://fatbigquiz.com/blog/printable-halloween-picture-quiz-download-hard"
+    },
+    {
+      "title": "Free News Quiz of the Week 2023: 08/10/23",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-2023-08-10-23",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-2023-08-10-23"
+    },
+    {
+      "title": "Free Monthly Sports Quiz Questions: September 2023",
+      "oldUrl": "https://www.bucketrace.com/post/free-monthly-sports-quiz-questions-september-october-2023",
+      "newUrl": "https://fatbigquiz.com/blog/free-monthly-sports-quiz-questions-september-october-2023"
+    },
+    {
+      "title": "Free News Quiz of the Week 2023: 01/10/23",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-2023-01-10-23",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-2023-01-10-23"
+    },
+    {
+      "title": "Printable Soft Drink Quiz Download",
+      "oldUrl": "https://www.bucketrace.com/post/printable-soft-drink-quiz-download",
+      "newUrl": "https://fatbigquiz.com/blog/printable-soft-drink-quiz-download"
+    },
+    {
+      "title": "Printable Halloween Picture Quiz Download (Mixed)",
+      "oldUrl": "https://www.bucketrace.com/post/printable-halloween-picture-quiz-download-mixed",
+      "newUrl": "https://fatbigquiz.com/blog/printable-halloween-picture-quiz-download-mixed"
+    },
+    {
+      "title": "USA High Street Brands Dingbats Quiz",
+      "oldUrl": "https://www.bucketrace.com/post/usa-high-street-brands-dingbats-quiz",
+      "newUrl": "https://fatbigquiz.com/blog/usa-high-street-brands-dingbats-quiz"
+    },
+    {
+      "title": "Printable Halloween Horror Villains Dingbats Quiz",
+      "oldUrl": "https://www.bucketrace.com/post/halloween-horror-villains-dingbats-quiz",
+      "newUrl": "https://fatbigquiz.com/blog/halloween-horror-villains-dingbats-quiz"
+    },
+    {
+      "title": "Free News Quiz of the Week 2023: 25/09/23",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-2023-18-09-23",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-2023-18-09-23"
+    },
+    {
+      "title": "Free News Quiz of the Week: 18/09/23",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-18-09-23",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-18-09-23"
+    },
+    {
+      "title": "Guy Fawkes Dingbats Quiz",
+      "oldUrl": "https://www.bucketrace.com/post/guy-fawkes-dingbats-quiz",
+      "newUrl": "https://fatbigquiz.com/blog/guy-fawkes-dingbats-quiz"
+    },
+    {
+      "title": "Free Monthly Technology Quiz Questions: August/September 2023",
+      "oldUrl": "https://www.bucketrace.com/post/free-monthly-technology-quiz-questions-august-september-2023",
+      "newUrl": "https://fatbigquiz.com/blog/free-monthly-technology-quiz-questions-august-september-2023"
+    },
+    {
+      "title": "Free News Quiz of the Week: 11/09/23",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-11-09-23",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-11-09-23"
+    },
+    {
+      "title": "100+ Football Quiz Questions",
+      "oldUrl": "https://www.bucketrace.com/post/100-football-quiz-questions",
+      "newUrl": "https://fatbigquiz.com/blog/100-football-quiz-questions"
+    },
+    {
+      "title": "Free Monthly Sports Quiz Questions: August/September 2023",
+      "oldUrl": "https://www.bucketrace.com/post/copy-of-free-monthly-sports-quiz-questions-august-september-2023",
+      "newUrl": "https://fatbigquiz.com/blog/copy-of-free-monthly-sports-quiz-questions-august-september-2023"
+    },
+    {
+      "title": "Free News Quiz of the Week: 04/09/23",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-04-09-23",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-04-09-23"
+    },
+    {
+      "title": "Printable Chocolate Quiz Download (Easy Level)",
+      "oldUrl": "https://www.bucketrace.com/post/printable-chocolate-quiz-download-easy-level",
+      "newUrl": "https://fatbigquiz.com/blog/printable-chocolate-quiz-download-easy-level"
+    },
+    {
+      "title": "Free News Quiz of the Week: 28/08/23",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-28-08-23",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-28-08-23"
+    },
+    {
+      "title": "Free News Quiz of the Week: 21/08/23",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-21-08-23",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-21-08-23"
+    },
+    {
+      "title": "Retitled Book Quiz With Answers",
+      "oldUrl": "https://www.bucketrace.com/post/retitled-book-quiz-with-answers",
+      "newUrl": "https://fatbigquiz.com/blog/retitled-book-quiz-with-answers"
+    },
+    {
+      "title": "Cereal Killer Halloween Dingbats Quiz",
+      "oldUrl": "https://www.bucketrace.com/post/cereal-killer-halloween-dingbats-quiz",
+      "newUrl": "https://fatbigquiz.com/blog/cereal-killer-halloween-dingbats-quiz"
+    },
+    {
+      "title": "Which Bitch Is Which Halloween Dog Quiz",
+      "oldUrl": "https://www.bucketrace.com/post/which-bitch-is-which-halloween-dog-quiz",
+      "newUrl": "https://fatbigquiz.com/blog/which-bitch-is-which-halloween-dog-quiz"
+    },
+    {
+      "title": "Free News Quiz of the Week: 14/08/23",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-14-08-23",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-14-08-23"
+    },
+    {
+      "title": "Under My Umbrella Logo Quiz With Answers",
+      "oldUrl": "https://www.bucketrace.com/post/under-my-umbrella-logo-quiz-with-answers",
+      "newUrl": "https://fatbigquiz.com/blog/under-my-umbrella-logo-quiz-with-answers"
+    },
+    {
+      "title": "General Knowledge Quiz Questions and Answers",
+      "oldUrl": "https://www.bucketrace.com/post/general-knowledge-quiz-questions-and-answers",
+      "newUrl": "https://fatbigquiz.com/blog/general-knowledge-quiz-questions-and-answers"
+    },
+    {
+      "title": "We're Making A Killing Horror Picture Quiz (Most On Screen Kills)",
+      "oldUrl": "https://www.bucketrace.com/post/we-re-making-a-killing-horror-picture-quiz-most-on-screen-kills",
+      "newUrl": "https://fatbigquiz.com/blog/we-re-making-a-killing-horror-picture-quiz-most-on-screen-kills"
+    },
+    {
+      "title": "Free Monthly Sports Quiz Questions: July/August 2023",
+      "oldUrl": "https://www.bucketrace.com/post/free-monthly-sports-quiz-questions-july-august-2023",
+      "newUrl": "https://fatbigquiz.com/blog/free-monthly-sports-quiz-questions-july-august-2023"
+    },
+    {
+      "title": "Free News Quiz of the Week: 07/08/23",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-07-08-23",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-07-08-23"
+    },
+    {
+      "title": "Feeling Hot Hot Hot Picture Quiz",
+      "oldUrl": "https://www.bucketrace.com/post/feeling-hot-hot-hot-printable-picture-quiz",
+      "newUrl": "https://fatbigquiz.com/blog/feeling-hot-hot-hot-printable-picture-quiz"
+    },
+    {
+      "title": "2020 Picture Dingbats Quiz",
+      "oldUrl": "https://www.bucketrace.com/post/2020-picture-dingbats-quiz",
+      "newUrl": "https://fatbigquiz.com/blog/2020-picture-dingbats-quiz"
+    },
+    {
+      "title": "Free Monthly Music Quiz Questions: July 2023",
+      "oldUrl": "https://www.bucketrace.com/post/free-monthly-music-quiz-questions-july-2023",
+      "newUrl": "https://fatbigquiz.com/blog/free-monthly-music-quiz-questions-july-2023"
+    },
+    {
+      "title": "Free News Quiz of the Week: 31/07/23",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week-31-07-23",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week-31-07-23"
+    },
+    {
+      "title": "You're Getting Warmer Printable Picture Quiz",
+      "oldUrl": "https://www.bucketrace.com/post/you-re-getting-warmer-printable-picture-quiz",
+      "newUrl": "https://fatbigquiz.com/blog/you-re-getting-warmer-printable-picture-quiz"
+    },
+    {
+      "title": "Quotes Quiz Questions and Answers",
+      "oldUrl": "https://www.bucketrace.com/post/quotes-quiz-questions-and-answers",
+      "newUrl": "https://fatbigquiz.com/blog/quotes-quiz-questions-and-answers"
+    },
+    {
+      "title": "Stag Do Scavenger Hunt Printable",
+      "oldUrl": "https://www.bucketrace.com/post/stag-do-scavenger-hunt-printable",
+      "newUrl": "https://fatbigquiz.com/blog/stag-do-scavenger-hunt-printable"
+    },
+    {
+      "title": "European Capital City Picture Dingbats Quiz",
+      "oldUrl": "https://www.bucketrace.com/post/european-capital-city-picture-dingbats-quiz",
+      "newUrl": "https://fatbigquiz.com/blog/european-capital-city-picture-dingbats-quiz"
+    },
+    {
+      "title": "Free News Quiz of the Week: 24/07/23",
+      "oldUrl": "https://www.bucketrace.com/post/free-news-quiz-of-the-week",
+      "newUrl": "https://fatbigquiz.com/blog/free-news-quiz-of-the-week"
+    },
+    {
+      "title": "Sports Quiz Questions and Answers",
+      "oldUrl": "https://www.bucketrace.com/post/sports-quiz-questions-and-answers",
+      "newUrl": "https://fatbigquiz.com/blog/sports-quiz-questions-and-answers"
+    },
+    {
+      "title": "Hen Party Scavenger Hunt Printable",
+      "oldUrl": "https://www.bucketrace.com/post/hen-party-scavenger-hunt-printable",
+      "newUrl": "https://fatbigquiz.com/blog/hen-party-scavenger-hunt-printable"
+    },
+    {
+      "title": "100+ Free Pub Questions and Answers",
+      "oldUrl": "https://www.bucketrace.com/post/100-free-pub-questions-and-answers",
+      "newUrl": "https://fatbigquiz.com/blog/100-free-pub-questions-and-answers"
+    },
+    {
+      "title": "British Icons Dingbats Quiz",
+      "oldUrl": "https://www.bucketrace.com/post/british-picture-dingbats-quiz",
+      "newUrl": "https://fatbigquiz.com/blog/british-picture-dingbats-quiz"
+    },
+    {
+      "title": "Summer Quiz Questions and Answers",
+      "oldUrl": "https://www.bucketrace.com/post/summer-quiz-questions-and-answers",
+      "newUrl": "https://fatbigquiz.com/blog/summer-quiz-questions-and-answers"
+    },
+    {
+      "title": "Halloween Music Quiz Questions and Answers",
+      "oldUrl": "https://www.bucketrace.com/post/halloween-music-quiz-questions-and-answers",
+      "newUrl": "https://fatbigquiz.com/blog/halloween-music-quiz-questions-and-answers"
+    },
+    {
+      "title": "40 Printable Halloween Scavenger Hunt Ideas",
+      "oldUrl": "https://www.bucketrace.com/post/40-printable-halloween-scavenger-hunt-ideas",
+      "newUrl": "https://fatbigquiz.com/blog/40-printable-halloween-scavenger-hunt-ideas"
+    },
+    {
+      "title": "Football Quiz Premier League: Oldest Premier League Players 2022–23 Season!",
+      "oldUrl": "https://www.bucketrace.com/post/football-quiz-premier-league-oldest-premier-league-players-2022-23-season",
+      "newUrl": "https://fatbigquiz.com/blog/football-quiz-premier-league-oldest-premier-league-players-2022-23-season"
+    },
+    {
+      "title": "Household Scavenger Hunt Printable Clues",
+      "oldUrl": "https://www.bucketrace.com/post/household-scavenger-hunt-printable-clues",
+      "newUrl": "https://fatbigquiz.com/blog/household-scavenger-hunt-printable-clues"
+    },
+    {
+      "title": "100+ Halloween Quiz Questions",
+      "oldUrl": "https://www.bucketrace.com/post/100-halloween-quiz-questions",
+      "newUrl": "https://fatbigquiz.com/blog/100-halloween-quiz-questions"
+    },
+    {
+      "title": "Rediscover the Joys of Play with an Adults Sports Day",
+      "oldUrl": "https://www.bucketrace.com/post/rediscover-the-joys-of-play-with-an-adults-sports-day",
+      "newUrl": "https://fatbigquiz.com/blog/rediscover-the-joys-of-play-with-an-adults-sports-day"
+    },
+    {
+      "title": "Printable Halloween Picture Quiz Download (Easy)",
+      "oldUrl": "https://www.bucketrace.com/post/printable-halloween-picture-quiz-download-easy",
+      "newUrl": "https://fatbigquiz.com/blog/printable-halloween-picture-quiz-download-easy"
+    },
+    {
+      "title": "Summer Picture Dingbats Quiz",
+      "oldUrl": "https://www.bucketrace.com/post/summer-picture-dingbats-quiz",
+      "newUrl": "https://fatbigquiz.com/blog/summer-picture-dingbats-quiz"
+    },
+    {
+      "title": "Stranger Things Quiz: 40 Questions and Answers",
+      "oldUrl": "https://www.bucketrace.com/post/stranger-things-quiz-40-questions-and-answers",
+      "newUrl": "https://fatbigquiz.com/blog/stranger-things-quiz-40-questions-and-answers"
+    },
+    {
+      "title": "100+ Movie Quiz Questions",
+      "oldUrl": "https://www.bucketrace.com/post/100-movie-quiz-questions",
+      "newUrl": "https://fatbigquiz.com/blog/100-movie-quiz-questions"
+    },
+    {
+      "title": "UK High Street Brands Dingbats Quiz",
+      "oldUrl": "https://www.bucketrace.com/post/picture-dingbats-quiz",
+      "newUrl": "https://fatbigquiz.com/blog/picture-dingbats-quiz"
+    },
+    {
+      "title": "The Ultimate Guide to Creating the Perfect Team Building Quiz!",
+      "oldUrl": "https://www.bucketrace.com/post/the-ultimate-guide-to-creating-the-perfect-team-building-quiz",
+      "newUrl": "https://fatbigquiz.com/blog/the-ultimate-guide-to-creating-the-perfect-team-building-quiz"
+    },
+    {
+      "title": "Printable Indoor Scavenger Hunt Riddles for Adults: A Clever and Fun Game for Home Entertainment",
+      "oldUrl": "https://www.bucketrace.com/post/printable-indoor-scavenger-hunt-riddles-for-adults-a-clever-and-fun-game-for-home-entertainment",
+      "newUrl": "https://fatbigquiz.com/blog/printable-indoor-scavenger-hunt-riddles-for-adults-a-clever-and-fun-game-for-home-entertainment"
+    },
+    {
+      "title": "100+ Sports Quiz Questions",
+      "oldUrl": "https://www.bucketrace.com/post/100-sports-quiz-questions",
+      "newUrl": "https://fatbigquiz.com/blog/100-sports-quiz-questions"
+    },
+    {
+      "title": "Games to play on a Hen Do: Bespoke Scavenger Hunts, Adult Sports Day, and More!",
+      "oldUrl": "https://www.bucketrace.com/post/games-to-play-on-a-hen-do-bespoke-scavenger-hunts-adult-sports-day-and-more",
+      "newUrl": "https://fatbigquiz.com/blog/games-to-play-on-a-hen-do-bespoke-scavenger-hunts-adult-sports-day-and-more"
+    },
+    {
+      "title": "Sportsman Dingbats Quiz",
+      "oldUrl": "https://www.bucketrace.com/post/sportsman-dingbats-quiz",
+      "newUrl": "https://fatbigquiz.com/blog/sportsman-dingbats-quiz"
+    },
+    {
+      "title": "The Biggest Chocolate Quiz Questions",
+      "oldUrl": "https://www.bucketrace.com/post/the-biggest-chocolate-quiz-questions",
+      "newUrl": "https://fatbigquiz.com/blog/the-biggest-chocolate-quiz-questions"
+    },
+    {
+      "title": "Printable Biscuit Quiz Download",
+      "oldUrl": "https://www.bucketrace.com/post/pub-quiz-biscuit-quiz-download",
+      "newUrl": "https://fatbigquiz.com/blog/pub-quiz-biscuit-quiz-download"
+    },
+    {
+      "title": "40+ funny pub quiz questions",
+      "oldUrl": "https://www.bucketrace.com/post/40-funny-pub-quiz-questions",
+      "newUrl": "https://fatbigquiz.com/blog/40-funny-pub-quiz-questions"
+    },
+    {
+      "title": "Football Quiz Questions and Answers: Oldest Premier League Goalkeepers!",
+      "oldUrl": "https://www.bucketrace.com/post/football-quiz-questions-and-answers-oldest-premier-league-goal-keepers",
+      "newUrl": "https://fatbigquiz.com/blog/football-quiz-questions-and-answers-oldest-premier-league-goal-keepers"
+    },
+    {
+      "title": "Printable Chocolate Pub Quiz Download (Mixed Level)",
+      "oldUrl": "https://www.bucketrace.com/post/chocolate-quiz-time-1",
+      "newUrl": "https://fatbigquiz.com/blog/chocolate-quiz-time-1"
+    },
+    {
+      "title": "Printable Spring Pub Quiz Download",
+      "oldUrl": "https://www.bucketrace.com/post/spring-quiz",
+      "newUrl": "https://fatbigquiz.com/blog/spring-quiz"
+    },
+    {
+      "title": "History Pub Quiz Questions ",
+      "oldUrl": "https://www.bucketrace.com/post/history-pub-quiz-questions",
+      "newUrl": "https://fatbigquiz.com/blog/history-pub-quiz-questions"
+    },
+    {
+      "title": "10 Funny Quiz Questions to Spice up Your Next Pub Quiz",
+      "oldUrl": "https://www.bucketrace.com/post/10-funny-quiz-questions-to-spice-up-your-next-pub-quiz",
+      "newUrl": "https://fatbigquiz.com/blog/10-funny-quiz-questions-to-spice-up-your-next-pub-quiz"
+    },
+    {
+      "title": "Christmas Dingbat Picture Quiz: Questions",
+      "oldUrl": "https://www.bucketrace.com/post/christmas-dingbat-picture-quiz-questions",
+      "newUrl": "https://fatbigquiz.com/blog/christmas-dingbat-picture-quiz-questions"
+    },
+    {
+      "title": "Christmas Music Quiz",
+      "oldUrl": "https://www.bucketrace.com/post/christmas-music-quiz",
+      "newUrl": "https://fatbigquiz.com/blog/christmas-music-quiz"
+    },
+    {
+      "title": "Halloween Music Quiz",
+      "oldUrl": "https://www.bucketrace.com/post/halloween-music-quiz",
+      "newUrl": "https://fatbigquiz.com/blog/halloween-music-quiz"
+    },
+    {
+      "title": "Halloween Picture Quiz: Dingbats Questions",
+      "oldUrl": "https://www.bucketrace.com/post/halloween-picture-quiz-dingbats",
+      "newUrl": "https://fatbigquiz.com/blog/halloween-picture-quiz-dingbats"
+    },
+    {
+      "title": "Football Quiz: Say What You Can See Dingbats Picture Quiz Questions",
+      "oldUrl": "https://www.bucketrace.com/post/football-quiz-say-what-you-can-see-quiz-questions",
+      "newUrl": "https://fatbigquiz.com/blog/football-quiz-say-what-you-can-see-quiz-questions"
+    },
+    {
+      "title": "The Biggest Biscuit Quiz Questions",
+      "oldUrl": "https://www.bucketrace.com/post/the-biggest-biscuit-quiz-questions",
+      "newUrl": "https://fatbigquiz.com/blog/the-biggest-biscuit-quiz-questions"
+    }
+  ]
+}

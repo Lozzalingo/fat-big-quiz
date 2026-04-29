@@ -47,7 +47,9 @@ const ShopPage = (slug: any) => {
             </div>
             <div className="divider"></div>
             <Products slug={slug} />
-            <Pagination />
+            <Suspense fallback={null}>
+              <Pagination />
+            </Suspense>
           </div>
         </div>
       </div>

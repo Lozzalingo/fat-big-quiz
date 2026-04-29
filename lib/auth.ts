@@ -15,22 +15,27 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials: any) {
         try {
+          console.log("[Auth] Login attempt for:", credentials?.email);
           const user = await prisma.user.findFirst({
             where: {
-              email: credentials.email,
+              email: credentials.email.toLowerCase().trim(),
             },
           });
+          console.log("[Auth] User found:", !!user, user?.id);
           if (user) {
             const isPasswordCorrect = await bcrypt.compare(
               credentials.password,
               user.password!
             );
+            console.log("[Auth] Password match:", isPasswordCorrect);
             if (isPasswordCorrect) {
               return user;
             }
           }
+          console.log("[Auth] Login failed for:", credentials?.email);
           return null;
         } catch (err: any) {
+          console.error("[Auth] Error during login:", err.message || err);
           throw new Error(err);
         }
       },

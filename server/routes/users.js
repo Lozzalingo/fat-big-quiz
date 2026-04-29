@@ -1,4 +1,6 @@
 const express = require('express');
+const { validate } = require('../middleware/validate');
+const { userCreate, userUpdate } = require('../middleware/schemas');
 
 const router = express.Router();
 
@@ -7,7 +9,7 @@ const {
     createUser,
     updateUser,
     deleteUser,
-    getAllUsers, 
+    getAllUsers,
     getUserByEmail,
     getUserComments,
     getUserVotes
@@ -15,11 +17,11 @@ const {
 
   router.route('/')
   .get(getAllUsers)
-  .post(createUser);
+  .post(validate(userCreate), createUser);
 
   router.route('/:id')
   .get(getUser)
-  .put(updateUser) 
+  .put(validate(userUpdate), updateUser)
   .delete(deleteUser);
 
   router.route('/email/:email')

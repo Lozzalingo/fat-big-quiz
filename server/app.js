@@ -1,6 +1,13 @@
 // app.js
 require('dotenv').config({ path: require('path').join(__dirname, './.env') });
 
+// Clear GOOGLE_APPLICATION_CREDENTIALS if the file doesn't exist — prevents SDK crash
+const fs = require("fs");
+if (process.env.GOOGLE_APPLICATION_CREDENTIALS && !fs.existsSync(process.env.GOOGLE_APPLICATION_CREDENTIALS)) {
+  console.warn("[Merchant] Credentials file not found, disabling Google Merchant:", process.env.GOOGLE_APPLICATION_CREDENTIALS);
+  delete process.env.GOOGLE_APPLICATION_CREDENTIALS;
+}
+
 const express = require("express");
 const path = require("path");
 const bcrypt = require('bcryptjs');
@@ -36,8 +43,15 @@ const purchasesRouter = require('./routes/purchases');
 const quizFormatsRouter = require('./routes/quizFormats');
 const homepageCardsRouter = require('./routes/homepageCards');
 const globalDownloadFilesRouter = require('./routes/globalDownloadFiles');
-const merchantRouter = require('./routes/merchant');
+let merchantRouter;
+try {
+  merchantRouter = require('./routes/merchant');
+} catch (err) {
+  console.warn("[Merchant] Failed to load merchant routes:", err.message);
+  merchantRouter = null;
+}
 const indexingRouter = require('./routes/indexing');
+const campaignsRouter = require('./routes/campaigns');
 const {
   sendPurchaseConfirmationEmail,
   sendOrderConfirmationEmail,
@@ -46,11 +60,35 @@ const {
   sendAdminSaleNotification
 } = require('./services/email');
 
+// Shared packages
+const { createConfig } = require('@lozzalingo/config/server');
+const { createLoggingRoutes, createLoggingService, createClientErrorRoutes } = require('@lozzalingo/logging/server');
+const { createEmailService, createEmailRoutes } = require('@lozzalingo/email/server');
+const { createSubscriberRoutes } = require('@lozzalingo/subscribers/server');
+const { createSettingsRoutes } = require('@lozzalingo/settings/server');
+const { createOpsRoutes } = require('@lozzalingo/ops/server');
+const { createStorageService, createStorageRoutes } = require('@lozzalingo/storage/server');
+const { createAuthRoutes, createAuthMiddleware } = require('@lozzalingo/auth/server');
+const { createOrderRoutes } = require('@lozzalingo/orders/server');
+const { createMerchandiseRoutes } = require('@lozzalingo/merchandise/server');
+const { createCalendarRoutes } = require('@lozzalingo/calendar/routes');
+
+// Shared package services
+const appConfig = createConfig({ APP_NAME: 'Fat Big Quiz' });
+const loggingService = createLoggingService(prisma);
+const sharedEmailService = createEmailService({
+  brandName: 'Fat Big Quiz',
+  style: { primary: '#7c3aed', headerBg: '#7c3aed' },
+});
+const storageService = createStorageService();
+const { rateLimit } = createAuthMiddleware(prisma);
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "*",
+    origin: true,
+    credentials: true,
     methods: ["GET", "POST"],
   },
 });
@@ -58,15 +96,48 @@ const io = new Server(server, {
 // Make io accessible to route handlers
 app.set('io', io);
 
+// Game engine socket handlers
+const { attachGameHandlers } = require('@lozzalingo/game-engine/server');
+attachGameHandlers(io, {
+  onGameEnd: (game) => {
+    console.log(`[GameSocket] Game ${game.gameCode} ended. Winner: ${game.getLeaderboard()[0]?.name || 'N/A'}`);
+  },
+});
+
 app.use(express.json());
 app.use(
   cors({
-    origin: "*",
+    origin: true, // Reflect request origin (supports credentials)
+    credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "x-admin-key"],
   })
 );
 app.use(fileUpload());
+
+// Request logging middleware
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    // Skip noisy static file requests
+    if (req.originalUrl.startsWith('/server/images') || req.originalUrl.startsWith('/uploads')) return;
+    console.log(`[Request] ${req.method} ${req.originalUrl} ${res.statusCode} ${duration}ms`);
+
+    // Auto-log 5xx errors to database
+    if (res.statusCode >= 500) {
+      loggingService.error('Request', `${req.method} ${req.originalUrl} ${res.statusCode}`, {
+        method: req.method,
+        path: req.originalUrl,
+        statusCode: res.statusCode,
+        duration,
+        ip: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+    }
+  });
+  next();
+});
 
 // Serve static files
 app.use("/server/images", express.static(path.join(__dirname, "images")));
@@ -97,8 +168,43 @@ app.use('/api/purchases', purchasesRouter);
 app.use('/api/quiz-formats', quizFormatsRouter);
 app.use('/api/homepage-cards', homepageCardsRouter);
 app.use('/api/global-files', globalDownloadFilesRouter);
-app.use('/api/merchant', merchantRouter);
+app.use('/api/campaigns', requireAdminKey, campaignsRouter);
+if (merchantRouter) {
+  app.use('/api/merchant', merchantRouter);
+} else {
+  // Merchant routes unavailable — return 503 for any merchant API calls
+  app.use('/api/merchant', (req, res) => {
+    res.status(503).json({ error: 'Google Merchant not configured', configured: false });
+  });
+}
 app.use('/api/indexing', indexingRouter);
+
+// Admin API key middleware — protects admin-only Express routes
+// Key is checked via x-admin-key header or ?adminKey query param
+const ADMIN_API_KEY = process.env.ADMIN_API_KEY || process.env.NEXTAUTH_SECRET;
+function requireAdminKey(req, res, next) {
+  const key = req.headers['x-admin-key'] || req.query.adminKey;
+  if (!ADMIN_API_KEY || key !== ADMIN_API_KEY) {
+    console.log('[Auth] Admin API access denied:', req.method, req.originalUrl);
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  next();
+}
+
+// Shared package routes — admin-protected
+app.use('/api/logs', requireAdminKey, createLoggingRoutes(prisma));
+app.use('/api/logs/client', createClientErrorRoutes(prisma));
+app.use('/api/emails', requireAdminKey, createEmailRoutes(sharedEmailService, prisma));
+app.use('/api/app-settings', requireAdminKey, createSettingsRoutes(prisma, { secretKey: process.env.NEXTAUTH_SECRET }));
+app.use('/api/ops', requireAdminKey, createOpsRoutes(prisma));
+app.use('/api/storage', requireAdminKey, createStorageRoutes(storageService));
+
+// Shared package routes — public
+app.use('/api/shared-subscribers', createSubscriberRoutes(prisma));
+app.use('/api/shared-auth', createAuthRoutes(prisma, sharedEmailService));
+app.use('/api/calendar', createCalendarRoutes(prisma, { domain: 'fatbigquiz.com', calendarName: 'Fat Big Quiz Events' }));
+app.use('/api/shared-orders', requireAdminKey, createOrderRoutes(prisma));
+app.use('/api/shared-products', requireAdminKey, createMerchandiseRoutes(prisma, storageService, { modelName: 'merchProduct' }));
 
 // File download route - streams file from S3 to user
 const { getFromSpaces, getKey, FOLDER } = require('./utils/spaces');

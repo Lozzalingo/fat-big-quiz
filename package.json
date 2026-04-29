@@ -6,17 +6,29 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "node --test test/critical-path.test.js"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.18",
+    "@lozzalingo/analytics": "*",
+    "@lozzalingo/auth": "*",
+    "@lozzalingo/config": "*",
+    "@lozzalingo/email": "*",
+    "@lozzalingo/logging": "*",
+    "@lozzalingo/merchandise": "*",
+    "@lozzalingo/ops": "*",
+    "@lozzalingo/orders": "*",
+    "@lozzalingo/settings": "*",
+    "@lozzalingo/storage": "*",
+    "@lozzalingo/subscribers": "*",
     "@prisma/client": "^5.10.2",
     "@stripe/stripe-js": "^8.6.1",
     "@tailwindcss/forms": "^0.5.7",
     "@tailwindcss/typography": "^0.5.10",
     "@types/bcryptjs": "^2.4.6",
     "@types/react-slick": "^0.23.13",
-    "axios": "^1.9.0",
+    "axios": "1.9.0",
     "bcryptjs": "^2.4.3",
     "child_process": "^1.0.2",
     "cors": "^2.8.5",
@@ -26,6 +38,7 @@
     "framer-motion": "^12.10.1",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.507.0",
+    "mysql2": "^3.22.3",
     "nanoid": "^5.0.6",
     "next": "14.1.0",
     "next-auth": "^4.24.6",
@@ -70,7 +83,9 @@
   "description": "<h1>Multi purpose website in Next.js and Node.js</h1>",
   "main": "postcss.config.js",
   "directories": {
-    "lib": "lib"
+    "doc": "docs",
+    "lib": "lib",
+    "test": "test"
   },
   "repository": {
     "type": "git",
@@ -82,5 +97,6 @@
   "bugs": {
     "url": "https://github.com/Kuzma02/Electronics-eCommerce-Shop-With-Admin-Dashboard-NextJS-NodeJS/issues"
   },
-  "homepage": "https://github.com/Kuzma02/Electronics-eCommerce-Shop-With-Admin-Dashboard-NextJS-NodeJS#readme"
+  "homepage": "https://github.com/Kuzma02/Electronics-eCommerce-Shop-With-Admin-Dashboard-NextJS-NodeJS#readme",
+  "type": "commonjs"
 }

@@ -5,14 +5,18 @@ WORKDIR /app
 # Install OpenSSL for Prisma
 RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
-# Copy package files
-COPY package*.json ./
+# Copy server package files
+COPY fat-big-quiz/server/package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Copy workspace package into a local directory
+COPY packages/game-engine/ ./local-packages/game-engine/
 
-# Copy source files
-COPY . .
+# Rewrite the workspace dep to point to the local copy, then install
+RUN sed -i 's|"@lozzalingo/game-engine": "\*"|"@lozzalingo/game-engine": "file:./local-packages/game-engine"|' package.json && \
+    npm install --omit=dev
+
+# Copy server source
+COPY fat-big-quiz/server/ .
 
 # Generate Prisma client
 RUN npx prisma generate

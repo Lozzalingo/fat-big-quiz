@@ -50,7 +50,7 @@ services:
       - DO_SPACES_ENDPOINT=https://sfo3.digitaloceanspaces.com
       - DO_SPACES_CDN_ENDPOINT=https://aitshirts-laurence-dot-computer.sfo3.cdn.digitaloceanspaces.com
       - RESEND_API_KEY=${RESEND_API_KEY}
-      - RESEND_FROM_EMAIL=noreply@fatbigquiz.com
+      - RESEND_FROM_EMAIL=no-reply@fatbigquiz.com
       - RESEND_REPLY_TO=${RESEND_REPLY_TO}
       - GOOGLE_MERCHANT_ID=5708205694
       - GOOGLE_APPLICATION_CREDENTIALS=/app/config/google-merchant-credentials.json

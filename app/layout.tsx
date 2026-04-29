@@ -9,7 +9,9 @@ import { getServerSession } from "next-auth";
 import "svgmap/dist/svgMap.min.css";
 import { ScrollProvider } from "@/utils/ScrollContext";
 import EnhancedHeader from "@/components/Header/HeaderTop";
-import VisitorTracker from "@/components/VisitorTracker"; // Import the new component
+import VisitorTracker from "@/components/VisitorTracker";
+import SubscribePopup from "@lozzalingo/analytics/client/SubscribePopup";
+import ErrorLogger from "@lozzalingo/logging/client";
 
 
 // Use multiple fonts for more design flexibility
@@ -65,7 +67,16 @@ export default async function RootLayout({
       <body className="flex flex-col min-h-screen bg-gradient-to-b from-gray-50 to-white">
         <SessionProvider session={session}>
           <ScrollProvider>
+            <ErrorLogger project="fat-big-quiz" />
             <VisitorTracker />
+            <SubscribePopup
+              apiBaseUrl={process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001"}
+              delayMs={45000}
+              heading="Never miss a quiz!"
+              subheading="Subscribe for new quiz packs, tips, and exclusive offers."
+              buttonText="Subscribe"
+              brandColor="#7c3aed"
+            />
             <EnhancedHeader />
             <main className="flex-grow">
               <Providers>{children}</Providers>

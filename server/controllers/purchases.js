@@ -13,8 +13,22 @@ async function createPurchase(request, response) {
     const { productId, email, userId, stripeSessionId, stripePaymentId, status } =
       request.body;
 
+    console.log("[Purchase] Creating purchase:", { productId, email, stripeSessionId });
+
     if (!productId || !email) {
+      console.log("[Purchase] Rejected — missing required fields");
       return response.status(400).json({ error: "Missing required fields" });
+    }
+
+    // Idempotency check — prevent duplicate purchases for same Stripe session
+    if (stripeSessionId) {
+      const existing = await prisma.purchase.findFirst({
+        where: { stripeSessionId },
+      });
+      if (existing) {
+        console.log("[Purchase] Duplicate session, returning existing:", existing.id);
+        return response.status(200).json(existing);
+      }
     }
 
     // Generate secure download token and set expiration (7 days for guest users)
@@ -35,9 +49,10 @@ async function createPurchase(request, response) {
       },
     });
 
+    console.log("[Purchase] Created:", purchase.id);
     return response.status(201).json(purchase);
   } catch (error) {
-    console.error("Error creating purchase:", error);
+    console.error("[Purchase] Error creating:", error.message);
     return response.status(500).json({ error: "Error creating purchase" });
   }
 }

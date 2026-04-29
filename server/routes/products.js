@@ -11,9 +11,15 @@ const {
   duplicateProduct,
   reorderProducts,
   getEmbedProducts,
+  getParentProducts,
+  getVariantsByParent,
 } = require("../controllers/products");
 
 router.route("/").get(getAllProducts).post(createProduct);
+
+router.route("/parents").get(getParentProducts);
+
+router.route("/parent/:parentId/variants").get(getVariantsByParent);
 
 router.route("/embed").get(getEmbedProducts);
 

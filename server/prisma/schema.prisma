@@ -30,6 +30,15 @@ model Product {
   displayOrder    Int                      @default(0)  // Sort order for admin listing
   quizFormatId    String?                  // Reference to QuizFormat
   tags            String?                  @db.Text // JSON array of tag strings
+
+  // Parent-variant hierarchy
+  parentId        String?                  // Parent product ID (null = top-level or standalone)
+  isParent        Boolean                  @default(false) // True for parent products (Fat Big Quiz, Game Shows, Whacky Wagers)
+  variantLabel    String?                  // Label like "Christmas Edition", "Valentine's Special"
+  eventFormat     EventFormat?             // VIRTUAL, IN_PERSON, HYBRID - how this product can be delivered
+
+  parent          Product?                 @relation("ProductVariants", fields: [parentId], references: [id])
+  variants        Product[]                @relation("ProductVariants")
   discountCodes   DiscountCodeProduct[]
   images          Image[]                  @relation("ProductImages")
   category        Category?                @relation("ProductCategory", fields: [categoryId], references: [id])
@@ -41,6 +50,7 @@ model Product {
 
   @@index([categoryId], map: "Product_categoryId_fkey")
   @@index([quizFormatId])
+  @@index([parentId])
 }
 
 model Purchase {
@@ -358,10 +368,11 @@ model Wishlist {
 }
 
 model Subscriber {
-  id           String   @id @default(uuid())
-  email        String   @unique
-  subscribedAt DateTime @default(now())
-  optIn        Boolean  @default(true)
+  id            String                  @id @default(uuid())
+  email         String                  @unique
+  subscribedAt  DateTime                @default(now())
+  optIn         Boolean                 @default(true)
+  confirmations SubscriberConfirmation[]
 }
 
 model BlogPost {
@@ -426,6 +437,79 @@ model Tag {
   posts BlogPost[] @relation("PostTags")
 }
 
+// ─── CALENDAR & SCHEDULING ──────────────────────────────────────────────────────
+
+model CalendarEvent {
+  id              String          @id @default(uuid())
+  title           String
+  description     String?         @db.Text
+  startTime       DateTime
+  endTime         DateTime
+  timezone        String          @default("Europe/London")
+
+  // Link to product
+  productId       String?
+
+  // Capacity
+  maxCapacity     Int?
+  currentBookings Int             @default(0)
+
+  // Recurrence
+  isRecurring     Boolean         @default(false)
+  recurrenceRule  String?         // RRULE string (RFC 5545)
+  parentEventId   String?         // Link to recurring parent
+
+  // Location
+  locationId      String?
+  locationName    String?
+  isVirtual       Boolean         @default(false)
+  meetingUrl      String?         // Zoom/Teams link
+
+  // Status
+  status          CalendarStatus  @default(SCHEDULED)
+  isPublic        Boolean         @default(true)
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  bookings        CalendarBooking[]
+
+  @@index([startTime])
+  @@index([productId])
+  @@index([status])
+}
+
+model CalendarBooking {
+  id              String               @id @default(uuid())
+  calendarEventId String
+  bookingId       String?
+  customerName    String
+  customerEmail   String
+  groupSize       Int
+  status          CalendarBookingStatus @default(PENDING)
+  createdAt       DateTime             @default(now())
+
+  calendarEvent   CalendarEvent        @relation(fields: [calendarEventId], references: [id], onDelete: Cascade)
+
+  @@index([calendarEventId])
+  @@index([customerEmail])
+}
+
+enum CalendarStatus {
+  DRAFT
+  SCHEDULED
+  LIVE
+  FULL
+  COMPLETED
+  CANCELLED
+}
+
+enum CalendarBookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
 enum CategoryType {
   PRODUCT
   BLOG
@@ -441,4 +525,148 @@ enum ProductType {
   DIGITAL_DOWNLOAD
   SUBSCRIPTION
   EVENT
+}
+
+enum EventFormat {
+  VIRTUAL
+  IN_PERSON
+  HYBRID
+}
+
+// ====== Shared Package Models ======
+
+// @lozzalingo/logging
+model AppLog {
+  id          Int      @id @default(autoincrement())
+  timestamp   DateTime @default(now())
+  level       String
+  source      String
+  message     String   @db.Text
+  details     String?  @db.Text
+  ipAddress   String?
+  userAgent   String?  @db.Text
+  requestPath String?
+  userId      String?
+  @@index([timestamp])
+  @@index([level])
+  @@index([source])
+}
+
+// @lozzalingo/subscribers - popup config
+model SubscriberPopupConfig {
+  id        Int      @id @default(1)
+  config    String   @db.Text
+  updatedAt DateTime @updatedAt
+}
+
+// @lozzalingo/settings (encrypted)
+model Setting {
+  id          Int      @id @default(autoincrement())
+  category    String
+  key         String   @unique
+  value       String?  @db.Text
+  isSecret    Boolean  @default(false)
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  @@index([category])
+  @@index([key])
+}
+
+// @lozzalingo/auth
+model PasswordResetToken {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  @@index([token])
+}
+
+model EmailVerificationToken {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  @@index([token])
+}
+
+// @lozzalingo/orders (shared)
+model Order {
+  id                 Int         @id @default(autoincrement())
+  orderNumber        String      @unique
+  customerEmail      String
+  customerName       String?
+  totalAmount        Int
+  currency           String      @default("gbp")
+  status             String      @default("paid")
+  stripeSessionId    String?
+  shippingName       String?
+  shippingLine1      String?
+  shippingLine2      String?
+  shippingCity       String?
+  shippingPostalCode String?
+  shippingCountry    String?
+  trackingNumber     String?
+  carrier            String?
+  notes              String?     @db.Text
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+  items              OrderItem[]
+  @@index([customerEmail])
+  @@index([status])
+}
+
+model OrderItem {
+  id          Int    @id @default(autoincrement())
+  orderId     Int
+  productName String
+  quantity    Int    @default(1)
+  unitPrice   Int
+  order       Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+// @lozzalingo/merchandise (shared)
+model MerchProduct {
+  id             Int      @id @default(autoincrement())
+  name           String
+  description    String?  @db.Text
+  price          Int
+  stockQuantity  Int      @default(0)
+  isActive       Boolean  @default(true)
+  isPreorder     Boolean  @default(false)
+  limitedEdition Boolean  @default(false)
+  imageUrls      String   @db.Text
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  @@index([isActive])
+}
+
+model Campaign {
+  id        String    @id @default(uuid())
+  subject   String
+  heading   String?
+  body      String    @db.LongText
+  ctaUrl    String?
+  ctaText   String?
+  status    String    @default("draft")
+  sentCount Int       @default(0)
+  sentAt    DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model SubscriberConfirmation {
+  id           String   @id @default(uuid())
+  subscriberId String
+  token        String   @unique
+  expiresAt    DateTime
+  confirmed    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  subscriber   Subscriber @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+  @@index([subscriberId])
 }

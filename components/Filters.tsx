@@ -56,12 +56,14 @@ const Filters = () => {
 
   useEffect(() => {
     const params = new URLSearchParams();
-    params.set("outOfStock", inputCategory.outOfStock.isChecked.toString());
-    params.set("inStock", inputCategory.inStock.isChecked.toString());
-    params.set("rating", inputCategory.ratingFilter.value.toString());
-    params.set("price", inputCategory.priceFilter.value.toString());
-    params.set("sort", sortBy);
-    params.set("page", page.toString());
+
+    // Only add params that differ from defaults to keep the URL clean
+    if (!inputCategory.outOfStock.isChecked) params.set("outOfStock", "false");
+    if (!inputCategory.inStock.isChecked) params.set("inStock", "false");
+    if (inputCategory.ratingFilter.value !== 0) params.set("rating", inputCategory.ratingFilter.value.toString());
+    if (inputCategory.priceFilter.value !== 100) params.set("price", inputCategory.priceFilter.value.toString());
+    if (sortBy && sortBy !== "defaultSort") params.set("sort", sortBy);
+    if (page > 1) params.set("page", page.toString());
 
     if (selectedQuizFormat) {
       params.set("quizFormat", selectedQuizFormat);
@@ -70,7 +72,8 @@ const Filters = () => {
       params.set("category", selectedCategory);
     }
 
-    router.replace(`${pathname}?${params}`, { scroll: false });
+    const queryString = params.toString();
+    router.replace(queryString ? `${pathname}?${queryString}` : pathname, { scroll: false });
   }, [inputCategory, sortBy, page, selectedQuizFormat, selectedCategory]);
 
   const formatCategoryName = (name: string) => {

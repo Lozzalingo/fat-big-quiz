@@ -324,24 +324,33 @@ async function getAllProducts(request, response) {
     const whereConditions = buildWhereClause();
     const hasFilters = Object.keys(filterObj).length > 0 || searchQuery;
 
+    const ITEMS_PER_PAGE = 12;
+
+    // Get total count for pagination
+    const totalCount = await prisma.product.count({
+      where: hasFilters ? whereConditions : undefined,
+    });
+    const totalPages = Math.max(1, Math.ceil(totalCount / ITEMS_PER_PAGE));
+
     if (!hasFilters) {
       products = await prisma.product.findMany({
-        skip: (page - 1) * 10,
-        take: 12,
+        skip: (page - 1) * ITEMS_PER_PAGE,
+        take: ITEMS_PER_PAGE,
         include: shopIncludes,
         orderBy: sortObj,
       });
     } else {
       products = await prisma.product.findMany({
-        skip: (page - 1) * 10,
-        take: 12,
+        skip: (page - 1) * ITEMS_PER_PAGE,
+        take: ITEMS_PER_PAGE,
         include: shopIncludes,
         where: whereConditions,
         orderBy: sortObj,
       });
     }
 
-    return response.json(products);
+    console.log(`[Products] Page ${page}/${totalPages} - ${products.length} items (${totalCount} total)`);
+    return response.json({ products, totalPages, totalCount });
   }
   
 }
@@ -839,6 +848,89 @@ async function getEmbedProducts(request, response) {
   }
 }
 
+/**
+ * GET /api/products/parents
+ * Returns the 3 top-level parent products (Fat Big Quiz, Game Shows, Whacky Wagers)
+ * with their variant count and a sample of variants.
+ */
+async function getParentProducts(request, response) {
+  try {
+    const parents = await prisma.product.findMany({
+      where: { isParent: true },
+      include: {
+        variants: {
+          where: { inStock: { gte: 1 } },
+          select: {
+            id: true,
+            slug: true,
+            title: true,
+            mainImage: true,
+            price: true,
+            variantLabel: true,
+            eventFormat: true,
+            productType: true,
+          },
+          orderBy: { displayOrder: "asc" },
+        },
+        images: true,
+        categories: {
+          include: { category: { select: { id: true, name: true } } },
+        },
+      },
+      orderBy: { displayOrder: "asc" },
+    });
+
+    const result = parents.map((p) => ({
+      ...p,
+      variantCount: p.variants.length,
+    }));
+
+    console.log(`[Products] Fetched ${result.length} parent products`);
+    return response.json(result);
+  } catch (error) {
+    console.error("[Products] Error fetching parent products:", error.message);
+    return response.status(500).json({ error: "Error fetching parent products" });
+  }
+}
+
+/**
+ * GET /api/products/parent/:parentId/variants
+ * Returns all variants for a given parent product.
+ */
+async function getVariantsByParent(request, response) {
+  try {
+    const { parentId } = request.params;
+
+    const parent = await prisma.product.findUnique({
+      where: { id: parentId },
+      select: { id: true, title: true, slug: true, isParent: true, description: true, mainImage: true },
+    });
+
+    if (!parent || !parent.isParent) {
+      return response.status(404).json({ error: "Parent product not found" });
+    }
+
+    const variants = await prisma.product.findMany({
+      where: { parentId },
+      include: {
+        category: { select: { name: true } },
+        quizFormat: { select: { id: true, name: true, displayName: true } },
+        categories: {
+          include: { category: { select: { id: true, name: true } } },
+        },
+        images: true,
+      },
+      orderBy: { displayOrder: "asc" },
+    });
+
+    console.log(`[Products] Fetched ${variants.length} variants for parent: ${parent.title}`);
+    return response.json({ parent, variants });
+  } catch (error) {
+    console.error("[Products] Error fetching variants:", error.message);
+    return response.status(500).json({ error: "Error fetching variants" });
+  }
+}
+
 module.exports = {
   getAllProducts,
   createProduct,
@@ -849,4 +941,6 @@ module.exports = {
   duplicateProduct,
   reorderProducts,
   getEmbedProducts,
+  getParentProducts,
+  getVariantsByParent,
 };

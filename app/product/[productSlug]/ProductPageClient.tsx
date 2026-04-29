@@ -1,12 +1,16 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { FaDownload, FaCalendar, FaTicketAlt, FaShoppingCart, FaHeart, FaHeartBroken } from "react-icons/fa";
 import { useProductStore } from "@/app/store/store";
 import { useWishlistStore } from "@/app/store/wishlistStore";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import { createEcommerceTracker } from "@lozzalingo/analytics/client";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+const tracker = createEcommerceTracker(API_BASE);
 
 interface Product {
   id: string;
@@ -46,6 +50,15 @@ export default function ProductPageClient({
   // Check if product is in cart
   const isInCart = cartProducts.some(item => item.id === product.id);
 
+  // Track product view
+  const hasTracked = useRef(false);
+  useEffect(() => {
+    if (!hasTracked.current) {
+      hasTracked.current = true;
+      tracker.trackProductView(product.id, productSlug);
+    }
+  }, [product.id, productSlug]);
+
   // Check if product is in wishlist
   useEffect(() => {
     const checkWishlist = async () => {
@@ -75,6 +88,7 @@ export default function ProductPageClient({
       amount: 1,
     });
     calculateTotals();
+    tracker.trackAddToCart(product.id);
     toast.success("Added to cart");
   };
 
@@ -119,6 +133,7 @@ export default function ProductPageClient({
   const handleCheckout = async () => {
     setIsLoading(true);
     setError(null);
+    tracker.trackCheckoutStart(product.price);
 
     try {
       const response = await fetch("/api/checkout", {
