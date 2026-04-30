@@ -469,6 +469,15 @@ model CalendarEvent {
   status          CalendarStatus  @default(SCHEDULED)
   isPublic        Boolean         @default(true)
 
+  // Slot management (@lozzalingo/calendar slots)
+  slotStatus         String?   @default("AVAILABLE")
+  heldUntil          DateTime?
+  heldByBookingId    String?
+  blockedByBookingId String?
+  externalCalendarId String?
+  externalSource     String?
+  supplierId         String?
+
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
@@ -669,4 +678,97 @@ model SubscriberConfirmation {
   createdAt    DateTime @default(now())
   subscriber   Subscriber @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
   @@index([subscriberId])
+}
+
+// === NEW: Booking system (@lozzalingo/bookings) ===
+
+model Booking {
+  id                String        @id @default(uuid())
+  bookingNumber     String        @unique
+  bookingType       BookingType   @default(PRIVATE)
+  status            BookingStatus_New @default(ENQUIRY)
+
+  customerName      String
+  customerEmail     String
+  customerPhone     String?
+  customerCompany   String?
+  customerMessage   String?       @db.Text
+
+  experienceId      String?
+  productId         String?
+  eventDate         DateTime?
+  groupSize         Int
+  specialRequests   String?       @db.Text
+
+  quotedPrice       Int?
+  depositAmount     Int?
+  totalPaid         Int           @default(0)
+
+  stripeSessionId   String?
+  stripePaymentId   String?
+
+  calendarEventId   String?
+  pencilExpiresAt   DateTime?
+
+  adminNotes        String?       @db.Text
+  source            String?       @default("website")
+
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+}
+
+enum BookingType {
+  PRIVATE
+  PUBLIC
+  PLAY_TODAY
+}
+
+enum BookingStatus_New {
+  ENQUIRY
+  QUOTED
+  PENCILLED
+  PAID
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  LOST
+}
+
+// === NEW: Outreach system (@lozzalingo/outreach) ===
+
+model OutreachLog {
+  id              String         @id @default(uuid())
+  trigger         String
+  recipientEmail  String
+  subject         String
+  status          OutreachStatus @default(SENT)
+  error           String?        @db.Text
+  bookingId       String?
+  purchaseId      String?
+  sentAt          DateTime       @default(now())
+  createdAt       DateTime       @default(now())
+}
+
+model OutreachSchedule {
+  id              String          @id @default(uuid())
+  trigger         String
+  recipientEmail  String
+  bookingId       String?
+  scheduledFor    DateTime
+  status          ScheduleStatus  @default(PENDING)
+  processedAt     DateTime?
+  error           String?         @db.Text
+  createdAt       DateTime       @default(now())
+}
+
+enum OutreachStatus {
+  SENT
+  FAILED
+}
+
+enum ScheduleStatus {
+  PENDING
+  SENT
+  FAILED
+  CANCELLED
 }

@@ -72,6 +72,13 @@ const { createAuthRoutes, createAuthMiddleware } = require('@lozzalingo/auth/ser
 const { createOrderRoutes } = require('@lozzalingo/orders/server');
 const { createMerchandiseRoutes } = require('@lozzalingo/merchandise/server');
 const { createCalendarRoutes } = require('@lozzalingo/calendar/routes');
+const { createBookingRoutes, createBookingController } = require("@lozzalingo/bookings");
+const { createPaymentRoutes } = require("@lozzalingo/payments/routes");
+const { createPurchaseRoutes, createPurchaseController } = require("@lozzalingo/purchases");
+const { createOutreachService } = require("@lozzalingo/outreach/services/triggers");
+const { createOutreachRoutes } = require("@lozzalingo/outreach/routes");
+const { processScheduledOutreach } = require("@lozzalingo/outreach/services/scheduler");
+const { pencilSlot, blockSlot, releaseSlot, releaseExpiredPencils } = require("@lozzalingo/calendar/services/slots");
 
 // Shared package services
 const appConfig = createConfig({ APP_NAME: 'Fat Big Quiz' });
@@ -82,6 +89,65 @@ const sharedEmailService = createEmailService({
 });
 const storageService = createStorageService();
 const { rateLimit } = createAuthMiddleware(prisma);
+
+// Outreach service
+const outreachEmailService = createEmailService({
+  brandName: "Fat Big Quiz",
+  fromEmail: process.env.RESEND_FROM_EMAIL,
+  replyTo: process.env.RESEND_REPLY_TO,
+  websiteUrl: process.env.FRONTEND_URL || "http://localhost:3000",
+  adminEmail: process.env.ADMIN_EMAIL,
+});
+
+const outreachService = createOutreachService(prisma, outreachEmailService, {
+  adminEmail: process.env.ADMIN_EMAIL,
+  brandName: "Fat Big Quiz",
+  baseUrl: process.env.FRONTEND_URL || "http://localhost:3000",
+});
+
+// Booking controller (for programmatic access from webhook)
+const bookingController = createBookingController(prisma, {
+  modelName: "booking",
+  brandPrefix: "FBQ",
+  hooks: {
+    onCreated: async (booking) => {
+      console.log("[FBQ] Booking created:", booking.bookingNumber);
+      await outreachService.trigger("booking_created", booking);
+    },
+    onPaid: async (booking) => {
+      console.log("[FBQ] Booking paid:", booking.bookingNumber);
+      if (booking.calendarEventId) {
+        await blockSlot(prisma, "calendarEvent", booking.calendarEventId, booking.id);
+      }
+      await outreachService.trigger("booking_paid", booking);
+      await outreachService.cancelScheduled(booking.id, "enquiry_followup_3day");
+    },
+    onCancelled: async (booking) => {
+      console.log("[FBQ] Booking cancelled:", booking.bookingNumber);
+      if (booking.calendarEventId) {
+        await releaseSlot(prisma, "calendarEvent", booking.calendarEventId);
+      }
+      await outreachService.trigger("booking_cancelled", booking);
+      await outreachService.cancelScheduled(booking.id);
+    },
+  },
+});
+
+// Purchase controller
+const purchaseController = createPurchaseController(prisma, {
+  defaultDownloadLimit: 5,
+  defaultExpiryDays: 7,
+  hooks: {
+    getDownloadUrl: async (purchase) => {
+      const product = await prisma.product.findUnique({ where: { id: purchase.productId } });
+      return product ? product.downloadFile : null;
+    },
+    onPurchaseCreated: async (purchase) => {
+      console.log("[FBQ] Purchase created:", purchase.id);
+      await outreachService.trigger("purchase_completed", purchase);
+    },
+  },
+});
 
 const app = express();
 const server = http.createServer(app);
@@ -205,6 +271,23 @@ app.use('/api/shared-auth', createAuthRoutes(prisma, sharedEmailService));
 app.use('/api/calendar', createCalendarRoutes(prisma, { domain: 'fatbigquiz.com', calendarName: 'Fat Big Quiz Events' }));
 app.use('/api/shared-orders', requireAdminKey, createOrderRoutes(prisma));
 app.use('/api/shared-products', requireAdminKey, createMerchandiseRoutes(prisma, storageService, { modelName: 'merchProduct' }));
+
+// New booking routes (@lozzalingo/bookings)
+app.use("/api/bookings-new", createBookingRoutes(prisma, {
+  modelName: "booking",
+  brandPrefix: "FBQ",
+  authMiddleware: requireAdminKey,
+}));
+
+// New purchase routes (@lozzalingo/purchases) - alongside existing /api/purchases
+app.use("/api/purchases-new", createPurchaseRoutes(prisma, {
+  authMiddleware: requireAdminKey,
+}));
+
+// Outreach admin routes (@lozzalingo/outreach)
+app.use("/api/outreach", createOutreachRoutes(prisma, {
+  authMiddleware: requireAdminKey,
+}));
 
 // File download route - streams file from S3 to user
 const { getFromSpaces, getKey, FOLDER } = require('./utils/spaces');

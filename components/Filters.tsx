@@ -55,21 +55,26 @@ const Filters = () => {
   }, []);
 
   useEffect(() => {
-    const params = new URLSearchParams();
+    // Start from the current URL params so we preserve any we don't manage (e.g. search)
+    const params = new URLSearchParams(window.location.search);
 
     // Only add params that differ from defaults to keep the URL clean
-    if (!inputCategory.outOfStock.isChecked) params.set("outOfStock", "false");
-    if (!inputCategory.inStock.isChecked) params.set("inStock", "false");
-    if (inputCategory.ratingFilter.value !== 0) params.set("rating", inputCategory.ratingFilter.value.toString());
-    if (inputCategory.priceFilter.value !== 100) params.set("price", inputCategory.priceFilter.value.toString());
-    if (sortBy && sortBy !== "defaultSort") params.set("sort", sortBy);
-    if (page > 1) params.set("page", page.toString());
+    if (!inputCategory.outOfStock.isChecked) { params.set("outOfStock", "false"); } else { params.delete("outOfStock"); }
+    if (!inputCategory.inStock.isChecked) { params.set("inStock", "false"); } else { params.delete("inStock"); }
+    if (inputCategory.ratingFilter.value !== 0) { params.set("rating", inputCategory.ratingFilter.value.toString()); } else { params.delete("rating"); }
+    if (inputCategory.priceFilter.value !== 100) { params.set("price", inputCategory.priceFilter.value.toString()); } else { params.delete("price"); }
+    if (sortBy && sortBy !== "defaultSort") { params.set("sort", sortBy); } else { params.delete("sort"); }
+    if (page > 1) { params.set("page", page.toString()); } else { params.delete("page"); }
 
     if (selectedQuizFormat) {
       params.set("quizFormat", selectedQuizFormat);
+    } else {
+      params.delete("quizFormat");
     }
     if (selectedCategory) {
       params.set("category", selectedCategory);
+    } else {
+      params.delete("category");
     }
 
     const queryString = params.toString();

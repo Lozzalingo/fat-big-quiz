@@ -13,6 +13,7 @@ export default async function Home() {
       .catch(() => ({ posts: [] })),
     fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/homepage-cards/public`, { cache: "no-store" })
       .then((res) => res.json())
+      .then((data) => (Array.isArray(data) ? data : []))
       .catch(() => []),
   ]);
 
