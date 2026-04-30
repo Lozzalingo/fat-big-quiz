@@ -39,6 +39,10 @@
     "@lozzalingo/orders": "*",
     "@lozzalingo/settings": "*",
     "@lozzalingo/storage": "*",
+    "@lozzalingo/bookings": "*",
+    "@lozzalingo/outreach": "*",
+    "@lozzalingo/payments": "*",
+    "@lozzalingo/purchases": "*",
     "@lozzalingo/subscribers": "*",
     "zod": "^3.23.8"
   }

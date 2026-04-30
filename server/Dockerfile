@@ -11,6 +11,7 @@ COPY fat-big-quiz/server/package*.json ./
 # Copy all workspace packages used by the server
 COPY packages/analytics/ ./local-packages/analytics/
 COPY packages/auth/ ./local-packages/auth/
+COPY packages/bookings/ ./local-packages/bookings/
 COPY packages/calendar/ ./local-packages/calendar/
 COPY packages/config/ ./local-packages/config/
 COPY packages/email/ ./local-packages/email/
@@ -19,6 +20,9 @@ COPY packages/logging/ ./local-packages/logging/
 COPY packages/merchandise/ ./local-packages/merchandise/
 COPY packages/ops/ ./local-packages/ops/
 COPY packages/orders/ ./local-packages/orders/
+COPY packages/outreach/ ./local-packages/outreach/
+COPY packages/payments/ ./local-packages/payments/
+COPY packages/purchases/ ./local-packages/purchases/
 COPY packages/settings/ ./local-packages/settings/
 COPY packages/storage/ ./local-packages/storage/
 COPY packages/subscribers/ ./local-packages/subscribers/
@@ -36,6 +40,10 @@ RUN sed -i 's|"@lozzalingo/analytics": "\*"|"@lozzalingo/analytics": "file:./loc
     sed -i 's|"@lozzalingo/orders": "\*"|"@lozzalingo/orders": "file:./local-packages/orders"|' package.json && \
     sed -i 's|"@lozzalingo/settings": "\*"|"@lozzalingo/settings": "file:./local-packages/settings"|' package.json && \
     sed -i 's|"@lozzalingo/storage": "\*"|"@lozzalingo/storage": "file:./local-packages/storage"|' package.json && \
+    sed -i 's|"@lozzalingo/bookings": "\*"|"@lozzalingo/bookings": "file:./local-packages/bookings"|' package.json && \
+    sed -i 's|"@lozzalingo/outreach": "\*"|"@lozzalingo/outreach": "file:./local-packages/outreach"|' package.json && \
+    sed -i 's|"@lozzalingo/payments": "\*"|"@lozzalingo/payments": "file:./local-packages/payments"|' package.json && \
+    sed -i 's|"@lozzalingo/purchases": "\*"|"@lozzalingo/purchases": "file:./local-packages/purchases"|' package.json && \
     sed -i 's|"@lozzalingo/subscribers": "\*"|"@lozzalingo/subscribers": "file:./local-packages/subscribers"|' package.json && \
     npm install --omit=dev
 
