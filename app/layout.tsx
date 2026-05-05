@@ -1,5 +1,6 @@
 // app/layout.tsx
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import { Footer } from "@/components";
@@ -64,6 +65,20 @@ export default async function RootLayout({
 
   return (
     <html lang="en" data-theme="light" className={`${inter.variable} ${poppins.variable}`}>
+      {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
+        <>
+          <Script
+            src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
+            strategy="afterInteractive"
+          />
+          <Script id="ga-init" strategy="afterInteractive">
+            {`window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}');`}
+          </Script>
+        </>
+      )}
       <body className="flex flex-col min-h-screen bg-gradient-to-b from-gray-50 to-white">
         <SessionProvider session={session}>
           <ScrollProvider>
