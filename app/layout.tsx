@@ -91,6 +91,7 @@ export default async function RootLayout({
               subheading="Subscribe for new quiz packs, tips, and exclusive offers."
               buttonText="Subscribe"
               brandColor="#7c3aed"
+              excludePaths={["/sign-up", "/unsubscribe", "/confirm-subscription"]}
             />
             <EnhancedHeader />
             <main className="flex-grow">
