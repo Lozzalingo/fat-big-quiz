@@ -90,7 +90,7 @@ export default async function RootLayout({
               heading="Sign Up"
               buttonText="Sign Up"
               brandColor="#7c3aed"
-              excludePaths={["/sign-up", "/unsubscribe", "/confirm-subscription"]}
+              excludePaths={["/sign-up", "/unsubscribe", "/confirm-subscription", "/quiz-pack", "/quiz-database", "/terms", "/privacy"]}
               signUpMode={true}
               marketingLabel="I want to hear about new quiz packs, quiz questions, and quiz events"
               termsUrl="/terms"
