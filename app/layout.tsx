@@ -87,11 +87,14 @@ export default async function RootLayout({
             <SubscribePopup
               apiBaseUrl={process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001"}
               delayMs={45000}
-              heading="Never miss a quiz!"
-              subheading="Subscribe for new quiz packs, tips, and exclusive offers."
-              buttonText="Subscribe"
+              heading="Sign Up"
+              buttonText="Sign Up"
               brandColor="#7c3aed"
               excludePaths={["/sign-up", "/unsubscribe", "/confirm-subscription"]}
+              signUpMode={true}
+              marketingLabel="I want to hear about new quiz packs, quiz questions, and quiz events"
+              termsUrl="/terms"
+              privacyUrl="/privacy"
             />
             <EnhancedHeader />
             <main className="flex-grow">

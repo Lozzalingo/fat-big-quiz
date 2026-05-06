@@ -370,9 +370,15 @@ model Wishlist {
 model Subscriber {
   id            String                  @id @default(uuid())
   email         String                  @unique
+  firstName     String?
+  lastName      String?
+  source        String?                 // Short tag: "sign-up", "popup", "quiz-pack", "quiz-database", "app"
+  sourcePath    String?                 // Full URL path: "/sign-up", "/quiz-database"
   subscribedAt  DateTime                @default(now())
   optIn         Boolean                 @default(true)
   confirmations SubscriberConfirmation[]
+
+  @@index([source])
 }
 
 model BlogPost {

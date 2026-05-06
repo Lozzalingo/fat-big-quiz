@@ -24,6 +24,12 @@ const userUpdate = z.object({
 
 const subscriberCreate = z.object({
   email,
+  firstName: z.string().max(100).optional(),
+  lastName: z.string().max(100).optional(),
+  source: z.string().max(50).optional(),
+  sourcePath: z.string().max(255).optional(),
+  marketingOptIn: z.boolean().optional(),
+  _ts: z.number().optional(), // Anti-spam timestamp from popup
 });
 
 const subscriberUnsubscribe = z.object({

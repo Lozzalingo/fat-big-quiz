@@ -10,7 +10,9 @@ const signUpSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
-  marketingOptIn: z.boolean(),
+  marketingOptIn: z.boolean().refine((val) => val === true, {
+    message: "You must agree to receive quiz updates",
+  }),
   termsAccepted: z.boolean().refine((val) => val === true, {
     message: "You must agree to the terms and conditions",
   }),
@@ -75,6 +77,8 @@ export default function SignUpPage() {
           firstName: form.firstName,
           lastName: form.lastName,
           marketingOptIn: form.marketingOptIn,
+          source: "sign-up",
+          sourcePath: "/sign-up",
         }),
       });
 
@@ -215,6 +219,9 @@ export default function SignUpPage() {
                         I want to hear about new quiz packs, quiz questions, and quiz events
                       </span>
                     </label>
+                    {errors.marketingOptIn && (
+                      <p className="text-error text-sm ml-8">{errors.marketingOptIn}</p>
+                    )}
 
                     <label className="flex items-start gap-3 cursor-pointer">
                       <input

@@ -103,7 +103,7 @@ async function updateSubscriberOptIn(request, response) {
 
 async function createSubscriber(request, response) {
   try {
-    const { email } = request.body;
+    const { email, firstName, lastName, source, sourcePath } = request.body;
 
     if (!email) {
       console.log("[Subscriber] Create rejected — no email provided");
@@ -117,7 +117,7 @@ async function createSubscriber(request, response) {
       return response.status(400).json({ error: 'Invalid email address' });
     }
 
-    console.log("[Subscriber] Creating subscriber:", normalisedEmail);
+    console.log("[Subscriber] Creating subscriber:", normalisedEmail, "source:", source || 'unknown');
 
     // Check if email already exists
     const existingSubscriber = await prisma.subscriber.findUnique({
@@ -147,6 +147,10 @@ async function createSubscriber(request, response) {
     const subscriber = await prisma.subscriber.create({
       data: {
         email: normalisedEmail,
+        firstName: firstName?.trim() || null,
+        lastName: lastName?.trim() || null,
+        source: source?.trim() || null,
+        sourcePath: sourcePath?.trim() || null,
         subscribedAt: new Date(),
         optIn: DOUBLE_OPT_IN ? false : true,
       },
