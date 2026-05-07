@@ -97,6 +97,7 @@ export default function ComingSoonSignup({
             <p className="font-semibold text-lg">{message}</p>
           </div>
         ) : (
+          <div className="bg-white rounded-xl shadow-xl p-8 border border-border">
           <form onSubmit={handleSubmit} className="space-y-5 text-left">
             <p className="text-sm text-text-secondary text-center mb-4">
               Be the first to know when we launch. Sign up below.
@@ -213,6 +214,7 @@ export default function ComingSoonSignup({
               {status === "loading" ? "Signing up..." : "Notify Me"}
             </button>
           </form>
+          </div>
         )}
       </div>
     </div>
