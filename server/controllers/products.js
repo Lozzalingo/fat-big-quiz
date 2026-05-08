@@ -806,9 +806,9 @@ async function getEmbedProducts(request, response) {
 
     // Custom URL overrides for non-standard products
     const PRODUCT_URL_OVERRIDES = {
-      'quiz-app': 'https://app.fatbigquiz.com',
-      'weekly-quiz-pack': `${SITE_URL}/weekly-pack`,
-      'questions-database': `${SITE_URL}/quiz-database`,
+      'quiz-app': 'https://app.fatbigquiz.com?from=ecosystem',
+      'weekly-quiz-pack': `${SITE_URL}/weekly-pack?from=ecosystem`,
+      'questions-database': `${SITE_URL}/quiz-database?from=ecosystem`,
     };
 
     // Custom price display for subscription/free products
@@ -855,7 +855,7 @@ async function getEmbedProducts(request, response) {
         imageUrl = `${CDN_ENDPOINT}/${FOLDER}/products/images/${imageUrl}`;
       }
 
-      const productUrl = PRODUCT_URL_OVERRIDES[p.slug] || `${SITE_URL}/product/${p.slug}`;
+      const productUrl = PRODUCT_URL_OVERRIDES[p.slug] || `${SITE_URL}/product/${p.slug}?from=ecosystem`;
       const priceDisplay = PRICE_OVERRIDES[p.slug] || `£${p.price.toFixed(2)}`;
       const category = CATEGORY_OVERRIDES[p.slug] || p.quizFormat?.displayName || "Quiz Pack";
 
