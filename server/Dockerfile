@@ -9,6 +9,7 @@ RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists
 COPY fat-big-quiz/server/package*.json ./
 
 # Copy all workspace packages used by the server
+COPY packages/core/ ./local-packages/core/
 COPY packages/analytics/ ./local-packages/analytics/
 COPY packages/auth/ ./local-packages/auth/
 COPY packages/bookings/ ./local-packages/bookings/
@@ -28,7 +29,8 @@ COPY packages/storage/ ./local-packages/storage/
 COPY packages/subscribers/ ./local-packages/subscribers/
 
 # Rewrite all workspace deps to point to local copies, then install
-RUN sed -i 's|"@lozzalingo/analytics": "\*"|"@lozzalingo/analytics": "file:./local-packages/analytics"|' package.json && \
+RUN sed -i 's|"@lozzalingo/core": "\*"|"@lozzalingo/core": "file:./local-packages/core"|' package.json && \
+    sed -i 's|"@lozzalingo/analytics": "\*"|"@lozzalingo/analytics": "file:./local-packages/analytics"|' package.json && \
     sed -i 's|"@lozzalingo/auth": "\*"|"@lozzalingo/auth": "file:./local-packages/auth"|' package.json && \
     sed -i 's|"@lozzalingo/calendar": "\*"|"@lozzalingo/calendar": "file:./local-packages/calendar"|' package.json && \
     sed -i 's|"@lozzalingo/config": "\*"|"@lozzalingo/config": "file:./local-packages/config"|' package.json && \

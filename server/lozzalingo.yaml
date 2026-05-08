@@ -1,0 +1,71 @@
+# =============================================================================
+# Fat Big Quiz - Lozzalingo Configuration
+# =============================================================================
+# This file configures which shared packages are enabled and how they're wired.
+# Mirrors the Python framework's lozzalingo.yaml pattern.
+
+site:
+  name: "Fat Big Quiz"
+  tagline: "Quizzes, Game Shows, Whacky Wagers"
+  baseUrl: "${FRONTEND_URL}"
+
+# Enable/disable features
+features:
+  # Core infrastructure
+  config: true
+  logging: true
+  email: true
+  subscribers: true
+  settings: true
+  ops: true
+  storage: true
+  auth: true
+
+  # Experiences and bookings
+  experiences: false
+  bookings: true
+  payments: false
+  outreach: true
+  calendar: true
+
+  # Commerce
+  merchandise: true
+  orders: true
+
+  # Not used by Fat Big Quiz
+  analytics: false
+  external_api: false
+  game_engine: true
+  marketplace_sync: false
+  purchases: false
+  pricing: false
+  restream: false
+
+# Package-specific config
+email:
+  brandName: "Fat Big Quiz"
+  style:
+    primary: "#7c3aed"
+    headerBg: "#7c3aed"
+
+calendar:
+  domain: "fatbigquiz.com"
+  calendarName: "Fat Big Quiz Events"
+
+bookings:
+  modelName: "booking"
+  brandPrefix: "FBQ"
+
+outreach:
+  adminEmail: "${ADMIN_EMAIL}"
+  brandName: "Fat Big Quiz"
+
+# CORS
+cors:
+  origin: true
+  credentials: true
+  methods: ["GET", "POST", "PUT", "DELETE"]
+  allowedHeaders:
+    - "Content-Type"
+    - "Authorization"
+    - "x-admin-key"
