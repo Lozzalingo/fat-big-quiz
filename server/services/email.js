@@ -136,16 +136,23 @@ async function sendAdminSaleNotification({ customerEmail, productName, price, pr
 /**
  * Send admin notification when someone joins a list (subscriber, coming soon, etc.)
  */
-async function sendAdminListNotification({ email, name, source }) {
+async function sendAdminListNotification({ email, firstName, lastName, name, source }) {
   console.log('[Email] Sending admin list notification - source:', source, 'email:', email);
   const adminEmail = process.env.ADMIN_EMAIL || 'laurencedotcomputer@gmail.com';
   const timestamp = new Date().toLocaleString('en-GB', { timeZone: 'Europe/London', dateStyle: 'medium', timeStyle: 'short' });
 
+  // Support both separate first/last name and combined name
+  const first = firstName || (name ? name.split(' ')[0] : '');
+  const last = lastName || (name ? name.split(' ').slice(1).join(' ') : '');
+
   const sourceLabels = {
     'subscriber': 'Newsletter Signup',
+    'sign-up': 'Newsletter Signup',
+    'popup': 'Newsletter Signup (Popup)',
     'quiz-pack': 'Quiz Pack (Coming Soon)',
     'quiz-database': 'Quiz Database (Coming Soon)',
     'quiz-app': 'Quiz App Beta Access',
+    'app': 'Quiz App Beta Access',
   };
   const sourceLabel = sourceLabels[source] || source;
 
@@ -153,18 +160,17 @@ async function sendAdminListNotification({ email, name, source }) {
     title: 'New List Signup!',
     body: `
       <h2>Someone joined a list</h2>
-      <div class="summary">
-        <div class="summary-row"><span>List:</span><span><strong>${sourceLabel}</strong></span></div>
-        ${name ? `<div class="summary-row"><span>Name:</span><span>${name}</span></div>` : ''}
-        <div class="summary-row"><span>Email:</span><span>${email}</span></div>
-        <div class="summary-row"><span>Time:</span><span>${timestamp}</span></div>
+      <div style="background: #f9fafb; border-radius: 6px; border-left: 4px solid #7c3aed; margin: 16px 0; padding: 16px 20px; line-height: 2.2;">
+        <strong>List:</strong> ${sourceLabel}<br>
+        ${first ? `<strong>First Name:</strong> ${first}<br>` : ''}${last ? `<strong>Last Name:</strong> ${last}<br>` : ''}<strong>Email:</strong> ${email}<br>
+        <strong>Time:</strong> ${timestamp}
       </div>
     `,
     brandName: 'Fat Big Quiz Admin',
     style: { primary: '#7c3aed', headerBg: '#7c3aed' },
   });
 
-  const text = `New List Signup!\n\nList: ${sourceLabel}\n${name ? `Name: ${name}\n` : ''}Email: ${email}\nTime: ${timestamp}\n\nFat Big Quiz`;
+  const text = `New List Signup!\n\nList: ${sourceLabel}\n${first ? `First Name: ${first}\n` : ''}${last ? `Last Name: ${last}\n` : ''}Email: ${email}\nTime: ${timestamp}\n\nFat Big Quiz`;
 
   return sendEmail({ to: adminEmail, subject: `[FBQ] New signup: ${sourceLabel} - ${email}`, html, text });
 }

@@ -134,7 +134,7 @@ async function createSubscriber(request, response) {
         console.log("[Subscriber] Reactivated:", normalisedEmail);
 
         // Notify admin of reactivation
-        sendAdminListNotification({ email: normalisedEmail, source: 'subscriber' })
+        sendAdminListNotification({ email: normalisedEmail, firstName: existingSubscriber.firstName, lastName: existingSubscriber.lastName, source: source || existingSubscriber.source || 'subscriber' })
           .then((sent) => console.log("[Subscriber] Admin notification (reactivation) sent, success:", sent))
           .catch((err) => console.error("[Subscriber] Admin notification error:", err.message));
 
@@ -197,7 +197,7 @@ async function createSubscriber(request, response) {
       .catch((err) => console.error("[Subscriber] Welcome email error:", err.message));
 
     // Notify admin of new signup
-    sendAdminListNotification({ email: normalisedEmail, source: 'subscriber' })
+    sendAdminListNotification({ email: normalisedEmail, firstName: firstName?.trim(), lastName: lastName?.trim(), source: source || 'subscriber' })
       .then((sent) => console.log("[Subscriber] Admin notification sent, success:", sent))
       .catch((err) => console.error("[Subscriber] Admin notification error:", err.message));
 
