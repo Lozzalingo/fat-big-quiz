@@ -1,0 +1,218 @@
+
+> fat-big-quiz@0.1.0 build
+> next build
+
+ ⚠ Invalid next.config.mjs options detected: 
+ ⚠     Unrecognized key(s) in object: 'outputFileTracingRoot'
+ ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
+  ▲ Next.js 14.2.35
+  - Environments: .env
+
+   Creating an optimized production build ...
+(node:27596) Warning: Failed to load the ES module: /Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/fat-big-quiz/tailwind.config.ts. Make sure to set "type": "module" in the nearest package.json file or use the .mjs extension.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+🌼   daisyUI 4.12.24
+├─ ✔︎ 2 themes added		https://daisyui.com/docs/themes
+╰─ ★ Star daisyUI on GitHub	https://github.com/saadeghi/daisyui
+
+(node:27596) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+ ✓ Compiled successfully
+   Skipping validation of types
+   Skipping linting
+   Collecting page data ...
+   Generating static pages (0/62) ...
+[Sitemap] Error fetching blog posts for news sitemap: TypeError: fetch failed
+    at node:internal/deps/undici/undici:15363:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async l (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/fat-big-quiz/.next/server/app/news-sitemap.xml/route.js:1:529)
+    at async /Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:38411
+    at async e_.execute (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:27880)
+    at async e_.handle (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:39943)
+    at async exportAppRoute (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/node_modules/next/dist/export/routes/app-route.js:77:26)
+    at async exportPageImpl (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/node_modules/next/dist/export/worker.js:175:20)
+    at async Span.traceAsyncFn (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/node_modules/next/dist/trace/trace.js:154:20)
+    at async Object.exportPage (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/node_modules/next/dist/export/worker.js:237:20) {
+  [cause]: AggregateError [ECONNREFUSED]: 
+      at internalConnectMultiple (node:net:1139:18)
+      at afterConnectMultiple (node:net:1714:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [ [Error], [Error] ]
+  }
+}
+Error fetching products for sitemap: TypeError: fetch failed
+    at node:internal/deps/undici/undici:15363:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async c (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/fat-big-quiz/.next/server/app/sitemap.xml/route.js:1:848)
+    at async g (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/fat-big-quiz/.next/server/app/sitemap.xml/route.js:1:2285)
+    at async /Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:38411
+    at async e_.execute (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:27880)
+    at async e_.handle (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:39943)
+    at async exportAppRoute (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/node_modules/next/dist/export/routes/app-route.js:77:26)
+    at async exportPageImpl (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/node_modules/next/dist/export/worker.js:175:20)
+    at async Span.traceAsyncFn (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/node_modules/next/dist/trace/trace.js:154:20) {
+  [cause]: AggregateError [ECONNREFUSED]: 
+      at internalConnectMultiple (node:net:1139:18)
+      at afterConnectMultiple (node:net:1714:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [ [Error], [Error] ]
+  }
+}
+Error fetching blog posts for sitemap: TypeError: fetch failed
+    at node:internal/deps/undici/undici:15363:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async c (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/fat-big-quiz/.next/server/app/sitemap.xml/route.js:1:1151)
+    at async g (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/fat-big-quiz/.next/server/app/sitemap.xml/route.js:1:2285)
+    at async /Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:38411
+    at async e_.execute (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:27880)
+    at async e_.handle (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:39943)
+    at async exportAppRoute (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/node_modules/next/dist/export/routes/app-route.js:77:26)
+    at async exportPageImpl (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/node_modules/next/dist/export/worker.js:175:20)
+    at async Span.traceAsyncFn (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/node_modules/next/dist/trace/trace.js:154:20) {
+  [cause]: AggregateError [ECONNREFUSED]: 
+      at internalConnectMultiple (node:net:1139:18)
+      at afterConnectMultiple (node:net:1714:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [ [Error], [Error] ]
+  }
+}
+Error fetching categories for sitemap: TypeError: fetch failed
+    at node:internal/deps/undici/undici:15363:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async c (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/fat-big-quiz/.next/server/app/sitemap.xml/route.js:1:1512)
+    at async g (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/fat-big-quiz/.next/server/app/sitemap.xml/route.js:1:2285)
+    at async /Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:38411
+    at async e_.execute (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:27880)
+    at async e_.handle (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:39943)
+    at async exportAppRoute (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/node_modules/next/dist/export/routes/app-route.js:77:26)
+    at async exportPageImpl (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/node_modules/next/dist/export/worker.js:175:20)
+    at async Span.traceAsyncFn (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/node_modules/next/dist/trace/trace.js:154:20) {
+  [cause]: AggregateError [ECONNREFUSED]: 
+      at internalConnectMultiple (node:net:1139:18)
+      at afterConnectMultiple (node:net:1714:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [ [Error], [Error] ]
+  }
+}
+   Generating static pages (15/62) 
+   Generating static pages (30/62) 
+   Generating static pages (46/62) 
+[FBQ Products] Failed to fetch from Kalluna: n [Error]: Dynamic server usage: no-store fetch http://localhost:3007/api/experiences?providerSlug=fat-big-quiz&parentsOnly=true&limit=50 /products
+    at /Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/fat-big-quiz/.next/server/chunks/916.js:2:10770
+    at /Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/fat-big-quiz/.next/server/chunks/916.js:2:18391
+    at a.with (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/fat-big-quiz/.next/server/chunks/916.js:1:8883)
+    at u.with (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/fat-big-quiz/.next/server/chunks/916.js:1:3083)
+    at u.startActiveSpan (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/fat-big-quiz/.next/server/chunks/916.js:1:18138)
+    at a.startActiveSpan (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/fat-big-quiz/.next/server/chunks/916.js:1:18672)
+    at /Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/fat-big-quiz/.next/server/chunks/916.js:2:17924
+    at a.with (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/fat-big-quiz/.next/server/chunks/916.js:1:8883)
+    at u.with (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/fat-big-quiz/.next/server/chunks/916.js:1:3083)
+    at b.trace (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/fat-big-quiz/.next/server/chunks/916.js:2:17878) {
+  description: 'no-store fetch http://localhost:3007/api/experiences?providerSlug=fat-big-quiz&parentsOnly=true&limit=50 /products',
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+[FBQ Products] Failed to fetch from Kalluna: n [Error]: Dynamic server usage: no-store fetch http://localhost:3007/api/experiences?providerSlug=fat-big-quiz&parentsOnly=true&limit=50 /products
+    at /Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/fat-big-quiz/.next/server/chunks/916.js:2:10770
+    at /Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/fat-big-quiz/.next/server/chunks/916.js:2:18391
+    at a.with (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/fat-big-quiz/.next/server/chunks/916.js:1:8883)
+    at u.with (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/fat-big-quiz/.next/server/chunks/916.js:1:3083)
+    at u.startActiveSpan (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/fat-big-quiz/.next/server/chunks/916.js:1:18138)
+    at a.startActiveSpan (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/fat-big-quiz/.next/server/chunks/916.js:1:18672)
+    at /Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/fat-big-quiz/.next/server/chunks/916.js:2:17924
+    at a.with (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/fat-big-quiz/.next/server/chunks/916.js:1:8883)
+    at u.with (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/fat-big-quiz/.next/server/chunks/916.js:1:3083)
+    at b.trace (/Users/laurencestephan/Programming/lozzalingo-ecosystem/lozzalingo-js/fat-big-quiz/.next/server/chunks/916.js:2:17878) {
+  description: 'no-store fetch http://localhost:3007/api/experiences?providerSlug=fat-big-quiz&parentsOnly=true&limit=50 /products',
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+ ✓ Generating static pages (62/62)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+┌ ƒ /                                    418 B           257 kB
+├ ƒ /_not-found                          159 B          88.7 kB
+├ ƒ /admin                               2.51 kB         256 kB
+├ ƒ /admin/analytics                     113 kB          379 kB
+├ ƒ /admin/blog-categories               2.35 kB         256 kB
+├ ƒ /admin/blog-editor                   1.53 kB         255 kB
+├ ƒ /admin/blog-editor/[id]              1.41 kB         255 kB
+├ ƒ /admin/blog-editor/new               1.39 kB         255 kB
+├ ƒ /admin/campaigns                     2.21 kB         256 kB
+├ ƒ /admin/categories                    2.35 kB         256 kB
+├ ƒ /admin/categories/[id]               1.28 kB        89.9 kB
+├ ƒ /admin/categories/new                1.27 kB        89.8 kB
+├ ƒ /admin/config                        1.98 kB         255 kB
+├ ƒ /admin/discount-codes                1.95 kB         255 kB
+├ ƒ /admin/discount-codes/[id]           1.03 kB         254 kB
+├ ƒ /admin/discount-codes/new            680 B           254 kB
+├ ƒ /admin/emails                        3.05 kB         256 kB
+├ ƒ /admin/global-files                  2.04 kB         255 kB
+├ ƒ /admin/global-files/[id]             187 B           256 kB
+├ ƒ /admin/global-files/new              187 B           256 kB
+├ ƒ /admin/google-merchant               4.39 kB         258 kB
+├ ƒ /admin/homepage-cards                2.1 kB          255 kB
+├ ƒ /admin/homepage-cards/[id]           186 B           256 kB
+├ ƒ /admin/homepage-cards/new            186 B           256 kB
+├ ƒ /admin/logs                          1.91 kB         255 kB
+├ ƒ /admin/ops                           1.72 kB         255 kB
+├ ƒ /admin/orders                        383 B           254 kB
+├ ƒ /admin/orders/[id]                   2.11 kB         255 kB
+├ ƒ /admin/products                      385 B           254 kB
+├ ƒ /admin/products/[id]                 6.09 kB         259 kB
+├ ƒ /admin/products/new                  5.25 kB         259 kB
+├ ƒ /admin/quiz-formats                  1.71 kB         255 kB
+├ ƒ /admin/quiz-formats/[id]             187 B           257 kB
+├ ƒ /admin/quiz-formats/new              187 B           257 kB
+├ ƒ /admin/settings                      1.53 kB         120 kB
+├ ƒ /admin/storage                       1.63 kB         255 kB
+├ ƒ /admin/users                         1.1 kB          254 kB
+├ ƒ /admin/users/[id]                    3.83 kB         257 kB
+├ ƒ /admin/users/new                     2.84 kB         256 kB
+├ ƒ /api/auth/[...nextauth]              0 B                0 B
+├ ƒ /api/checkout                        0 B                0 B
+├ ƒ /api/download/[purchaseId]/[token]   0 B                0 B
+├ ƒ /api/register                        0 B                0 B
+├ ƒ /api/webhooks/stripe                 0 B                0 B
+├ ƒ /blog                                5.35 kB         163 kB
+├ ƒ /blog/[blogSlug]                     3.33 kB         117 kB
+├ ƒ /cart                                1.28 kB         255 kB
+├ ƒ /checkout                            2.92 kB         256 kB
+├ ƒ /confirm-subscription                970 B          98.2 kB
+├ ƒ /download/[sessionId]                4.02 kB         121 kB
+├ ƒ /forgot-password                     1.27 kB         104 kB
+├ ƒ /login                               1.53 kB         114 kB
+├ ○ /news-sitemap.xml                    0 B                0 B
+├ ƒ /on-stage                            1.25 kB         121 kB
+├ ƒ /play                                2.24 kB         110 kB
+├ ƒ /play/[gameCode]                     3.35 kB         124 kB
+├ ƒ /play/host                           3.82 kB         124 kB
+├ ƒ /preferences                         1.63 kB        98.9 kB
+├ ƒ /privacy                             159 B          88.7 kB
+├ ƒ /product/[productSlug]               3.13 kB         259 kB
+├ ƒ /products                            193 B          97.4 kB
+├ ƒ /products/[slug]                     196 B          97.5 kB
+├ ƒ /profile/[id]                        2.03 kB        95.6 kB
+├ ƒ /profile/edit                        4.37 kB         108 kB
+├ ƒ /purchases                           1.59 kB         255 kB
+├ ƒ /quiz-database                       187 B           256 kB
+├ ƒ /quiz-pack                           187 B           256 kB
+├ ƒ /register                            1.66 kB         114 kB
+├ ƒ /reset-password                      1.53 kB         104 kB
+├ ƒ /search                              159 B          88.7 kB
+├ ƒ /shop/[[...slug]]                    395 B           254 kB
+├ ƒ /sign-up                             16.2 kB         138 kB
+├ ○ /sitemap.xml                         0 B                0 B
+├ ƒ /terms                               159 B          88.7 kB
+├ ƒ /unsubscribe                         1.03 kB        98.3 kB
+├ ƒ /weekly-pack                         187 B           256 kB
+└ ƒ /wishlist                            1.31 kB         255 kB
++ First Load JS shared by all            88.6 kB
+  ├ chunks/2364-70fe16d4a1d8fd77.js      31.9 kB
+  ├ chunks/618f8807-277085dc4dd11656.js  53.7 kB
+  └ other shared chunks (total)          3 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

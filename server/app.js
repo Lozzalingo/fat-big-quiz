@@ -58,7 +58,8 @@ const {
   sendOrderConfirmationEmail,
   sendWelcomeEmail,
   sendPasswordResetEmail,
-  sendAdminSaleNotification
+  sendAdminSaleNotification,
+  sendAdminListNotification
 } = require('./services/email');
 
 const app = express();
@@ -292,6 +293,9 @@ app.post('/api/test-email', async (req, res) => {
         break;
       case 'admin-notification':
         success = await sendAdminSaleNotification({ customerEmail: 'test@example.com', productName: 'Test Quiz Pack', price: '4.99', productType: 'DIGITAL_DOWNLOAD', sessionId: 'test_session_123' });
+        break;
+      case 'admin-list-signup':
+        success = await sendAdminListNotification({ email: 'test@example.com', firstName: 'Jane', lastName: 'Smith', source: 'sign-up' });
         break;
       default:
         return res.status(400).json({ error: 'Invalid email type' });

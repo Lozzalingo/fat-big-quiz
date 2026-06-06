@@ -50,8 +50,17 @@ export async function POST(request: NextRequest) {
       const { productId, productType, slug, userId } = session.metadata || {};
       const customerEmail = session.customer_email || session.customer_details?.email;
 
-      // Get product name and amount from line items
-      const productName = session.line_items?.data?.[0]?.description || "Quiz Pack";
+      // Get product name from line items (must be fetched separately)
+      let productName = "Quiz Pack";
+      try {
+        const lineItems = await getStripe().checkout.sessions.listLineItems(session.id, { limit: 1 });
+        if (lineItems.data?.[0]?.description) {
+          productName = lineItems.data[0].description;
+        }
+        console.log("[Stripe] Product name resolved:", productName);
+      } catch (err: any) {
+        console.error("[Stripe] Failed to fetch line items:", err.message);
+      }
       const amountTotal = session.amount_total ? (session.amount_total / 100).toFixed(2) : "0.00";
 
       console.log("[Stripe] Checkout completed:", { productId, productType, email: customerEmail, amount: amountTotal });

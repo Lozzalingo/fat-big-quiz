@@ -8,6 +8,12 @@ const nextConfig = {
   output: 'standalone',
   // Set to workspace root so standalone traces node_modules from the monorepo
   outputFileTracingRoot: path.join(__dirname, '../'),
+  webpack: (config, { dev }) => {
+    if (dev) {
+      config.cache = false;
+    }
+    return config;
+  },
   transpilePackages: [
     '@lozzalingo/analytics',
     '@lozzalingo/auth',

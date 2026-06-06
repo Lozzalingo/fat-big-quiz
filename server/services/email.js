@@ -113,12 +113,12 @@ async function sendAdminSaleNotification({ customerEmail, productName, price, pr
   const html = buildEmailTemplate({
     title: 'New Sale!',
     body: `
-      <div class="summary">
-        <div class="summary-row"><span>Product:</span><span><strong>${productName}</strong></span></div>
-        <div class="summary-row"><span>Amount:</span><span>${priceDisplay}</span></div>
-        <div class="summary-row"><span>Type:</span><span>${typeLabel}</span></div>
-        <div class="summary-row"><span>Customer:</span><span>${customerEmail}</span></div>
-        <div class="summary-row"><span>Time:</span><span>${timestamp}</span></div>
+      <div style="background: #f9fafb; border-radius: 6px; border-left: 4px solid #10b981; margin: 16px 0; padding: 16px 20px; line-height: 2.2;">
+        <strong>Product:</strong> ${productName}<br>
+        <strong>Amount:</strong> ${priceDisplay}<br>
+        <strong>Type:</strong> ${typeLabel}<br>
+        <strong>Customer:</strong> ${customerEmail}<br>
+        <strong>Time:</strong> ${timestamp}
       </div>
       <p style="text-align: center;">
         <a href="${baseUrl}/admin/orders" style="display: inline-block; background: #000; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-size: 13px;">View Orders</a>
