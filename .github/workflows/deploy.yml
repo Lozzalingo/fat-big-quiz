@@ -16,7 +16,7 @@ jobs:
       - name: Checkout shared packages
         uses: actions/checkout@v4
         with:
-          repository: Lozzalingo/lozzalingo-packages
+          repository: Lozzalingo/lozzalingo-js-packages
           path: packages
 
       - name: Set up Docker Buildx
