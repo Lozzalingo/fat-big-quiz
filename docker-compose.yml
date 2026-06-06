@@ -1,8 +1,7 @@
-version: '3.8'
-
 services:
   # Next.js Frontend
   frontend:
+    image: fatbigquiz-frontend:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -22,6 +21,12 @@ services:
       - DATABASE_URL=mysql://fatbigquiz:${DB_PASSWORD}@db:3306/fatbigquiz
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
       - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     depends_on:
       db:
         condition: service_healthy
@@ -30,9 +35,10 @@ services:
 
   # Express API Backend
   api:
+    image: fatbigquiz-api:latest
     build:
-      context: ./server
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: server/Dockerfile
     container_name: fatbigquiz_api
     restart: unless-stopped
     ports:
@@ -54,6 +60,12 @@ services:
       - RESEND_REPLY_TO=${RESEND_REPLY_TO}
       - GOOGLE_MERCHANT_ID=5708205694
       - GOOGLE_APPLICATION_CREDENTIALS=/app/config/google-merchant-credentials.json
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
     volumes:
       - ./server/config:/app/config:ro
     depends_on:
