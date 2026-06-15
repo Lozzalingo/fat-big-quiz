@@ -66,18 +66,18 @@ export default async function Home() {
 
             {/* For Events */}
             <Link
-              href="/on-stage"
+              href="/events"
               className="group p-6 bg-background rounded-xl hover:shadow-lg hover:border-primary border border-transparent transition"
             >
               <div className="text-3xl mb-3">🎭</div>
               <h3 className="font-bold text-text-primary mb-2 group-hover:text-primary transition">
-                Planning a Night Out?
+                Live Events
               </h3>
               <p className="text-sm text-text-secondary mb-3">
-                Book tickets to our live theatrical quiz experience.
+                Theatrical quiz shows, game shows, and whacky wagers. Book a private event or grab tickets.
               </p>
               <span className="text-primary text-sm font-semibold">
-                Get Tickets →
+                View Events →
               </span>
             </Link>
 

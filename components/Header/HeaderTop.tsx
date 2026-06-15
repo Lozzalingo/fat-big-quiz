@@ -26,7 +26,8 @@ import {
   FaUserEdit,
   FaBook,
   FaRocket,
-  FaDownload
+  FaDownload,
+  FaTheaterMasks
 } from "react-icons/fa";
 
 const EnhancedHeader = () => {
@@ -118,6 +119,7 @@ const EnhancedHeader = () => {
   const navLinks = [
     { href: "/", label: "Home", icon: FaHome },
     { href: "/shop", label: "Quizzes", icon: FaShoppingCart },
+    { href: "/events", label: "Events", icon: FaTheaterMasks },
     { href: "/blog", label: "Blog", icon: FaBook },
   ];
 

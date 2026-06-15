@@ -173,7 +173,7 @@ const SingleProductPage = async ({ params }: SingleProductPageProps) => {
 
   // For landing page style products
   if (isLandingPageStyle) {
-    const productImages = product.images || [];
+    const productImages = product.shopImages || [];
 
     return (
       <div className="bg-white">

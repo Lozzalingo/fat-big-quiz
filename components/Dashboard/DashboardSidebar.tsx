@@ -5,7 +5,7 @@ import { MdDashboard } from "react-icons/md";
 import { FaTable } from "react-icons/fa6";
 import { FaRegUser } from "react-icons/fa6";
 import { FaGear } from "react-icons/fa6";
-import { FaBook, FaEnvelope, FaHome, FaGift, FaGoogle, FaChartLine } from "react-icons/fa";
+import { FaBook, FaCalendarCheck, FaEnvelope, FaHome, FaGift, FaGoogle, FaChartLine, FaTheaterMasks } from "react-icons/fa";
 import { FaBagShopping } from "react-icons/fa6";
 import { MdCategory, MdQuiz } from "react-icons/md";
 import { FaBars, FaHeartPulse, FaFileLines, FaCloud, FaWrench } from "react-icons/fa6";
@@ -50,7 +50,18 @@ const DashboardSidebar = () => {
   // Fetch user settings from the API
   useEffect(() => {
     const fetchSettings = async () => {
-      if (!userEmail) return;
+      if (!userEmail) {
+        // On localhost with no session, use defaults and stop loading
+        setSettings({
+          userId: "local-admin",
+          orders: true,
+          products: true,
+          blog: true,
+          users: true,
+        });
+        setLoading(false);
+        return;
+      }
 
       try {
         // First, get the user ID from email
@@ -130,6 +141,8 @@ const DashboardSidebar = () => {
         { path: "/admin/global-files", icon: <FaGift className="text-xl" />, label: "Bonus Files" },
       ],
     },
+    { path: "/admin/events", icon: <FaTheaterMasks className="text-2xl" />, label: "Events" },
+    { path: "/admin/bookings", icon: <FaCalendarCheck className="text-2xl" />, label: "Bookings" },
     {
       icon: <FaBook className="text-2xl" />,
       label: "Blog",

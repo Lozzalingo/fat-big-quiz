@@ -18,10 +18,10 @@ async function syncProductToMerchant(productId) {
     const product = await prisma.product.findUnique({
       where: { id: productId },
       include: {
-        category: true,
+        legacyCategory: true,
         categories: { include: { category: true } },
         quizFormat: true,
-        images: true,
+        shopImages: true,
       },
     });
 
@@ -93,7 +93,7 @@ async function getAllProducts(request, response) {
     try {
       const adminProducts = await prisma.product.findMany({
         include: {
-          category: { select: { name: true } },
+          legacyCategory: { select: { name: true } },
           quizFormat: { select: { id: true, name: true, displayName: true } },
           categories: {
             include: { category: { select: { id: true, name: true } } },
@@ -276,7 +276,7 @@ async function getAllProducts(request, response) {
 
     // Standard includes for shop page products
     const shopIncludes = {
-      category: { select: { name: true } },
+      legacyCategory: { select: { name: true } },
       quizFormat: { select: { id: true, name: true, displayName: true, explainerImages: true } },
       categories: {
         include: { category: { select: { id: true, name: true } } },
@@ -418,7 +418,7 @@ async function createProduct(request, response) {
         } : undefined,
       },
       include: {
-        category: { select: { name: true } },
+        legacyCategory: { select: { name: true } },
         quizFormat: { select: { id: true, name: true, displayName: true } },
         categories: {
           include: { category: { select: { id: true, name: true } } },
@@ -518,7 +518,7 @@ async function updateProduct(request, response) {
     const productWithRelations = await prisma.product.findUnique({
       where: { id },
       include: {
-        category: { select: { name: true } },
+        legacyCategory: { select: { name: true } },
         quizFormat: { select: { id: true, name: true, displayName: true } },
         categories: {
           include: { category: { select: { id: true, name: true } } },
@@ -677,7 +677,7 @@ async function getProductById(request, response) {
       id: id,
     },
     include: {
-      category: true,
+      legacyCategory: true,
       quizFormat: true,
       categories: {
         include: { category: true },
@@ -737,7 +737,7 @@ async function duplicateProduct(request, response) {
         } : undefined,
       },
       include: {
-        category: { select: { name: true } },
+        legacyCategory: { select: { name: true } },
         quizFormat: { select: { id: true, name: true, displayName: true } },
         categories: {
           include: { category: { select: { id: true, name: true } } },
@@ -774,7 +774,7 @@ async function reorderProducts(request, response) {
     // Return updated products list
     const products = await prisma.product.findMany({
       include: {
-        category: { select: { name: true } },
+        legacyCategory: { select: { name: true } },
         quizFormat: { select: { id: true, name: true, displayName: true } },
         categories: {
           include: { category: { select: { id: true, name: true } } },
@@ -905,7 +905,7 @@ async function getParentProducts(request, response) {
           },
           orderBy: { displayOrder: "asc" },
         },
-        images: true,
+        shopImages: true,
         categories: {
           include: { category: { select: { id: true, name: true } } },
         },
@@ -946,12 +946,12 @@ async function getVariantsByParent(request, response) {
     const variants = await prisma.product.findMany({
       where: { parentId },
       include: {
-        category: { select: { name: true } },
+        legacyCategory: { select: { name: true } },
         quizFormat: { select: { id: true, name: true, displayName: true } },
         categories: {
           include: { category: { select: { id: true, name: true } } },
         },
-        images: true,
+        shopImages: true,
       },
       orderBy: { displayOrder: "asc" },
     });

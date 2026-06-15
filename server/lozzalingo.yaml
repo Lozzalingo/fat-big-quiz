@@ -22,7 +22,7 @@ features:
   auth: true
 
   # Experiences and bookings
-  experiences: false
+  experiences: false  # FBQ uses EventProduct model (custom controller) to avoid clash with e-commerce Product model
   bookings: true
   payments: false
   outreach: true

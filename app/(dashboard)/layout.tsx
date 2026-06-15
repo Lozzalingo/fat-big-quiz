@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import { getServerSession } from "next-auth/next";
 import { redirect } from "next/navigation";
 import prisma from "@/utils/db";
@@ -7,6 +8,17 @@ export default async function Layout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Auto-authenticate on localhost (matching BucketRace's local dev behaviour)
+  const headersList = headers();
+  const host = headersList.get("host") || "";
+  const isLocalhost = host.startsWith("localhost") || host.startsWith("127.0.0.1");
+
+  if (isLocalhost) {
+    console.log("[Admin] Localhost detected - bypassing auth");
+    return <>{children}</>;
+  }
+
+  // In production, require NextAuth session with admin role
   const session = await getServerSession();
 
   if (!session?.user?.email) {

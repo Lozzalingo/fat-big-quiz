@@ -151,6 +151,32 @@ if (merchantRouter) {
 }
 app.use('/api/indexing', indexingRouter);
 
+// ─── Event Products (events-ui compatible) ──────────────────────────────────────
+// Uses @lozzalingo/experiences routes with a Prisma proxy that maps
+// prisma.product -> prisma.eventProduct (etc.) to avoid clashing with the
+// e-commerce Product model. Mounted at /ev/api so events-ui can use
+// apiBase = "${API_BASE}/ev".
+
+const { createExperienceRoutes } = require("@lozzalingo/experiences");
+
+// Proxy Prisma so the experiences controller hits EventProduct tables
+const eventPrisma = new Proxy(prisma, {
+  get(target, prop) {
+    if (prop === "product") return target.eventProduct;
+    if (prop === "package") return target.eventPackage;
+    if (prop === "productImage") return target.eventProductImage;
+    if (prop === "productSection") return target.eventProductSection;
+    // theme and productTheme stay on the shared models
+    return target[prop];
+  },
+});
+
+const eventRoutes = createExperienceRoutes(eventPrisma, {
+  authMiddleware: lz.adminMiddleware,
+});
+app.use("/ev/api", eventRoutes);
+console.log("[FBQ] Event experience routes mounted at /ev/api (proxied to EventProduct tables)");
+
 // ─── File Download Route ────────────────────────────────────────────────────────
 
 const { getFromSpaces, getKey, FOLDER } = require('./utils/spaces');

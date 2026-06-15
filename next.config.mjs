@@ -19,6 +19,8 @@ const nextConfig = {
     '@lozzalingo/auth',
     '@lozzalingo/config',
     '@lozzalingo/email',
+    '@lozzalingo/events-ui',
+    '@lozzalingo/booking-form',
     '@lozzalingo/logging',
     '@lozzalingo/merchandise',
     '@lozzalingo/ops',

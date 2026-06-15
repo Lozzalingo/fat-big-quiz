@@ -138,8 +138,8 @@ function formatProductForMerchant(product) {
 
   // Get additional images
   const additionalImages = [];
-  if (product.images && product.images.length > 0) {
-    product.images.forEach(img => {
+  if (product.shopImages && product.shopImages.length > 0) {
+    product.shopImages.forEach(img => {
       const url = getProductImageUrl(img.image, product.slug);
       if (url && !additionalImages.includes(url)) {
         additionalImages.push(url);
