@@ -1,5 +1,5 @@
 "use client";
-import { CustomButton, DashboardSidebar } from "@/components";
+import { CustomButton } from "@/components";
 import { getUserAvatarUrl } from "@/utils/cdn";
 import { nanoid } from "nanoid";
 import Link from "next/link";
@@ -20,9 +20,7 @@ const DashboardUsers = () => {
   }, []);
 
   return (
-    <div className="bg-gray-100 flex min-h-screen">
-      <DashboardSidebar />
-      <div className="flex-1 min-w-0 p-6 overflow-auto">
+    <div className="p-6 min-h-screen">
         <div className="bg-white rounded-lg border p-6">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-semibold">All Users</h1>
@@ -104,7 +102,6 @@ const DashboardUsers = () => {
           </table>
           </div>
         </div>
-      </div>
     </div>
   );
 };

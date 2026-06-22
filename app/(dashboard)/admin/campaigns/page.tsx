@@ -1,6 +1,5 @@
 "use client";
 
-import { DashboardSidebar } from "@/components";
 import { adminFetch } from "@/utils/adminFetch";
 import React, { useState, useEffect } from "react";
 
@@ -123,9 +122,7 @@ const CampaignsPage = () => {
   };
 
   return (
-    <div className="flex">
-      <DashboardSidebar />
-      <div className="flex-1 xl:ml-[300px] md:ml-[250px] p-4 md:p-8 bg-gray-100 min-h-screen">
+    <div className="p-4 md:p-8 bg-gray-100 min-h-screen">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Email Campaigns</h1>
           <button onClick={() => startEdit()} data-action="campaign_new" className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 text-sm">
@@ -193,7 +190,6 @@ const CampaignsPage = () => {
             ))}
           </div>
         )}
-      </div>
     </div>
   );
 };

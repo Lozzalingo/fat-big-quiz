@@ -1,6 +1,5 @@
 "use client";
-import { DashboardSidebar } from "@/components";
-import { 
+import {
   UserAvatar, 
   UserProfileForm, 
   UserNotifications,
@@ -262,9 +261,8 @@ const DashboardSingleUserPage = ({
   }, [userInput.email, fetchSubscriptionStatus]);
 
   return (
-    <div className="flex min-h-screen w-full bg-white">
-      <DashboardSidebar />
-      <div className="flex flex-col items-center gap-8 w-full xl:pl-10 mt-6 pb-10">
+    <div className="min-h-screen w-full">
+      <div className="flex flex-col items-center gap-8 w-full mt-6 pb-10">
         <h1 className="text-4xl font-bold text-center">User Details</h1>
 
         {/* Tab Navigation */}

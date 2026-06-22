@@ -1,5 +1,4 @@
 "use client";
-import { DashboardSidebar } from "@/components";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import toast from "react-hot-toast";
@@ -287,9 +286,7 @@ const QuizFormatForm = ({ id }: QuizFormatFormProps) => {
   };
 
   return (
-    <div className="bg-white flex min-h-screen">
-      <DashboardSidebar />
-      <div className="flex-1 min-w-0 p-4 overflow-auto flex flex-col gap-y-7">
+    <div className="p-4 min-h-screen flex flex-col gap-y-7">
         <h1 className="text-3xl font-semibold">
           {isEditMode ? "Edit Quiz Format" : "Add New Quiz Format"}
         </h1>
@@ -496,7 +493,6 @@ const QuizFormatForm = ({ id }: QuizFormatFormProps) => {
             )}
           </div>
         )}
-      </div>
     </div>
   );
 };

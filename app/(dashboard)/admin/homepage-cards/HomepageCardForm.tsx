@@ -1,5 +1,4 @@
 "use client";
-import { DashboardSidebar } from "@/components";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -161,19 +160,14 @@ const HomepageCardForm: React.FC<HomepageCardFormProps> = ({ mode, cardId }) => 
 
   if (isLoading) {
     return (
-      <div className="bg-gray-100 flex min-h-screen">
-        <DashboardSidebar />
-        <div className="flex-1 flex items-center justify-center">
-          <span className="loading loading-spinner loading-lg"></span>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <span className="loading loading-spinner loading-lg"></span>
       </div>
     );
   }
 
   return (
-    <div className="bg-gray-100 flex min-h-screen">
-      <DashboardSidebar />
-      <div className="flex-1 min-w-0 p-6 overflow-auto">
+    <div className="p-6 min-h-screen">
         <div className="max-w-3xl mx-auto">
           <div className="mb-6">
             <Link href="/admin/homepage-cards" className="text-gray-500 hover:text-gray-700 flex items-center gap-2 text-sm">
@@ -354,7 +348,6 @@ const HomepageCardForm: React.FC<HomepageCardFormProps> = ({ mode, cardId }) => 
             </form>
           </div>
         </div>
-      </div>
     </div>
   );
 };

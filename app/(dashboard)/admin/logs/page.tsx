@@ -1,6 +1,5 @@
 "use client";
 
-import { DashboardSidebar } from "@/components";
 import { adminFetch } from "@/utils/adminFetch";
 import React, { useState, useEffect } from "react";
 
@@ -64,9 +63,7 @@ const LogsPage = () => {
   };
 
   return (
-    <div className="flex">
-      <DashboardSidebar />
-      <div className="flex-1 xl:ml-[300px] md:ml-[250px] p-4 md:p-8 bg-gray-100 min-h-screen">
+    <div className="p-4 md:p-8 bg-gray-100 min-h-screen">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Application Logs</h1>
           <button onClick={handleCleanup} data-action="logs_cleanup" className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Cleanup Old Logs</button>
@@ -108,7 +105,6 @@ const LogsPage = () => {
             <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} data-action="logs_next" className="px-3 py-1 border rounded disabled:opacity-50">Next</button>
           </div>
         </div>
-      </div>
     </div>
   );
 };

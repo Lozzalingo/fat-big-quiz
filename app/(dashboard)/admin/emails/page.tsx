@@ -1,6 +1,5 @@
 "use client";
 
-import { DashboardSidebar } from "@/components";
 import React, { useState } from "react";
 import { FaEnvelope, FaPaperPlane, FaCheck, FaTimes, FaEye } from "react-icons/fa";
 
@@ -158,9 +157,7 @@ const TestEmailsPage = () => {
   };
 
   return (
-    <div className="bg-gray-50 flex min-h-screen">
-      <DashboardSidebar />
-      <div className="flex-1 min-w-0 p-6 overflow-auto">
+    <div className="p-6 min-h-screen">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-3 mb-6">
             <FaEnvelope className="text-2xl text-gray-600" />
@@ -257,7 +254,6 @@ const TestEmailsPage = () => {
             </p>
           </div>
         </div>
-      </div>
     </div>
   );
 };

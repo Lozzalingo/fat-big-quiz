@@ -122,6 +122,73 @@ input:focus, textarea:focus, select:focus {
   animation: float 3s ease-in-out infinite;
 }
 
+/* Prose styling overrides for blog content */
+.prose img {
+  border-radius: 0.75rem;
+  margin: 1.5rem auto;
+}
+
+/* Blog content figures with captions (Quill CustomImage blot) */
+.prose figure {
+  margin: 1.5em auto !important;
+  text-align: center !important;
+}
+.prose figure img {
+  display: block !important;
+  margin: 0 auto !important;
+  border-radius: 6px !important;
+}
+.prose figcaption {
+  font-size: 0.85rem !important;
+  color: #6b7280 !important;
+  font-style: italic !important;
+  margin-top: 8px !important;
+  text-align: center !important;
+}
+
+/* Figure size variants (data-size attribute from Quill editor) */
+.prose figure[data-size="small"] { max-width: 25%; }
+.prose figure[data-size="medium"] { max-width: 50%; }
+.prose figure[data-size="large"] { max-width: 75%; }
+.prose figure[data-size="full"] { max-width: 100%; }
+
+/* Figure alignment (data-align attribute from Quill editor) */
+.prose figure[data-align="left"] { margin-right: auto; margin-left: 0; }
+.prose figure[data-align="center"] { margin-left: auto; margin-right: auto; }
+.prose figure[data-align="right"] { margin-left: auto; margin-right: 0; }
+
+/* Quill indent classes for public blog rendering.
+   Quill outputs class="ql-indent-N" on <li> and block elements.
+   These rules mirror quill.core.css but scoped to .prose so they
+   work on the user-facing blog pages (not just inside .ql-editor). */
+.prose .ql-indent-1 { padding-left: 3em; }
+.prose .ql-indent-2 { padding-left: 6em; }
+.prose .ql-indent-3 { padding-left: 9em; }
+.prose .ql-indent-4 { padding-left: 12em; }
+.prose .ql-indent-5 { padding-left: 15em; }
+.prose .ql-indent-6 { padding-left: 18em; }
+.prose .ql-indent-7 { padding-left: 21em; }
+.prose .ql-indent-8 { padding-left: 24em; }
+
+.prose details {
+  border: 1px solid #E2E2E2;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+}
+
+.prose details summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.prose details[open] summary {
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid #E2E2E2;
+  padding-bottom: 0.5rem;
+}
+
 /* DaisyUI Overrides */
 .range {
   --range-shdw: #673ab7;

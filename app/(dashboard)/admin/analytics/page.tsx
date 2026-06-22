@@ -59,8 +59,6 @@ import {
 } from "recharts";
 import dynamic from "next/dynamic";
 import io from "socket.io-client";
-import { DashboardSidebar } from "@/components";
-
 // Dynamic import for map component
 const MapView = dynamic(() => import("@/components/MapView"), {
   ssr: false,
@@ -463,9 +461,7 @@ export default function AnalyticsDashboard() {
   ];
 
   return (
-    <div className="bg-gray-50 flex min-h-screen">
-      <DashboardSidebar />
-      <div className="flex-1 min-w-0 p-6 overflow-auto">
+    <div className="p-6 min-h-screen">
         {/* Header */}
         <div className="mb-8">
           <div className="flex justify-between items-start flex-wrap gap-4 mb-4">
@@ -1123,7 +1119,6 @@ export default function AnalyticsDashboard() {
             </div>
           </div>
         )}
-      </div>
     </div>
   );
 }

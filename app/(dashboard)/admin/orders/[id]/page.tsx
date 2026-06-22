@@ -1,5 +1,4 @@
 "use client";
-import { DashboardSidebar } from "@/components";
 import { isValidEmailAddressFormat, isValidNameOrLastname } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
@@ -140,9 +139,7 @@ const AdminSingleOrder = () => {
   };
 
   return (
-    <div className="bg-white flex min-h-screen">
-      <DashboardSidebar />
-      <div className="flex-1 min-w-0 p-4 overflow-auto flex flex-col gap-y-7">
+    <div className="p-4 min-h-screen flex flex-col gap-y-7">
         <h1 className="text-3xl font-semibold">Order details</h1>
         <div className="mt-5">
           <label className="w-full">
@@ -388,7 +385,6 @@ const AdminSingleOrder = () => {
             </button>
           </div>
         </div>
-      </div>
     </div>
   );
 };

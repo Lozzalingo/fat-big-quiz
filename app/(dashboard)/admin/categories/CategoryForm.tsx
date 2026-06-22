@@ -1,5 +1,4 @@
 "use client";
-import { DashboardSidebar } from "@/components";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
@@ -230,9 +229,7 @@ const CategoryForm = ({ id }: CategoryFormProps) => {
   };
 
   return (
-    <div className="bg-white flex min-h-screen">
-      <DashboardSidebar />
-      <div className="flex-1 min-w-0 p-4 overflow-auto flex flex-col gap-y-7">
+    <div className="p-4 min-h-screen flex flex-col gap-y-7">
         <h1 className="text-3xl font-semibold">
           {isEditMode ? "Edit Category" : "Add New Category"}
         </h1>
@@ -377,7 +374,6 @@ const CategoryForm = ({ id }: CategoryFormProps) => {
             )}
           </div>
         )}
-      </div>
     </div>
   );
 };

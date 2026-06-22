@@ -1,5 +1,5 @@
 "use client";
-import { CustomButton, DashboardSidebar } from "@/components";
+import { CustomButton } from "@/components";
 import toast from "react-hot-toast";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
@@ -116,9 +116,7 @@ const DashboardDiscountCodes = () => {
   );
 
   return (
-    <div className="bg-gray-100 flex min-h-screen">
-      <DashboardSidebar />
-      <div className="flex-1 min-w-0 p-6 overflow-auto">
+    <div className="p-6 min-h-screen">
         <div className="bg-white rounded-lg border p-6">
           <div className="flex justify-between items-center mb-6 max-xl:flex-col max-xl:gap-y-4 max-xl:items-start">
             <h1 className="text-2xl font-semibold">All Discount Codes</h1>
@@ -253,7 +251,6 @@ const DashboardDiscountCodes = () => {
           </table>
           </div>
         </div>
-      </div>
     </div>
   );
 };

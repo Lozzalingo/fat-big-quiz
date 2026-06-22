@@ -1,5 +1,4 @@
 "use client";
-import { DashboardSidebar } from "@/components";
 import {
   convertCategoryNameToURLFriendly as convertSlugToURLFriendly,
   formatCategoryName,
@@ -559,21 +558,14 @@ const DashboardProductDetails = ({
 
   if (isLoading) {
     return (
-      <div className="bg-gray-100 flex min-h-screen">
-        <DashboardSidebar />
-        <div className="flex-1 min-w-0 overflow-auto flex items-center justify-center">
-          <span className="loading loading-spinner loading-lg"></span>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <span className="loading loading-spinner loading-lg"></span>
       </div>
     );
   }
 
   return (
-    <div className="bg-gray-100 flex min-h-screen">
-      <DashboardSidebar />
-
-      {/* Main Content */}
-      <div className="flex-1 min-w-0 overflow-auto">
+    <div className="min-h-screen">
         {/* Header */}
         <div className="bg-white border-b sticky top-0 z-10">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">

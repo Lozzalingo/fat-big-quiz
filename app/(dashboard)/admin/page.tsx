@@ -11,7 +11,6 @@ import {
   FaGoogle,
   FaEye,
 } from "react-icons/fa";
-import { DashboardSidebar } from "@/components";
 import Link from "next/link";
 
 interface DashboardStats {
@@ -149,9 +148,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="bg-gray-50 flex min-h-screen">
-      <DashboardSidebar />
-      <div className="flex-1 min-w-0 p-6 overflow-auto">
+    <div className="p-6 min-h-screen">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-800">Dashboard Overview</h1>
           <p className="text-gray-500 mt-1">Welcome back! Here&apos;s what&apos;s happening today.</p>
@@ -323,7 +320,6 @@ export default function AdminDashboard() {
             </table>
           </div>
         </div>
-      </div>
     </div>
   );
 }

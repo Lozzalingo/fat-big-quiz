@@ -1,5 +1,4 @@
 "use client";
-import { DashboardSidebar } from "@/components";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { nanoid } from "nanoid";
@@ -37,9 +36,7 @@ const DashboardBlog = () => {
   }, []);
 
   return (
-    <div className="bg-gray-100 flex min-h-screen">
-      <DashboardSidebar />
-      <div className="flex-1 min-w-0 p-6 overflow-auto">
+    <div className="p-6 min-h-screen">
         <div className="bg-white rounded-lg border p-6">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-semibold">Blog Posts</h1>
@@ -120,7 +117,6 @@ const DashboardBlog = () => {
             </div>
           )}
         </div>
-      </div>
     </div>
   );
 };

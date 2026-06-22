@@ -1,5 +1,4 @@
 "use client";
-import { DashboardSidebar } from "@/components";
 import toast from "react-hot-toast";
 import React, { useEffect, useState } from "react";
 import {
@@ -297,9 +296,7 @@ export default function GoogleMerchantPage() {
   };
 
   return (
-    <div className="bg-gray-100 flex min-h-screen">
-      <DashboardSidebar />
-      <div className="flex-1 min-w-0 p-6 overflow-auto">
+    <div className="p-6 min-h-screen">
         <div className="space-y-6">
           {/* Header Card */}
           <div className="bg-white rounded-lg border p-6">
@@ -703,7 +700,6 @@ GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json`}
             </div>
           )}
         </div>
-      </div>
     </div>
   );
 }

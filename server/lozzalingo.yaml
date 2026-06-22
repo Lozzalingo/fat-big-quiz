@@ -32,6 +32,9 @@ features:
   merchandise: true
   orders: true
 
+  # CRM
+  crm: true
+
   # Not used by Fat Big Quiz
   analytics: false
   external_api: false
@@ -55,6 +58,27 @@ calendar:
 bookings:
   modelName: "booking"
   brandPrefix: "FBQ"
+
+crm:
+  customerPrefix: "FBQ"
+  campaignModel: "crmCampaign"
+  campaignSendModel: "crmCampaignSend"
+  scoring:
+    booking_completed: 20
+    email_opened: 2
+    email_clicked: 5
+    website_visit: 1
+    product_used: 10
+    app_interaction: 5
+    returning_visitor: 5
+    decay_3_months: -5
+    decay_6_months: -10
+    decay_12_months: -15
+  marketingPreferences:
+    - "Printable Quizzes"
+    - "Live Shows"
+    - "Free Content"
+    - "Quiz Builder"
 
 outreach:
   adminEmail: "${ADMIN_EMAIL}"

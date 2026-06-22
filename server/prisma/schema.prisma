@@ -771,12 +771,15 @@ model Campaign {
 
 model SubscriberConfirmation {
   id           String   @id @default(uuid())
-  subscriberId String
+  customerId   String?
+  subscriberId String?                  // Legacy: kept during migration, will be removed
   token        String   @unique
   expiresAt    DateTime
   confirmed    Boolean  @default(false)
   createdAt    DateTime @default(now())
-  subscriber   Subscriber @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+  customer     Customer?   @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  subscriber   Subscriber? @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+  @@index([customerId])
   @@index([subscriberId])
 }
 
@@ -844,19 +847,151 @@ enum BookingStatus_New {
   LOST
 }
 
-// === Bookings: Customer CRM ===
+// === CRM (@lozzalingo/crm) ===
 
 model Customer {
+  id                  String         @id @default(uuid())
+  customerNumber      String?        @unique // Human-readable: #FBQ0001
+  fingerprint         String?                 // Links anonymous Visitor data
+  firstName           String
+  lastName            String
+  email               String         @unique
+  phone               String?
+  company             String?
+  jobTitle            String?
+  dateOfBirth         DateTime?
+  country             String?
+  region              String?
+  lat                 Float?
+  lng                 Float?
+  ipAddress           String?
+  source              String?                 // First-touch: "website", "referral", "etsy"
+  status              CustomerStatus @default(ACTIVE)
+  marketingOptIn      Boolean        @default(false) // Double opt-in confirmed
+  totalSpent          Int            @default(0)     // Cached, pence
+  totalBookings       Int            @default(0)     // Cached count
+  lastActivityAt      DateTime?                      // Last engagement of any kind
+  referralName        String?
+  referralEmail       String?
+  notes               String?        @db.Text
+  termsAcceptedAt     DateTime?
+  privacyAcceptedAt   DateTime?
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  // Relations
+  activities              CustomerActivity[]
+  marketingPreferences    MarketingPreference[]
+  campaignSends           CrmCampaignSend[]
+  subscriberConfirmations SubscriberConfirmation[]
+  score                   CustomerScore?
+
+  @@index([email])
+  @@index([source])
+  @@index([status])
+  @@index([fingerprint])
+  @@index([customerNumber])
+}
+
+enum CustomerStatus {
+  ACTIVE
+  UNSUBSCRIBED
+  BOUNCED
+}
+
+model CustomerActivity {
+  id              String       @id @default(uuid())
+  customerId      String
+  type            ActivityType
+  source          String?                  // "website", "etsy", "app", "public-game"
+  channel         String?                  // "Website Sign Up", "Etsy Store", "BucketRace Games"
+  productRef      String?                  // ID from site-specific product table
+  productModel    String?                  // "Event", "Product", "MerchProduct"
+  productName     String?                  // Denormalised for display without joins
+  productCategory String?                  // "Scavenger Hunt", "Printable Quiz", "Live Show"
+  platform        String?                  // "Virtual", "Real-World", "Hybrid"
+  groupType       String?                  // "Corporate", "Private", "Public"
+  audience        String?                  // "Adult", "Children", "Mixed"
+  location        String?
+  region          String?
+  country         String?
+  teamName        String?
+  eventDate       DateTime?
+  metadata        String?      @db.Text    // JSON for anything else
+  createdAt       DateTime     @default(now())
+
+  customer Customer @relation(fields: [customerId], references: [id])
+
+  @@index([customerId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+enum ActivityType {
+  GAME_PLAYED
+  PRODUCT_USED
+  WEBSITE_VISIT
+  APP_INTERACTION
+  FREE_CONTENT
+  ENQUIRY
+  SIGNUP
+}
+
+model CustomerScore {
+  id          String   @id @default(uuid())
+  customerId  String   @unique
+  score       Int      @default(0)
+  breakdown   String   @db.Text // JSON: { profile: 25, purchase: 40, engagement: 18, decay: -10 }
+  updatedAt   DateTime @updatedAt
+
+  customer Customer @relation(fields: [customerId], references: [id])
+
+  @@index([score])
+}
+
+model MarketingPreference {
+  id          String   @id @default(uuid())
+  customerId  String
+  preference  String                   // "Virtual", "Real World", "Fat Big Quiz", etc.
+  optedIn     Boolean  @default(true)
+  updatedAt   DateTime @updatedAt
+
+  customer Customer @relation(fields: [customerId], references: [id])
+
+  @@unique([customerId, preference])
+  @@index([customerId])
+}
+
+// CRM campaign tracking (separate from the email content Campaign model)
+model CrmCampaign {
+  id           String   @id @default(uuid())
+  name         String
+  subject      String
+  sentAt       DateTime?
+  totalSent    Int      @default(0)
+  totalOpened  Int      @default(0)
+  totalClicked Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  sends CrmCampaignSend[]
+}
+
+model CrmCampaignSend {
   id          String    @id @default(uuid())
-  firstName   String
-  lastName    String
-  email       String    @unique
-  phone       String?
-  company     String?
-  source      String?
-  notes       String?   @db.Text
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  campaignId  String
+  customerId  String
+  sentAt      DateTime  @default(now())
+  opened      Boolean   @default(false)
+  openedAt    DateTime?
+  clicked     Boolean   @default(false)
+  clickedAt   DateTime?
+
+  campaign CrmCampaign @relation(fields: [campaignId], references: [id])
+  customer Customer    @relation(fields: [customerId], references: [id])
+
+  @@index([campaignId])
+  @@index([customerId])
+  @@index([sentAt])
 }
 
 // === Bookings: Invoices ===

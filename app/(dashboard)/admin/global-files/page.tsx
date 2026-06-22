@@ -1,5 +1,4 @@
 "use client";
-import { DashboardSidebar } from "@/components";
 import Link from "next/link";
 import React, { useEffect, useState, useCallback } from "react";
 import toast from "react-hot-toast";
@@ -127,9 +126,7 @@ export default function GlobalFilesPage() {
   };
 
   return (
-    <div className="bg-white flex min-h-screen">
-      <DashboardSidebar />
-      <div className="flex-1 min-w-0 p-4 overflow-auto">
+    <div className="p-4 min-h-screen">
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-semibold">Bonus Download Files</h1>
@@ -251,7 +248,6 @@ export default function GlobalFilesPage() {
             <li>- Toggle active/inactive without deleting files</li>
           </ul>
         </div>
-      </div>
     </div>
   );
 }

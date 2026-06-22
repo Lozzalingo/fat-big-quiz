@@ -1,5 +1,4 @@
 "use client";
-import { DashboardSidebar } from "@/components";
 import { UserProfileForm } from "@/app/(dashboard)/admin/users/UserComponents";
 import { isValidEmailAddressFormat } from "@/lib/utils";
 import React, { useState } from "react";
@@ -70,9 +69,7 @@ const DashboardCreateNewUser = () => {
   };
 
   return (
-    <div className="bg-white flex min-h-screen">
-      <DashboardSidebar />
-      <div className="flex-1 min-w-0 p-4 overflow-auto flex flex-col gap-y-7">
+    <div className="p-4 min-h-screen flex flex-col gap-y-7">
         <h1 className="text-3xl font-semibold">Add New User</h1>
         
         <div className="max-w-md">
@@ -101,7 +98,6 @@ const DashboardCreateNewUser = () => {
             </button>
           </div>
         </div>
-      </div>
     </div>
   );
 };

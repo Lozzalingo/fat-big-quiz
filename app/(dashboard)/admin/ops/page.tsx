@@ -1,6 +1,5 @@
 "use client";
 
-import { DashboardSidebar } from "@/components";
 import { adminFetch } from "@/utils/adminFetch";
 import React, { useState, useEffect } from "react";
 
@@ -68,9 +67,7 @@ const OpsPage = () => {
   };
 
   return (
-    <div className="flex">
-      <DashboardSidebar />
-      <div className="flex-1 xl:ml-[300px] md:ml-[250px] p-4 md:p-8 bg-gray-100 min-h-screen">
+    <div className="p-4 md:p-8 bg-gray-100 min-h-screen">
         <h1 className="text-2xl font-bold mb-6">Operations & Health</h1>
 
         {alerts.length > 0 && (
@@ -131,7 +128,6 @@ const OpsPage = () => {
             </div>
           </>
         )}
-      </div>
     </div>
   );
 };

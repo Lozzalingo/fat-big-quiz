@@ -1,6 +1,5 @@
 "use client";
 
-import { DashboardSidebar } from "@/components";
 import { adminFetch } from "@/utils/adminFetch";
 import React, { useState, useEffect, useRef } from "react";
 
@@ -70,9 +69,7 @@ const StoragePage = () => {
   };
 
   return (
-    <div className="flex">
-      <DashboardSidebar />
-      <div className="flex-1 xl:ml-[300px] md:ml-[250px] p-4 md:p-8 bg-gray-100 min-h-screen">
+    <div className="p-4 md:p-8 bg-gray-100 min-h-screen">
         <h1 className="text-2xl font-bold mb-6">File Storage</h1>
         {stats && (
           <div className="bg-white rounded-lg shadow p-4 mb-6">
@@ -102,7 +99,6 @@ const StoragePage = () => {
             {files.length === 0 && <p className="text-gray-400 col-span-3">No files found</p>}
           </div>
         </div>
-      </div>
     </div>
   );
 };

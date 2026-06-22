@@ -1,6 +1,5 @@
 "use client";
 
-import { DashboardSidebar } from "@/components";
 import { adminFetch } from "@/utils/adminFetch";
 import React, { useState, useEffect } from "react";
 
@@ -71,9 +70,7 @@ const ConfigPage = () => {
   };
 
   return (
-    <div className="flex">
-      <DashboardSidebar />
-      <div className="flex-1 xl:ml-[300px] md:ml-[250px] p-4 md:p-8 bg-gray-100 min-h-screen">
+    <div className="p-4 md:p-8 bg-gray-100 min-h-screen">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Configuration & Settings</h1>
           <button onClick={() => setShowNew(!showNew)} data-action="config_new"
@@ -153,7 +150,6 @@ const ConfigPage = () => {
             ))
           )}
         </div>
-      </div>
     </div>
   );
 };
