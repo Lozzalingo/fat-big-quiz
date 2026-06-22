@@ -893,8 +893,6 @@ const AddNewProduct = () => {
               </button>
             </div>
           </div>
-        </div>
-      </div>
     </div>
   );
 };

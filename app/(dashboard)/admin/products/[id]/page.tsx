@@ -1087,7 +1087,6 @@ const DashboardProductDetails = ({
             </button>
           </div>
         </div>
-      </div>
     </div>
   );
 };
