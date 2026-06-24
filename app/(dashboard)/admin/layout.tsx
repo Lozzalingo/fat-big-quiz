@@ -8,13 +8,12 @@ import {
   FaCalendarCheck,
   FaRegUser,
   FaGear,
-  FaHome,
   FaPlus,
   FaStar,
   FaGift,
   FaUsers,
 } from "react-icons/fa6";
-import { FaBook, FaGoogle, FaTheaterMasks, FaEnvelope } from "react-icons/fa";
+import { FaBook, FaGoogle, FaTheaterMasks, FaEnvelope, FaHome } from "react-icons/fa";
 import { FaTable } from "react-icons/fa6";
 import { MdCategory, MdQuiz } from "react-icons/md";
 import { PiReadCvLogoDuotone } from "react-icons/pi";
@@ -179,7 +178,7 @@ export default function FBQAdminLayout({
       <main className="flex-1 overflow-auto">
         <ModulePageProvider
           apiBase={process.env.NEXT_PUBLIC_API_BASE_URL || ""}
-          adminSecret=""
+          adminSecret={typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") ? "localhost" : ""}
         >
           {children}
         </ModulePageProvider>
