@@ -873,6 +873,9 @@ model Customer {
   lastActivityAt      DateTime?                      // Last engagement of any kind
   referralName        String?
   referralEmail       String?
+  linkedinUrl         String?
+  instagramHandle     String?
+  websiteUrl          String?
   notes               String?        @db.Text
   termsAcceptedAt     DateTime?
   privacyAcceptedAt   DateTime?

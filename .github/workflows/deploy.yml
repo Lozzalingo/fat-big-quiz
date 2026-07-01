@@ -4,6 +4,15 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      no_cache:
+        description: 'Build without Docker cache'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
 
 jobs:
   build-and-deploy:
@@ -32,6 +41,7 @@ jobs:
           tags: fatbigquiz-frontend:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          no-cache: ${{ github.event.inputs.no_cache == 'true' }}
 
       - name: Build API image
         uses: docker/build-push-action@v5
@@ -43,6 +53,7 @@ jobs:
           tags: fatbigquiz-api:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          no-cache: ${{ github.event.inputs.no_cache == 'true' }}
 
       - name: Save images to tar
         run: |
