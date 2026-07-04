@@ -8,8 +8,9 @@ export default function EventPage() {
     <EventDetailPage
       renderPrivateBookingForm={({ productSlug }) => (
         <BookingForm
-          productName={productSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
-          source={`events/${productSlug}`}
+          preselectedProductSlug={productSlug}
+          showModeToggle={false}
+          showEventSelector={false}
         />
       )}
     />
