@@ -112,8 +112,8 @@ jobs:
             # Restart services (db stays up)
             docker compose up -d --no-build frontend api
 
-            # Clean up old images
-            docker image prune -f
+            # Clean up old images (|| true to avoid failure if prune already running)
+            docker image prune -f || true
 
       - name: Health check
         uses: appleboy/ssh-action@v1
