@@ -41,12 +41,43 @@ export const authOptions: NextAuthOptions = {
       },
     })
   ],
+  session: {
+    strategy: "jwt",
+  },
   callbacks: {
     async signIn({ account }: { user: AuthUser; account: Account }) {
       if (account?.provider == "credentials") {
         return true;
       }
       return true;
+    },
+
+    async jwt({ token, user }) {
+      // On initial sign-in, user object is available
+      if (user) {
+        token.id = user.id;
+        token.role = (user as any).role || "user";
+      }
+
+      // Always refresh role from DB to pick up admin changes
+      const email = (token.email as string)?.toLowerCase();
+      if (email) {
+        const dbUser = await prisma.user.findFirst({ where: { email } });
+        if (dbUser) {
+          token.id = dbUser.id;
+          token.role = (dbUser as any).role || "user";
+        }
+      }
+
+      return token;
+    },
+
+    async session({ session, token }) {
+      if (session.user) {
+        (session.user as any).id = token.id;
+        (session.user as any).role = token.role;
+      }
+      return session;
     },
   },
 };
