@@ -61,6 +61,20 @@ jobs:
           docker save fatbigquiz-api:latest | gzip > fatbigquiz-api.tar.gz
           ls -lh fatbigquiz-*.tar.gz
 
+      - name: Clean up server disk
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: root
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            echo "=== Before cleanup ==="
+            df -h /
+            rm -f /tmp/fatbigquiz-*.tar.gz
+            docker system prune -af 2>/dev/null || docker image prune -af 2>/dev/null || true
+            echo "=== After cleanup ==="
+            df -h /
+
       - name: Transfer images to server
         uses: appleboy/scp-action@v0.1.7
         with:
