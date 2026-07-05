@@ -1,14 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AdminEventsPage } from "@lozzalingo/events-ui/admin/pages";
 import { EventsProvider } from "@lozzalingo/events-ui";
+import { io, Socket } from "socket.io-client";
+
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
 const CDN = process.env.NEXT_PUBLIC_DO_SPACES_CDN_ENDPOINT || "";
 const FOLDER = process.env.NEXT_PUBLIC_DO_SPACES_FOLDER || "fat-big-quiz";
 
 export default function AdminEvents() {
   const [adminSecret, setAdminSecret] = useState("");
+  const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
     const isLocalhost =
@@ -38,6 +41,17 @@ export default function AdminEvents() {
       });
   }, []);
 
+  // Connect socket.io for auto-save
+  useEffect(() => {
+    const s = io(API_BASE, { transports: ["websocket", "polling"] });
+    s.on("connect", () => console.log("[AdminEvents] Socket connected"));
+    s.on("disconnect", () => console.log("[AdminEvents] Socket disconnected"));
+    setSocket(s);
+    return () => {
+      s.disconnect();
+    };
+  }, []);
+
   if (!adminSecret) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -52,6 +66,7 @@ export default function AdminEvents() {
       cdnBase={CDN}
       storageFolder={FOLDER}
       adminSecret={adminSecret}
+      socket={socket}
       brand={{
         name: "Fat Big Quiz",
         eventsPath: "/events",

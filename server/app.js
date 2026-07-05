@@ -386,6 +386,25 @@ io.on("connection", (socket) => {
   sendVisitorUpdate();
   socket.on("getVisitorData", (data) => sendVisitorUpdate(data?.timeRange || 'today'));
   socket.on("newVisitor", () => sendVisitorUpdate());
+
+  // ── Settings auto-save via socket ──────────────────────────────────────────
+  socket.on("settings:save", async ({ key, value, category, description }) => {
+    try {
+      console.log("[Socket] Saving setting:", key);
+      const storedValue = typeof value === "string" ? value : JSON.stringify(value);
+      await prisma.setting.upsert({
+        where: { key },
+        update: { value: storedValue, category: category || "general", description },
+        create: { key, value: storedValue, category: category || "general", description },
+      });
+      socket.emit("settings:saved", { key, success: true });
+      console.log("[Socket] Setting saved:", key);
+    } catch (error) {
+      console.error("[Socket] Error saving setting:", error.message);
+      socket.emit("settings:saved", { key, success: false, error: error.message });
+    }
+  });
+
   socket.on("disconnect", () => console.log("[Socket] User disconnected"));
 });
 
