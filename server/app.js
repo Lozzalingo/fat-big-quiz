@@ -177,6 +177,11 @@ const eventRoutes = createExperienceRoutes(eventPrisma, {
 app.use("/ev/api", eventRoutes);
 console.log("[FBQ] Event experience routes mounted at /ev/api (proxied to EventProduct tables)");
 
+// Mount settings routes at /ev/api/app-settings so events-ui can read/write booking config
+const { createSettingsRoutes } = require("@lozzalingo/settings/server");
+app.use("/ev/api/app-settings", createSettingsRoutes(prisma, { secretKey: process.env.NEXTAUTH_SECRET }));
+console.log("[FBQ] Settings routes mounted at /ev/api/app-settings");
+
 // ─── File Download Route ────────────────────────────────────────────────────────
 
 const { getFromSpaces, getKey, FOLDER } = require('./utils/spaces');
