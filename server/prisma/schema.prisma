@@ -397,6 +397,160 @@ model QuizFormat {
   products        Product[]
 }
 
+// ─── QUIZ DATABASE ─────────────────────────────────────────────────────────────
+
+model QuizCategory {
+  id            String            @id @default(uuid())
+  name          String            @unique
+  slug          String            @unique
+  displayOrder  Int               @default(0)
+  questions     QuizQuestion[]
+  subCategories QuizSubCategory[] @relation("CategorySubCategories")
+}
+
+model QuizSubCategory {
+  id           String         @id @default(uuid())
+  name         String         @unique
+  slug         String         @unique
+  categoryId   String?
+  displayOrder Int            @default(0)
+  category     QuizCategory?  @relation("CategorySubCategories", fields: [categoryId], references: [id])
+  questions    QuizQuestion[]
+
+  @@index([categoryId])
+}
+
+// Add reverse relation on QuizCategory
+// (handled via the @relation name above)
+
+model QuizCountry {
+  id           String         @id @default(uuid())
+  name         String         @unique
+  code         String         @unique // e.g. "UK", "US", "AU", "WORLD"
+  displayOrder Int            @default(0)
+  questions    QuizQuestion[]
+}
+
+model QuizTheme {
+  id           String         @id @default(uuid())
+  name         String         @unique
+  slug         String         @unique
+  monthsActive String?        // JSON array of month numbers, e.g. "[0,1]" for Jan-Feb
+  displayOrder Int            @default(0)
+  questions    QuizQuestion[]
+}
+
+model QuizSource {
+  id            String         @id @default(uuid())
+  name          String         @unique
+  slug          String         @unique
+  url           String?
+  lastRunAt     DateTime?
+  lastRunStatus String?        // "success", "error", "running"
+  lastRunCount  Int?           // Questions imported in last run
+  displayOrder  Int            @default(0)
+  questions     QuizQuestion[]
+}
+
+model QuizQuestion {
+  id               String             @id @default(uuid())
+  questionText     String             @db.Text
+  questionOriginal String?            @db.Text // Raw scraped text before rewriting
+  answerText       String             @db.Text
+  answerOriginal   String?            @db.Text // Raw scraped answer
+  options          String?            @db.Text // JSON: [{"label":"A","text":"Paris"},...]
+  explanation      String?            @db.Text
+
+  difficulty       QuestionDifficulty @default(MEDIUM)
+  questionType     QuestionType       @default(MULTIPLE_CHOICE)
+  status           QuestionStatus     @default(UNVERIFIED)
+
+  categoryId       String
+  subCategoryId    String?
+  countryId        String
+  themeId          String
+  sourceId         String
+
+  sourceUrl        String?            // URL of the original quiz page
+  publishedDate    DateTime?          // When the original quiz was published
+  scrapedDate      DateTime?          // When it was scraped
+  year             Int?               // Derived from publishedDate for filtering
+  week             Int?               // Week number from scraper system
+
+  // Scraper traceability
+  externalId       String?   @unique  // Scraper question ID for duplicate detection
+
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  category         QuizCategory    @relation(fields: [categoryId], references: [id])
+  subCategory      QuizSubCategory? @relation(fields: [subCategoryId], references: [id])
+  country          QuizCountry     @relation(fields: [countryId], references: [id])
+  theme            QuizTheme       @relation(fields: [themeId], references: [id])
+  source           QuizSource      @relation(fields: [sourceId], references: [id])
+
+  @@index([categoryId])
+  @@index([subCategoryId])
+  @@index([countryId])
+  @@index([themeId])
+  @@index([sourceId])
+  @@index([status])
+  @@index([year])
+  @@index([difficulty])
+  @@index([questionType])
+  @@index([publishedDate])
+  @@index([createdAt])
+}
+
+enum QuestionDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  OPEN_ANSWER
+  FILL_IN_THE_BLANKS
+  NAME_ANY
+  ORDER_THESE
+  WHOS_AT_POSITION
+  WHAT_POSITION
+  MISSING_SLOT
+  TOP_OR_BOTTOM_HALF
+  WHATS_BETWEEN
+  HOW_FAR_APART
+  HIGHEST_RANKED
+  COMPLETE_THE_LIST
+  HIGHER_OR_LOWER
+  UP_OR_DOWN
+  WHICH_IS_HIGHER
+  WORTH_MORE
+  SPOT_THE_FAKE
+  SWAP
+  FINISH_THE_LYRIC
+  MOST_WEEKS_AT_NUMBER_ONE
+  MOST_STREAMS
+  MOVIE_TAGLINE
+  ROTTEN_TOMATOES_SCORE
+  NAME_THE_GAME
+  FAKE_NEWS
+  MISSING_WORDS
+  MATCH_THE_COMMENT
+  MOST_UPVOTES
+  BEST_PERFORMER
+  WHAT_PRICE
+  EXCHANGE_RATE
+  BIGGEST_GAIN_LOSS
+}
+
+enum QuestionStatus {
+  UNVERIFIED
+  VERIFIED
+  FLAGGED
+}
+
 model ProductCategory {
   id         String   @id @default(uuid())
   productId  String

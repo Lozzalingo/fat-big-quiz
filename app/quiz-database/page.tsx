@@ -1,21 +1,11 @@
-import { MainHeaderClient } from "@/components";
-import ComingSoonSignup from "@/app/components/ComingSoonSignup";
+import QuizDatabaseClient from "./QuizDatabaseClient";
 
 export const metadata = {
-  title: "Questions Database - Coming Soon | Fat Big Quiz",
-  description: "Access thousands of questions across hundreds of categories. Build your own quizzes.",
+  title: "Quiz Questions Database | Fat Big Quiz",
+  description:
+    "Search thousands of quiz questions across hundreds of categories. Filter by topic, difficulty, country, theme, and more.",
 };
 
 export default function QuizDatabasePage() {
-  return (
-    <>
-      <MainHeaderClient />
-      <ComingSoonSignup
-        source="quiz-database"
-        title="Questions Database"
-        emoji="🗃️"
-        description="Access thousands of questions across hundreds of categories. Build your own quizzes."
-      />
-    </>
-  );
+  return <QuizDatabaseClient />;
 }

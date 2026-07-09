@@ -42,6 +42,7 @@ const settingsRouter = require('./routes/settings');
 const visitorRouter = require("./routes/visitors");
 const purchasesRouter = require('./routes/purchases');
 const quizFormatsRouter = require('./routes/quizFormats');
+const quizDatabaseRouter = require('./routes/quizDatabase');
 const homepageCardsRouter = require('./routes/homepageCards');
 const globalDownloadFilesRouter = require('./routes/globalDownloadFiles');
 let merchantRouter;
@@ -139,6 +140,7 @@ app.use('/api/settings', settingsRouter);
 app.use('/api/visitors', visitorRouter);
 app.use('/api/purchases', purchasesRouter);
 app.use('/api/quiz-formats', quizFormatsRouter);
+app.use('/api/quiz-database', quizDatabaseRouter);
 app.use('/api/homepage-cards', homepageCardsRouter);
 app.use('/api/global-files', globalDownloadFilesRouter);
 app.use('/api/campaigns', lz.adminMiddleware, campaignsRouter);
@@ -150,6 +152,10 @@ if (merchantRouter) {
   });
 }
 app.use('/api/indexing', indexingRouter);
+
+// ─── Quiz Database Scheduler ──────────────────────────────────────────────────
+const { initQuizScheduler } = require('./services/quizScheduler');
+initQuizScheduler();
 
 // ─── Event Products (events-ui compatible) ──────────────────────────────────────
 // Uses @lozzalingo/experiences routes with a Prisma proxy that maps

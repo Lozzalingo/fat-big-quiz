@@ -13,7 +13,7 @@ import {
   FaGift,
   FaUsers,
 } from "react-icons/fa6";
-import { FaBook, FaGoogle, FaTheaterMasks, FaEnvelope, FaHome } from "react-icons/fa";
+import { FaBook, FaGoogle, FaTheaterMasks, FaEnvelope, FaHome, FaDatabase, FaUpload, FaSearch } from "react-icons/fa";
 import { FaTable } from "react-icons/fa6";
 import { MdCategory, MdQuiz } from "react-icons/md";
 import { PiReadCvLogoDuotone } from "react-icons/pi";
@@ -141,6 +141,17 @@ export default function FBQAdminLayout({
       icon: <FaEnvelope className="text-lg" />,
       label: "Campaigns",
       id: "campaigns",
+    });
+
+    customNavItems.push({
+      icon: <FaDatabase className="text-lg" />,
+      label: "Quiz Database",
+      id: "quiz-database",
+      subItems: [
+        { path: "/admin/quiz-database", icon: <FaSearch className="text-base" />, label: "Questions" },
+        { path: "/admin/quiz-database/new", icon: <FaPlus className="text-base" />, label: "Add Question" },
+        { path: "/admin/quiz-database/import", icon: <FaUpload className="text-base" />, label: "Import" },
+      ],
     });
   }
 
