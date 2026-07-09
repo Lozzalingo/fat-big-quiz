@@ -248,44 +248,62 @@ function initQuizScheduler() {
     runBlogScrape();
   });
 
-  // Guardian News Quiz: every Thursday at 12:00 UTC (quiz publishes Thursday mornings)
+  // Guardian News Quiz (Thursday Quiz): every Thursday at 12:00 UTC
   cron.schedule("0 12 * * 4", () => {
     runExternalScraper("guardian-news", 5);
   });
 
-  // Guardian Sports Quiz: every Friday at 12:00 UTC (quiz publishes Friday mornings)
+  // Guardian Sports Quiz: every Friday at 12:00 UTC
   cron.schedule("0 12 * * 5", () => {
     runExternalScraper("guardian-sports", 5);
   });
 
-  // NPR Weekly News Quiz: every Saturday at 10:00 UTC (quiz typically publishes Friday)
+  // Guardian Kids Quiz: every Saturday at 08:00 UTC
+  cron.schedule("0 8 * * 6", () => {
+    runExternalScraper("guardian-kids", 3);
+  });
+
+  // Guardian Thomas Eaton (Saturday Quiz): every Saturday at 14:00 UTC
+  cron.schedule("0 14 * * 6", () => {
+    runExternalScraper("guardian-eaton", 3);
+  });
+
+  // Guardian Newsquiz: every Friday at 14:00 UTC
+  cron.schedule("0 14 * * 5", () => {
+    runExternalScraper("guardian-newsquiz", 3);
+  });
+
+  // Guardian Standalone (catch-all /tone/quizzes): every Sunday at 06:00 UTC
+  cron.schedule("0 6 * * 0", () => {
+    runExternalScraper("guardian-standalone", 5);
+  });
+
+  // NPR Weekly News Quiz: every Saturday at 10:00 UTC
   cron.schedule("0 10 * * 6", () => {
     runExternalScraper("npr", 3);
   });
 
-  // CNN Quiz: every Monday at 08:00 UTC (check for new weekly quiz)
+  // CNN Quiz: every Monday at 08:00 UTC
   cron.schedule("0 8 * * 1", () => {
     runExternalScraper("cnn", 5);
   });
 
-  // BBC Football Quiz: every Monday at 09:00 UTC (check for new quizzes)
+  // BBC Football Quiz: every Monday at 09:00 UTC
   cron.schedule("0 9 * * 1", () => {
     runExternalScraper("bbc-football", 10);
-  });
-
-  // NYT Quiz: every Saturday at 11:00 UTC (best effort, paywall may block)
-  cron.schedule("0 11 * * 6", () => {
-    runExternalScraper("nyt", 3);
   });
 
   console.log("[QuizDB Scheduler] Scheduled:");
   console.log("  - FBQ Blog scrape: daily at 06:00 UTC");
   console.log("  - Guardian News Quiz: Thursdays at 12:00 UTC");
   console.log("  - Guardian Sports Quiz: Fridays at 12:00 UTC");
+  console.log("  - Guardian Kids Quiz: Saturdays at 08:00 UTC");
+  console.log("  - Guardian Thomas Eaton: Saturdays at 14:00 UTC");
+  console.log("  - Guardian Newsquiz: Fridays at 14:00 UTC");
+  console.log("  - Guardian Standalone: Sundays at 06:00 UTC");
   console.log("  - NPR Quiz: Saturdays at 10:00 UTC");
   console.log("  - CNN Quiz: Mondays at 08:00 UTC");
   console.log("  - BBC Football Quiz: Mondays at 09:00 UTC");
-  console.log("  - NYT Quiz: Saturdays at 11:00 UTC (best effort)");
 }
 
 module.exports = { initQuizScheduler, runBlogScrape, runExternalScraper };

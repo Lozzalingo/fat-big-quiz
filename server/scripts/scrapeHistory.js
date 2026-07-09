@@ -567,56 +567,45 @@ async function scrapeCnnHistory(browser, progress, dryRun) {
   let imported = 0;
   let skipped = 0;
 
-  // Step 1: Collect quiz URLs from the Wayback Machine CDX API
-  console.log("[History] Fetching CNN quiz URLs from Wayback Machine...");
+  // Step 1: Construct CNN quiz URLs by testing every day from Jan 2023 to present
+  // Pattern: edition.cnn.com/interactive/{year}/{month}/us/cnn-5-things-news-quiz-{monthname}-{day}-sec/
+  console.log("[History] Constructing CNN quiz URLs (testing Jan 2023 to present)...");
   const quizUrls = [];
 
-  try {
-    // Use Wayback CDX API to find all CNN quiz URLs from 2018-2026
-    const cdxUrl = "https://web.archive.org/cdx/search/cdx?" +
-      "url=edition.cnn.com/interactive/*/us/cnn-5-things-news-quiz*&" +
-      "output=json&fl=timestamp,original&collapse=urlkey&limit=5000";
+  const monthNames = [
+    "january", "february", "march", "april", "may", "june",
+    "july", "august", "september", "october", "november", "december",
+  ];
 
-    const cdxRes = await axios.get(cdxUrl, { headers: HEADERS, timeout: 30000 });
-    const rows = cdxRes.data;
+  const now = new Date();
+  for (let year = 2023; year <= now.getFullYear(); year++) {
+    for (let monthIdx = 0; monthIdx < 12; monthIdx++) {
+      // Skip future months
+      if (year === now.getFullYear() && monthIdx > now.getMonth()) break;
 
-    if (Array.isArray(rows) && rows.length > 1) {
-      // Skip header row
-      for (let i = 1; i < rows.length; i++) {
-        const [timestamp, originalUrl] = rows[i];
-        if (originalUrl && !quizUrls.includes(originalUrl)) {
-          quizUrls.push(originalUrl);
+      const monthNum = String(monthIdx + 1).padStart(2, "0");
+      const monthName = monthNames[monthIdx];
+
+      for (let day = 1; day <= 31; day++) {
+        const url = `https://edition.cnn.com/interactive/${year}/${monthNum}/us/cnn-5-things-news-quiz-${monthName}-${day}-sec/`;
+
+        // Skip if already scraped
+        if (isUrlDone(progress, seriesKey, url)) continue;
+
+        try {
+          const res = await axios.head(url, { headers: HEADERS, timeout: 5000, validateStatus: (s) => s < 500 });
+          if (res.status === 200) {
+            quizUrls.push(url);
+            console.log(`[History]   Found: ${url}`);
+          }
+        } catch {
+          // 404 or timeout - skip
         }
       }
+      await sleep(200); // Small delay between months
     }
-    console.log(`[History] Found ${quizUrls.length} CNN quiz URLs from Wayback Machine`);
-  } catch (err) {
-    console.error(`[History] Wayback CDX error: ${err.message}`);
   }
-
-  // Also try the current CNN search for recent quizzes
-  try {
-    const page = await browser.newPage();
-    await page.goto("https://edition.cnn.com/search?q=5+things+news+quiz&size=50&sort=newest&category=us", {
-      waitUntil: "domcontentloaded",
-      timeout: 30000,
-    });
-    await sleep(3000);
-
-    const searchLinks = await page.evaluate(() => {
-      return Array.from(document.querySelectorAll('a[href*="quiz"]'))
-        .map((a) => a.href)
-        .filter((href) => href.includes("interactive") || href.includes("quiz"))
-        .filter((href) => !href.includes("search"));
-    });
-    for (const link of searchLinks) {
-      if (!quizUrls.includes(link)) quizUrls.push(link);
-    }
-    await page.close();
-    console.log(`[History] Total CNN URLs after search: ${quizUrls.length}`);
-  } catch (err) {
-    console.error(`[History] CNN search error: ${err.message}`);
-  }
+  console.log(`[History] Found ${quizUrls.length} CNN quiz URLs via URL construction`);
 
   // Step 2: Scrape each quiz
   for (let i = 0; i < quizUrls.length; i++) {
@@ -630,60 +619,59 @@ async function scrapeCnnHistory(browser, progress, dryRun) {
     try {
       const page = await browser.newPage();
 
-      // Try the live URL first, fall back to Wayback
-      let finalUrl = url;
       try {
-        const resp = await page.goto(url, { waitUntil: "networkidle", timeout: 20000 });
-        if (!resp || resp.status() >= 400) {
-          // Try Wayback version
-          finalUrl = `https://web.archive.org/web/2024/${url}`;
-          await page.goto(finalUrl, { waitUntil: "networkidle", timeout: 20000 });
-        }
+        await page.goto(url, { waitUntil: "networkidle", timeout: 30000 });
       } catch {
-        finalUrl = `https://web.archive.org/web/2024/${url}`;
-        try {
-          await page.goto(finalUrl, { waitUntil: "networkidle", timeout: 20000 });
-        } catch {
-          markUrlDone(progress, seriesKey, url, "error");
-          await page.close();
-          continue;
-        }
+        markUrlDone(progress, seriesKey, url, "error");
+        await page.close();
+        continue;
       }
 
       await sleep(3000);
 
-      const qaData = await page.evaluate(async () => {
-        function sl(ms) {
-          return new Promise((r) => setTimeout(r, ms));
-        }
-        const results = [];
-        const questionBlocks = document.querySelectorAll(".questionBlock, .quiz--question, [class*='question-block']");
+      // Accept cookies if present
+      try {
+        await page.evaluate(() => {
+          const btn = document.getElementById("onetrust-accept-btn-handler");
+          if (btn) btn.click();
+        });
+        await sleep(1000);
+      } catch {}
 
-        for (const block of questionBlocks) {
-          const qContent = block.querySelector(".quiz--question__content, [class*='question__content'], [class*='question-text']");
-          const qText = qContent ? qContent.textContent.trim() : "";
+      const qaData = await page.evaluate(async () => {
+        const results = [];
+
+        // CNN has option containers with buttons, each paired with an h3 question
+        const optionContainers = document.querySelectorAll('div[class*="_question-block_options"]');
+
+        for (const container of optionContainers) {
+          // Find the question heading - walk backwards from the options container
+          let qEl = container.previousElementSibling;
+          while (qEl && qEl.tagName !== "H3") {
+            qEl = qEl.previousElementSibling;
+          }
+          if (!qEl) continue;
+
+          const qText = qEl.textContent.trim();
           if (qText.length < 10) continue;
 
-          const optionEls = Array.from(block.querySelectorAll(".questionOption, ._question-block_option, [class*='option']"));
-          const options = optionEls.map((o) => o.textContent.trim()).filter((t) => t.length > 0 && t.length < 200);
-
-          if (optionEls[0]) optionEls[0].click();
-          await sl(300);
-
+          const options = [];
           let correctAnswer = "";
-          let explanation = "";
-          for (const opt of optionEls) {
-            const classes = Array.from(opt.classList);
-            if (classes.some((c) => c.startsWith("the-"))) {
-              correctAnswer = opt.textContent.trim();
+
+          // Buttons with value="true" for the correct answer
+          const buttons = container.querySelectorAll("button");
+          for (const btn of buttons) {
+            const optText = btn.textContent.trim();
+            if (optText.length > 0 && optText.length < 200) {
+              options.push(optText);
+              if (btn.getAttribute("value") === "true") {
+                correctAnswer = optText;
+              }
             }
           }
 
-          const responseEl = block.querySelector("._question-block_answer-response__copy, .answerResponse, [class*='answer-response']");
-          if (responseEl) explanation = responseEl.textContent.trim();
-
           if (correctAnswer) {
-            results.push({ question: qText, answer: correctAnswer, explanation, options });
+            results.push({ question: qText, answer: correctAnswer, options });
           }
         }
         return results;
@@ -703,7 +691,7 @@ async function scrapeCnnHistory(browser, progress, dryRun) {
           label: String.fromCharCode(65 + idx),
           text,
         }));
-        const slug = url.split("/").pop() || "cnn";
+        const slug = url.split("/").filter(Boolean).pop() || "cnn";
         const externalId = `cnn-quiz-${slug}-q${j + 1}`;
 
         const result = await importQuestion(
@@ -755,21 +743,25 @@ async function scrapeNprHistory(browser, progress, dryRun) {
   const quizUrls = [];
   console.log("[History] Fetching NPR quiz URLs from series pages...");
 
-  for (let pageNum = 1; pageNum <= 20; pageNum++) {
+  // NPR uses ?start= offset pagination (10 articles per page)
+  for (let pageNum = 0; pageNum < 30; pageNum++) {
+    const offset = pageNum * 10;
     if (isPageDone(progress, seriesKey, pageNum)) {
-      console.log(`[History]   NPR page ${pageNum}: already indexed, skipping`);
+      console.log(`[History]   NPR offset ${offset}: already indexed, skipping`);
       continue;
     }
 
     try {
-      const pageUrl = `https://www.npr.org/series/1146192567/weekly-news-quiz?page=${pageNum}`;
+      const pageUrl = offset === 0
+        ? "https://www.npr.org/series/1146192567/weekly-news-quiz"
+        : `https://www.npr.org/series/1146192567/weekly-news-quiz?start=${offset + 1}`;
       const res = await axios.get(pageUrl, { headers: HEADERS, timeout: 15000 });
       const $ = cheerio.load(res.data);
       let foundOnPage = 0;
 
       $("a[href]").each((_, el) => {
         const href = $(el).attr("href");
-        if (href && (href.includes("news-quiz") || href.includes("weekly-quiz")) && href.match(/\/\d{4}\//)) {
+        if (href && href.includes("news-quiz") && href.match(/\/\d{4}\//)) {
           const fullUrl = href.startsWith("http") ? href : `https://www.npr.org${href}`;
           if (!quizUrls.includes(fullUrl)) {
             quizUrls.push(fullUrl);
@@ -778,13 +770,13 @@ async function scrapeNprHistory(browser, progress, dryRun) {
         }
       });
 
-      console.log(`[History]   NPR page ${pageNum}: found ${foundOnPage} new URLs`);
+      console.log(`[History]   NPR offset ${offset}: found ${foundOnPage} new URLs`);
       markSeriesPage(progress, seriesKey, pageNum);
 
       if (foundOnPage === 0) break;
       await sleep(800);
     } catch (err) {
-      console.error(`[History]   NPR page ${pageNum} error: ${err.message}`);
+      console.error(`[History]   NPR offset ${offset} error: ${err.message}`);
       break;
     }
   }
