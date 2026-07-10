@@ -63,6 +63,9 @@ COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/static ./.next/static
 
+# Copy full server app routes (standalone tracing can miss workspace package routes)
+COPY --from=builder /app/.next/server ./.next/server
+
 # Copy all node_modules (standalone tracing misses workspace deps)
 COPY --from=builder /app/node_modules ./node_modules
 
