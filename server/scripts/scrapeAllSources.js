@@ -998,50 +998,59 @@ async function scrapeCnn(browser, maxPages, dryRun) {
 // ═══════════════════════════════════════════════════════════════════════════
 
 /**
- * Get NPR quiz URLs with pagination support.
+ * Get NPR quiz URLs from archive pages (month-by-month pagination via ?date=M-DD-YYYY).
+ * For CRON, only fetches recent months. For history, fetches all.
  */
 async function getNprQuizUrls(maxPages) {
-  const baseUrl = "https://www.npr.org/series/1146192567/weekly-news-quiz";
   const allUrls = [];
-  let pageNum = 1;
+  const seen = new Set();
 
-  while (true) {
-    try {
-      // NPR uses ?start= parameter for pagination (articles per page ~10)
-      const offset = (pageNum - 1) * 10;
-      const pageUrl = offset === 0 ? baseUrl : `${baseUrl}?start=${offset + 1}`;
-      const res = await fetchWithRetry(pageUrl);
-      const $ = cheerio.load(res.data);
-      let foundOnPage = 0;
+  try {
+    // Fetch archive index to get month links
+    const archiveRes = await fetchWithRetry("https://www.npr.org/series/1146192567/weekly-news-quiz/archive");
+    const $archive = cheerio.load(archiveRes.data);
+    const monthPaths = [];
+    $archive('a[href*="archive?date="]').each((_, el) => {
+      const href = $archive(el).attr("href");
+      if (href && !monthPaths.includes(href)) monthPaths.push(href);
+    });
 
-      $("a[href]").each((_, el) => {
-        const href = $(el).attr("href");
-        if (href && href.includes("news-quiz") && href.match(/\/\d{4}\//)) {
-          const fullUrl = href.startsWith("http") ? href : `https://www.npr.org${href}`;
-          if (!allUrls.includes(fullUrl)) {
-            allUrls.push(fullUrl);
-            foundOnPage++;
+    // Sort by date descending (most recent first) and limit to recent months for CRON
+    monthPaths.sort((a, b) => {
+      const dateA = a.split("date=")[1] || "";
+      const dateB = b.split("date=")[1] || "";
+      return dateB.localeCompare(dateA);
+    });
+    const monthsToFetch = monthPaths.slice(0, Math.max(3, maxPages));
+
+    for (const path of monthsToFetch) {
+      try {
+        const res = await fetchWithRetry(`https://www.npr.org${path}`);
+        const $ = cheerio.load(res.data);
+        $("a[href]").each((_, el) => {
+          const href = $(el).attr("href");
+          if (
+            href &&
+            href.match(/npr\.org\/\d{4}\/\d{2}\/\d{2}\//) &&
+            !href.includes("/archive") &&
+            !href.includes("/series/") &&
+            !seen.has(href)
+          ) {
+            seen.add(href);
+            allUrls.push(href);
           }
-        }
-      });
-
-      console.log(`[Scraper]   NPR page ${pageNum} (offset ${offset}): found ${foundOnPage} new URLs (total: ${allUrls.length})`);
-
-      if (foundOnPage === 0) {
-        console.log(`[Scraper]   No new NPR URLs on page ${pageNum}, finished paginating`);
-        break;
+        });
+        await sleep(500);
+      } catch (err) {
+        console.error(`[Scraper]   Error fetching NPR archive ${path}: ${err.message}`);
       }
-
-      pageNum++;
-      await sleep(500);
-    } catch (err) {
-      console.error(`[Scraper]   Error fetching NPR page ${pageNum}: ${err.message}`);
-      break;
     }
+  } catch (err) {
+    console.error(`[Scraper]   Error fetching NPR archive index: ${err.message}`);
   }
 
-  console.log(`[Scraper] Collected ${allUrls.length} total NPR URLs, returning up to ${maxPages}`);
-  return [...new Set(allUrls)].slice(0, maxPages);
+  console.log(`[Scraper] Collected ${allUrls.length} NPR URLs from archive, returning up to ${maxPages}`);
+  return allUrls.slice(0, maxPages);
 }
 
 async function scrapeNpr(browser, maxPages, dryRun) {

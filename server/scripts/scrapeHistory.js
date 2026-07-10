@@ -739,72 +739,57 @@ async function scrapeNprHistory(browser, progress, dryRun) {
   let imported = 0;
   let skipped = 0;
 
-  // NPR series page - use Playwright to click "Load More" button repeatedly
+  // NPR archive page has month-by-month pagination via ?date=M-DD-YYYY
+  // Much more reliable than clicking "Load More" button
   const quizUrls = [];
-  console.log("[History] Fetching NPR quiz URLs via Playwright (Load More button)...");
+  console.log("[History] Fetching NPR quiz URLs from archive pages...");
 
   try {
-    const page = await browser.newPage();
-    await page.goto("https://www.npr.org/series/1146192567/weekly-news-quiz", {
-      waitUntil: "domcontentloaded",
-      timeout: 30000,
+    // First get all archive month links
+    const archiveRes = await axios.get("https://www.npr.org/series/1146192567/weekly-news-quiz/archive", {
+      headers: HEADERS,
+      timeout: 15000,
     });
-    await sleep(3000);
-
-    // Dismiss cookie consent if present
-    try {
-      const cookieBtn = page.locator("#onetrust-accept-btn-handler");
-      if (await cookieBtn.isVisible({ timeout: 3000 })) {
-        await cookieBtn.click();
-        console.log("[History]   Dismissed cookie consent");
-        await sleep(1000);
-      }
-    } catch (_) {}
-
-    // Click "Load More" until no more button or we've loaded enough
-    let loadMoreClicks = 0;
-    const maxClicks = 50; // Safety limit
-    while (loadMoreClicks < maxClicks) {
-      const loadMoreBtn = page.locator('button:has-text("Load More"), a:has-text("Load More")');
-      try {
-        if (!(await loadMoreBtn.isVisible({ timeout: 3000 }))) {
-          console.log("[History]   No more 'Load More' button found - all content loaded");
-          break;
-        }
-        await loadMoreBtn.scrollIntoViewIfNeeded();
-        await sleep(500);
-        await loadMoreBtn.click();
-        loadMoreClicks++;
-        console.log(`[History]   Clicked 'Load More' (${loadMoreClicks})...`);
-        // Wait for new content to appear
-        await sleep(2000);
-      } catch (err) {
-        console.log(`[History]   Load More click ended: ${err.message}`);
-        break;
-      }
-    }
-
-    // Extract all quiz URLs from the fully loaded page
-    const allHrefs = await page.evaluate(() => {
-      return Array.from(document.querySelectorAll("a[href]"))
-        .map((a) => a.href)
-        .filter((href) => href.includes("npr.org") && href.match(/\/\d{4}\//));
+    const $archive = cheerio.load(archiveRes.data);
+    const monthPaths = [];
+    $archive('a[href*="archive?date="]').each((_, el) => {
+      const href = $archive(el).attr("href");
+      if (href && !monthPaths.includes(href)) monthPaths.push(href);
     });
+    console.log(`[History]   Found ${monthPaths.length} archive months`);
 
-    // De-duplicate and filter for quiz-related URLs
+    // Fetch each month page and collect quiz article URLs
     const seen = new Set();
-    for (const href of allHrefs) {
-      // NPR quiz URLs contain the series path or "news-quiz" in the slug
-      if (href.match(/\/\d{4}\/\d{2}\/\d{2}\//) && !seen.has(href)) {
-        seen.add(href);
-        quizUrls.push(href);
+    for (const path of monthPaths) {
+      const monthUrl = `https://www.npr.org${path}`;
+      try {
+        const res = await axios.get(monthUrl, { headers: HEADERS, timeout: 15000 });
+        const $ = cheerio.load(res.data);
+        let foundOnPage = 0;
+        $("a[href]").each((_, el) => {
+          const href = $(el).attr("href");
+          if (
+            href &&
+            href.match(/npr\.org\/\d{4}\/\d{2}\/\d{2}\//) &&
+            !href.includes("/archive") &&
+            !href.includes("/series/") &&
+            !seen.has(href)
+          ) {
+            seen.add(href);
+            quizUrls.push(href);
+            foundOnPage++;
+          }
+        });
+        if (foundOnPage > 0) {
+          console.log(`[History]   ${path.split("date=")[1]}: ${foundOnPage} URLs`);
+        }
+        await sleep(500);
+      } catch (err) {
+        console.error(`[History]   Error fetching ${path}: ${err.message}`);
       }
     }
-
-    await page.close();
-    console.log(`[History]   Loaded ${loadMoreClicks} more pages, found ${quizUrls.length} article URLs`);
   } catch (err) {
-    console.error(`[History]   NPR URL discovery error: ${err.message}`);
+    console.error(`[History]   NPR archive discovery error: ${err.message}`);
   }
 
   console.log(`[History] Total NPR URLs: ${quizUrls.length}`);
