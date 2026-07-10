@@ -65,8 +65,8 @@ const virtualQuizzes = [
     name: "The Fat Big Virtual Quiz of... Love",
     description: "<p>Roses are red, violets are blue, we have ten rounds of trivia, and they are all about you (and love).</p>",
     shortDesc: "Our Valentine's virtual quiz. Ten rounds of love-themed trivia, rom-com madness, and celebrity couple chaos.",
-    coverImage: null,
-    video: "https://www.youtube.com/shorts/Uas9jvdUK6E",
+    coverImage: "fat-big-virtual-quiz-love-cover.jpg",
+    video: "https://www.youtube.com/watch?v=Uas9jvdUK6E",
     descriptionText: "Roses are red, violets are blue, we have ten rounds of love-themed trivia, and they are all for you. From rom-com madness to celebrity couple portmanteaus, this heart-warming special will have your teams swooning, competing, and laughing in equal measure.\n\nOur quiz takes players through ten, highly interactive rounds of virtual gameplay. Using video, audio, special guests, graphics, guest presenters, and live triggers, along with the latest in broadcasting and design software, we bring our players a truly memorable user-friendly, immersive, experience.\n\nThe quizzes format consists of five quirky creative rounds and 5 normal quiz style rounds.",
     rounds: [
       "History: Bog standard quiz questions, picture questions, fill in the blanks.",
@@ -87,8 +87,8 @@ const virtualQuizzes = [
     name: "The Fat Big Virtual Quiz of... Christmas",
     description: "<p>Deck the halls with rounds of trivia, fa la la la la, la la la la.</p>",
     shortDesc: "Our festive virtual quiz. Christmas adverts, cracker jokes, and ten rounds of seasonal merriment.",
-    coverImage: null,
-    video: "https://www.youtube.com/shorts/4YLqCgTMpnM",
+    coverImage: "fat-big-virtual-quiz-christmas-cover.jpg",
+    video: "https://www.youtube.com/watch?v=4YLqCgTMpnM",
     descriptionText: "Deck the halls with rounds of trivia! From Christmas adverts to cracker jokes, this festive special is packed with seasonal merriment. Whether you are hosting an office Christmas party or getting the family together, our quiz brings the festive cheer with ten interactive rounds of yuletide joy.\n\nOur quiz takes players through ten, highly interactive rounds of virtual gameplay. Using video, audio, special guests, graphics, guest presenters, and live triggers, along with the latest in broadcasting and design software, we bring our players a truly memorable user-friendly, immersive, experience.\n\nThe quizzes format consists of five quirky creative rounds and 5 normal quiz style rounds.",
     rounds: [
       "History: Bog standard quiz questions, picture questions, fill in the blanks.",
@@ -109,8 +109,8 @@ const virtualQuizzes = [
     name: "The Fat Big Virtual Quiz of... Halloween",
     description: "<p>Things that go bump in the night... and ten rounds of spine-tingling trivia.</p>",
     shortDesc: "Our spooky virtual quiz. Cereal killers, horror villains, and ten rounds of ghoulish fun.",
-    coverImage: null,
-    video: "https://www.youtube.com/shorts/FVysiuahSF4",
+    coverImage: "fat-big-virtual-quiz-halloween-cover.jpg",
+    video: "https://www.youtube.com/watch?v=FVysiuahSF4",
     descriptionText: "Things that go bump in the night, and ten rounds of spine-tingling trivia. From cereal killers (the pun) to horror movie villains, this ghoulish special will have your teams screaming with laughter. Fancy dress encouraged but not required.\n\nOur quiz takes players through ten, highly interactive rounds of virtual gameplay. Using video, audio, special guests, graphics, guest presenters, and live triggers, along with the latest in broadcasting and design software, we bring our players a truly memorable user-friendly, immersive, experience.\n\nThe quizzes format consists of five quirky creative rounds and 5 normal quiz style rounds.",
     rounds: [
       "History: Bog standard quiz questions, picture questions, fill in the blanks.",
@@ -131,8 +131,8 @@ const virtualQuizzes = [
     name: "The Fat Big Virtual Quiz of... Easter",
     description: "<p>Hop to it! Ten rounds of egg-cellent trivia that will have your teams cracking up.</p>",
     shortDesc: "Our egg-cellent virtual quiz. Scrambled legs, chocolate collages, and ten rounds of Easter fun.",
-    coverImage: null,
-    video: "https://www.youtube.com/shorts/kN2nzqxU09Q",
+    coverImage: "fat-big-virtual-quiz-easter-cover.jpg",
+    video: "https://www.youtube.com/watch?v=kN2nzqxU09Q",
     descriptionText: "Hop to it! Ten rounds of egg-cellent trivia that will have your teams cracking up. From chocolate collages to cartoon character legs, this Easter special brings the fun with interactive rounds, daredevil challenges, and a resurrection twist.\n\nOur quiz takes players through ten, highly interactive rounds of virtual gameplay. Using video, audio, special guests, graphics, guest presenters, and live triggers, along with the latest in broadcasting and design software, we bring our players a truly memorable user-friendly, immersive, experience.\n\nThe quizzes format consists of five quirky creative rounds and 5 normal quiz style rounds.",
     rounds: [
       "History: Bog standard quiz questions, picture questions, fill in the blanks.",
@@ -153,8 +153,8 @@ const virtualQuizzes = [
     name: "The Fat Big Virtual Quiz of... Britain",
     description: "<p>Keep calm and quiz on. Ten rounds celebrating the very best (and quirkiest) of Britain.</p>",
     shortDesc: "Our British virtual quiz. James Bond supermarkets, cricket controversies, and ten rounds of Britishness.",
-    coverImage: null,
-    video: "https://www.youtube.com/shorts/5asX3YH3RN0",
+    coverImage: "fat-big-virtual-quiz-britain-cover.jpg",
+    video: "https://www.youtube.com/watch?v=5asX3YH3RN0",
     descriptionText: "Keep calm and quiz on. Ten rounds celebrating the very best (and quirkiest) of Britain. From James Bond villains hiding in British supermarkets to sporting controversies and monarch-themed brain teasers, this patriotic special is packed with British icons, culture, and a healthy dose of silliness.\n\nOur quiz takes players through ten, highly interactive rounds of virtual gameplay. Using video, audio, special guests, graphics, guest presenters, and live triggers, along with the latest in broadcasting and design software, we bring our players a truly memorable user-friendly, immersive, experience.\n\nThe quizzes format consists of five quirky creative rounds and 5 normal quiz style rounds.",
     rounds: [
       "History: Bog standard quiz questions, picture questions, fill in the blanks.",
@@ -175,8 +175,8 @@ const virtualQuizzes = [
     name: "The Fat Big Virtual Quiz of... Europe",
     description: "<p>From Paris to Prague, ten rounds of continental trivia that will take you on a tour of Europe.</p>",
     shortDesc: "Our European virtual quiz. Monuments, national dishes, and ten rounds of continental adventure.",
-    coverImage: null,
-    video: "https://www.youtube.com/shorts/ol6DlLDx5IY",
+    coverImage: "fat-big-virtual-quiz-europe-cover.jpg",
+    video: "https://www.youtube.com/watch?v=ol6DlLDx5IY",
     descriptionText: "From Paris to Prague, ten rounds of continental trivia that will take you on a grand tour of Europe. From famous monuments and national dishes to European leaders disguised as Pokemon, this quiz is your passport to an evening of culture, competition, and plenty of laughs.\n\nOur quiz takes players through ten, highly interactive rounds of virtual gameplay. Using video, audio, special guests, graphics, guest presenters, and live triggers, along with the latest in broadcasting and design software, we bring our players a truly memorable user-friendly, immersive, experience.\n\nThe quizzes format consists of five quirky creative rounds and 5 normal quiz style rounds.",
     rounds: [
       "History: Bog standard quiz questions, picture questions, fill in the blanks.",
@@ -197,8 +197,8 @@ const virtualQuizzes = [
     name: "The Fat Big Virtual Quiz of... Summer",
     description: "<p>Sun's out, quiz out. Ten rounds of sizzling trivia to heat up your summer.</p>",
     shortDesc: "Our summer virtual quiz. BBQ celebrities, beach pixel art, and ten rounds of sun-soaked fun.",
-    coverImage: null,
-    video: "https://www.youtube.com/shorts/HUFDj68M8uA",
+    coverImage: "fat-big-virtual-quiz-summer-cover.jpg",
+    video: "https://www.youtube.com/watch?v=HUFDj68M8uA",
     descriptionText: "Sun's out, quiz out. Ten rounds of sizzling trivia to heat up your summer. From celebrities on a BBQ spit roast to pixel art beach scenes and hot air balloon rides, this sun-soaked special brings the warmth with interactive rounds and plenty of summer vibes.\n\nOur quiz takes players through ten, highly interactive rounds of virtual gameplay. Using video, audio, special guests, graphics, guest presenters, and live triggers, along with the latest in broadcasting and design software, we bring our players a truly memorable user-friendly, immersive, experience.\n\nThe quizzes format consists of five quirky creative rounds and 5 normal quiz style rounds.",
     rounds: [
       "History: Bog standard quiz questions, picture questions, fill in the blanks.",
@@ -219,8 +219,8 @@ const virtualQuizzes = [
     name: "The Fat Big Virtual Quiz of... Spring",
     description: "<p>Spring has sprung! Ten rounds of fresh trivia to shake off the winter cobwebs.</p>",
     shortDesc: "Our spring virtual quiz. April fools, bee factories, and ten rounds of fresh seasonal fun.",
-    coverImage: null,
-    video: "https://www.youtube.com/shorts/UsOyhoRwPGc",
+    coverImage: "fat-big-virtual-quiz-spring-cover.jpg",
+    video: "https://www.youtube.com/watch?v=UsOyhoRwPGc",
     descriptionText: "Spring has sprung! Ten rounds of fresh trivia to shake off the winter cobwebs. From April fools and bee factory conveyor belts to emergency vehicle fly-overs and Springfield collages, this springtime special is bursting with colour, creativity, and competition.\n\nOur quiz takes players through ten, highly interactive rounds of virtual gameplay. Using video, audio, special guests, graphics, guest presenters, and live triggers, along with the latest in broadcasting and design software, we bring our players a truly memorable user-friendly, immersive, experience.\n\nThe quizzes format consists of five quirky creative rounds and 5 normal quiz style rounds.",
     rounds: [
       "History: Bog standard quiz questions, picture questions, fill in the blanks.",
@@ -241,8 +241,8 @@ const virtualQuizzes = [
     name: "The Fat Big Virtual Quiz of... The Year",
     description: "<p>The year in review! Ten rounds covering the headlines, hits, and hilarity of the past twelve months.</p>",
     shortDesc: "Our end-of-year virtual quiz. Headlines, quotes, and ten rounds of the year's biggest moments.",
-    coverImage: null,
-    video: "https://www.youtube.com/shorts/HdIsfxbhxro",
+    coverImage: "virtual-quiz-the-year-hero.png",
+    video: "https://www.youtube.com/watch?v=HdIsfxbhxro",
     descriptionText: "The year in review! Ten rounds covering the headlines, hits, and hilarity of the past twelve months. From anti-faxers and sporting achievements to the most ridiculous quotes of the year, this annual special is the perfect way to round off your year with a bang.\n\nOur quiz takes players through ten, highly interactive rounds of virtual gameplay. Using video, audio, special guests, graphics, guest presenters, and live triggers, along with the latest in broadcasting and design software, we bring our players a truly memorable user-friendly, immersive, experience.\n\nThe quizzes format consists of five quirky creative rounds and 5 normal quiz style rounds.",
     rounds: [
       "Headlines: Bog standard quiz questions, fake news, picture questions, fill in the blanks.",
@@ -263,7 +263,7 @@ const virtualQuizzes = [
     name: "The Fat Big Virtual Quiz of... Everything (Vol. 1)",
     description: "<p>A bit of everything! Ten rounds of general knowledge with our quirkiest creative twists.</p>",
     shortDesc: "Our general knowledge virtual quiz. Sporting legends, Pixar protagonists, and ten rounds of everything.",
-    coverImage: null,
+    coverImage: "fat-big-virtual-quiz-everything-1-cover.jpg",
     video: null,
     descriptionText: "A bit of everything! Ten rounds of general knowledge with our quirkiest creative twists. From sporting legend collages to Pixar protagonist challenges, this all-rounder is perfect for groups who want a mix of classic trivia and creative madness.\n\nOur quiz takes players through ten, highly interactive rounds of virtual gameplay. Using video, audio, special guests, graphics, guest presenters, and live triggers, along with the latest in broadcasting and design software, we bring our players a truly memorable user-friendly, immersive, experience.\n\nThe quizzes format consists of five quirky creative rounds and 5 normal quiz style rounds.",
     rounds: [
@@ -285,7 +285,7 @@ const virtualQuizzes = [
     name: "The Fat Big Virtual Quiz of... Everything (Vol. 2)",
     description: "<p>Even more of everything! Ten fresh rounds of general knowledge with brand new creative twists.</p>",
     shortDesc: "Our general knowledge sequel. High street brands, retitled books, and ten rounds of everything.",
-    coverImage: null,
+    coverImage: "fat-big-virtual-quiz-everything-2-cover.jpg",
     video: null,
     descriptionText: "Even more of everything! Ten fresh rounds of general knowledge with brand new creative twists. From high street brand collages to dog breeds that rhyme with cities and famous books retitled using a thesaurus, this sequel brings ten all-new rounds of chaos and competition.\n\nOur quiz takes players through ten, highly interactive rounds of virtual gameplay. Using video, audio, special guests, graphics, guest presenters, and live triggers, along with the latest in broadcasting and design software, we bring our players a truly memorable user-friendly, immersive, experience.\n\nThe quizzes format consists of five quirky creative rounds and 5 normal quiz style rounds.",
     rounds: [
@@ -309,7 +309,7 @@ const virtualQuizzes = [
 const allThemes = [
   "Everything 1", "Everything 2", "Europe", "Britain", "Valentines",
   "Spring", "Easter", "Summer", "Halloween", "Fireworks & Fall",
-  "Christmas", "New Year",
+  "Christmas", "The Year",
 ];
 
 async function seed() {

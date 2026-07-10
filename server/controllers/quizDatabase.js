@@ -59,7 +59,12 @@ async function getAllQuestions(req, res) {
     if (sourceId) where.sourceId = sourceId;
     if (difficulty) where.difficulty = difficulty;
     if (questionType) where.questionType = questionType;
-    if (status) where.status = status;
+    if (status) {
+      where.status = status;
+    } else {
+      // Hide flagged questions from public results by default
+      where.status = { not: "FLAGGED" };
+    }
 
     // Year filtering - single year or range
     if (year) {
@@ -739,6 +744,202 @@ async function deleteTheme(req, res) {
   }
 }
 
+// ─── Public: Submit feedback vote ──────────────────────────────────────────
+
+async function submitFeedback(req, res) {
+  try {
+    const { id } = req.params;
+    const { vote, fingerprint } = req.body;
+
+    if (!vote || !["GOOD", "BAD"].includes(vote)) {
+      return res.status(400).json({ error: "vote must be GOOD or BAD" });
+    }
+    if (!fingerprint) {
+      return res.status(400).json({ error: "fingerprint is required" });
+    }
+
+    // Upsert: one vote per user per question
+    await prisma.quizQuestionFeedback.upsert({
+      where: {
+        questionId_fingerprint: { questionId: id, fingerprint },
+      },
+      create: { questionId: id, vote, fingerprint },
+      update: { vote },
+    });
+
+    // Count votes and check auto-flag threshold
+    const counts = await prisma.quizQuestionFeedback.groupBy({
+      by: ["vote"],
+      where: { questionId: id },
+      _count: true,
+    });
+
+    const good = counts.find((c) => c.vote === "GOOD")?._count || 0;
+    const bad = counts.find((c) => c.vote === "BAD")?._count || 0;
+
+    console.log(`[QuizDB-Feedback] Vote ${vote} for question ${id} (good: ${good}, bad: ${bad})`);
+
+    // Auto-flag: 5+ bad votes AND bad:good ratio >= 5:1
+    if (bad >= 5 && (good === 0 || bad / good >= 5)) {
+      await prisma.quizQuestion.update({
+        where: { id },
+        data: { status: "FLAGGED" },
+      });
+      console.log(`[QuizDB-Feedback] Question ${id} auto-flagged (bad: ${bad}, good: ${good})`);
+    }
+
+    return res.json({ good, bad, userVote: vote });
+  } catch (error) {
+    console.error("[QuizDB-Feedback] Error submitting feedback:", error);
+    return res.status(500).json({ error: "Error submitting feedback" });
+  }
+}
+
+// ─── Public: Get batch feedback for multiple questions ─────────────────────
+
+async function getBatchFeedback(req, res) {
+  try {
+    const { questionIds, fingerprint } = req.body;
+
+    if (!questionIds || !Array.isArray(questionIds)) {
+      return res.status(400).json({ error: "questionIds array is required" });
+    }
+
+    // Get all votes for these questions
+    const allVotes = await prisma.quizQuestionFeedback.groupBy({
+      by: ["questionId", "vote"],
+      where: { questionId: { in: questionIds } },
+      _count: true,
+    });
+
+    // Get user's own votes if fingerprint provided
+    let userVotes = [];
+    if (fingerprint) {
+      userVotes = await prisma.quizQuestionFeedback.findMany({
+        where: {
+          questionId: { in: questionIds },
+          fingerprint,
+        },
+        select: { questionId: true, vote: true },
+      });
+    }
+
+    const userVoteMap = {};
+    for (const v of userVotes) {
+      userVoteMap[v.questionId] = v.vote;
+    }
+
+    // Build result map
+    const result = {};
+    for (const qId of questionIds) {
+      result[qId] = { good: 0, bad: 0, userVote: userVoteMap[qId] || null };
+    }
+    for (const row of allVotes) {
+      if (result[row.questionId]) {
+        if (row.vote === "GOOD") result[row.questionId].good = row._count;
+        if (row.vote === "BAD") result[row.questionId].bad = row._count;
+      }
+    }
+
+    return res.json(result);
+  } catch (error) {
+    console.error("[QuizDB-Feedback] Error fetching batch feedback:", error);
+    return res.status(500).json({ error: "Error fetching feedback" });
+  }
+}
+
+// ─── Public: Lucky Dip - random question selection ─────────────────────────
+
+async function luckyDip(req, res) {
+  try {
+    const {
+      count = 10,
+      categoryId,
+      difficulty,
+      countryId,
+      themeId,
+      questionType,
+    } = req.query;
+
+    const limit = Math.min(50, Math.max(1, parseInt(count)));
+
+    const where = { status: { not: "FLAGGED" } };
+    if (categoryId) where.categoryId = categoryId;
+    if (difficulty) where.difficulty = difficulty;
+    if (countryId) where.countryId = countryId;
+    if (themeId) where.themeId = themeId;
+    if (questionType) where.questionType = questionType;
+
+    // Get total count for these filters
+    const total = await prisma.quizQuestion.count({ where });
+
+    if (total === 0) {
+      return res.json({ questions: [], total: 0 });
+    }
+
+    // Select random IDs using skip with random offsets
+    const randomOffsets = new Set();
+    while (randomOffsets.size < Math.min(limit, total)) {
+      randomOffsets.add(Math.floor(Math.random() * total));
+    }
+
+    const questions = [];
+    for (const offset of randomOffsets) {
+      const q = await prisma.quizQuestion.findFirst({
+        where,
+        skip: offset,
+        include: {
+          category: { select: { id: true, name: true, slug: true } },
+          subCategory: { select: { id: true, name: true, slug: true } },
+          country: { select: { id: true, name: true, code: true } },
+          theme: { select: { id: true, name: true, slug: true } },
+          source: { select: { id: true, name: true, slug: true } },
+        },
+      });
+      if (q) questions.push(q);
+    }
+
+    console.log(`[QuizDB] Lucky dip: ${questions.length} questions (requested ${limit}, pool ${total})`);
+    return res.json({ questions, total });
+  } catch (error) {
+    console.error("[QuizDB] Error in lucky dip:", error);
+    return res.status(500).json({ error: "Error generating lucky dip" });
+  }
+}
+
+// ─── Public: Batch fetch questions by IDs ──────────────────────────────────
+
+async function getQuestionsByIds(req, res) {
+  try {
+    const { ids } = req.body;
+
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: "ids array is required" });
+    }
+
+    const questions = await prisma.quizQuestion.findMany({
+      where: { id: { in: ids } },
+      include: {
+        category: { select: { id: true, name: true, slug: true } },
+        subCategory: { select: { id: true, name: true, slug: true } },
+        country: { select: { id: true, name: true, code: true } },
+        theme: { select: { id: true, name: true, slug: true } },
+        source: { select: { id: true, name: true, slug: true } },
+      },
+    });
+
+    // Preserve input order
+    const questionMap = {};
+    for (const q of questions) questionMap[q.id] = q;
+    const ordered = ids.map((id) => questionMap[id]).filter(Boolean);
+
+    return res.json(ordered);
+  } catch (error) {
+    console.error("[QuizDB] Error fetching questions by IDs:", error);
+    return res.status(500).json({ error: "Error fetching questions" });
+  }
+}
+
 module.exports = {
   getAllQuestions,
   getQuestionById,
@@ -758,4 +959,8 @@ module.exports = {
   deleteCategory,
   createTheme,
   deleteTheme,
+  submitFeedback,
+  getBatchFeedback,
+  luckyDip,
+  getQuestionsByIds,
 };

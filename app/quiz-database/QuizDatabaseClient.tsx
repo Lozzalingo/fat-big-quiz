@@ -2,8 +2,14 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { FiList, FiShuffle, FiX } from "react-icons/fi";
 import QuestionCard from "./QuestionCard";
+import type { QuizQuestion as CardQuestion, FeedbackData } from "./QuestionCard";
 import FilterBar from "./FilterBar";
+import QuizReviewPanel from "./QuizReviewPanel";
+import LuckyDipModal from "./LuckyDipModal";
+import { useQuizBuilderStore, SelectedQuestion } from "./quizBuilderStore";
+import { useFingerprint } from "./useFingerprint";
 
 const API = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -89,6 +95,15 @@ export default function QuizDatabaseClient() {
   const [filters, setFilters] = useState<Filters>(emptyFilters);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<Stats | null>(null);
+  const [luckyDipOpen, setLuckyDipOpen] = useState(false);
+
+  // Feedback state
+  const [feedbackMap, setFeedbackMap] = useState<Record<string, FeedbackData>>({});
+  const fingerprint = useFingerprint();
+
+  // Quiz builder store
+  const { selectedQuestions, toggleQuestion, setQuestions: setSelectedQuestions, setPanelOpen, isSelected } =
+    useQuizBuilderStore();
 
   // Override body background for dark theme page
   useEffect(() => {
@@ -176,6 +191,97 @@ export default function QuizDatabaseClient() {
     fetchQuestions(1);
   }, [fetchQuestions]);
 
+  // Load feedback when questions change
+  useEffect(() => {
+    if (questions.length === 0 || !fingerprint) return;
+
+    const loadFeedback = async () => {
+      try {
+        const res = await fetch(`${API}/api/quiz-database/feedback/batch`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            questionIds: questions.map((q) => q.id),
+            fingerprint,
+          }),
+        });
+        const data = await res.json();
+        setFeedbackMap(data);
+      } catch (error) {
+        console.error("[QuizDB] Error loading feedback:", error);
+      }
+    };
+
+    loadFeedback();
+  }, [questions, fingerprint]);
+
+  // Handle voting
+  const handleVote = async (questionId: string, vote: "GOOD" | "BAD") => {
+    if (!fingerprint) return;
+
+    try {
+      const res = await fetch(`${API}/api/quiz-database/${questionId}/feedback`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ vote, fingerprint }),
+      });
+      const data = await res.json();
+
+      // Update local feedback map
+      setFeedbackMap((prev) => ({
+        ...prev,
+        [questionId]: data,
+      }));
+    } catch (error) {
+      console.error("[QuizDB] Error submitting vote:", error);
+    }
+  };
+
+  // Handle select/deselect
+  const handleToggleSelect = (question: CardQuestion) => {
+    const selected: SelectedQuestion = {
+      id: question.id,
+      questionText: question.questionText,
+      answerText: question.answerText,
+      options: question.options,
+      difficulty: question.difficulty,
+      questionType: question.questionType,
+      category: { name: question.category.name },
+    };
+    toggleQuestion(selected);
+  };
+
+  // Handle lucky dip results
+  const handleLuckyDipGenerate = (luckyQuestions: QuizQuestion[]) => {
+    const mapped: SelectedQuestion[] = luckyQuestions.map((q) => ({
+      id: q.id,
+      questionText: q.questionText,
+      answerText: q.answerText,
+      options: q.options,
+      difficulty: q.difficulty,
+      questionType: q.questionType,
+      category: { name: q.category.name },
+    }));
+
+    if (selectedQuestions.length > 0) {
+      if (
+        confirm(
+          `You have ${selectedQuestions.length} questions selected. Replace them with the Lucky Dip results?`
+        )
+      ) {
+        setSelectedQuestions(mapped);
+      } else {
+        // Add to existing
+        const existingIds = new Set(selectedQuestions.map((q) => q.id));
+        const newOnes = mapped.filter((q) => !existingIds.has(q.id));
+        setSelectedQuestions([...selectedQuestions, ...newOnes]);
+      }
+    } else {
+      setSelectedQuestions(mapped);
+    }
+    setPanelOpen(true);
+  };
+
   // Debounced search
   const [searchInput, setSearchInput] = useState("");
   useEffect(() => {
@@ -209,7 +315,7 @@ export default function QuizDatabaseClient() {
             Filter by topic, difficulty, country, theme, and more.
           </p>
           {stats && (
-            <div className="flex flex-wrap justify-center gap-4 text-sm">
+            <div className="flex flex-wrap justify-center gap-4 text-sm mb-6">
               <span className="bg-blue-500/20 text-blue-300 px-4 py-2 rounded-full font-medium">
                 {stats.total.toLocaleString()} Questions
               </span>
@@ -221,10 +327,19 @@ export default function QuizDatabaseClient() {
               </span>
             </div>
           )}
+
+          {/* Lucky Dip button */}
+          <button
+            onClick={() => setLuckyDipOpen(true)}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30 border border-yellow-500/30 rounded-full font-medium transition-colors"
+          >
+            <FiShuffle size={18} />
+            Lucky Dip
+          </button>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 pb-16">
+      <div className="max-w-6xl mx-auto px-4 pb-24">
         {/* Search */}
         <div className="mb-6">
           <input
@@ -297,7 +412,15 @@ export default function QuizDatabaseClient() {
               className="space-y-3"
             >
               {questions.map((q, idx) => (
-                <QuestionCard key={q.id} question={q} index={idx} />
+                <QuestionCard
+                  key={q.id}
+                  question={q}
+                  index={idx}
+                  isSelected={isSelected(q.id)}
+                  onToggleSelect={handleToggleSelect}
+                  feedbackData={feedbackMap[q.id]}
+                  onVote={handleVote}
+                />
               ))}
             </motion.div>
           </AnimatePresence>
@@ -320,7 +443,6 @@ export default function QuizDatabaseClient() {
               const current = pagination.page;
               const total = pagination.totalPages;
 
-              // Show first, last, and pages around current
               for (let i = 1; i <= total; i++) {
                 if (
                   i === 1 ||
@@ -369,6 +491,62 @@ export default function QuizDatabaseClient() {
           </div>
         )}
       </div>
+
+      {/* Floating quiz builder bar */}
+      <AnimatePresence>
+        {selectedQuestions.length > 0 && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="fixed bottom-0 left-0 right-0 z-30 bg-gray-900/95 backdrop-blur-sm border-t border-gray-700"
+          >
+            <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center">
+                  <FiList size={18} className="text-blue-400" />
+                </div>
+                <div>
+                  <p className="text-white font-medium text-sm">
+                    My Quiz
+                    <span className="ml-2 text-blue-400">
+                      {selectedQuestions.length} question{selectedQuestions.length !== 1 ? "s" : ""}
+                    </span>
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPanelOpen(true)}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition-colors"
+                >
+                  Review & Export
+                </button>
+                <button
+                  onClick={() => useQuizBuilderStore.getState().clearAll()}
+                  className="p-2 text-gray-400 hover:text-red-400 transition-colors"
+                  title="Clear all"
+                >
+                  <FiX size={18} />
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Review panel */}
+      <QuizReviewPanel />
+
+      {/* Lucky dip modal */}
+      <LuckyDipModal
+        isOpen={luckyDipOpen}
+        onClose={() => setLuckyDipOpen(false)}
+        onGenerate={handleLuckyDipGenerate}
+        categories={categories}
+      />
     </div>
   );
 }

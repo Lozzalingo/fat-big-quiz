@@ -488,6 +488,7 @@ model QuizQuestion {
   country          QuizCountry     @relation(fields: [countryId], references: [id])
   theme            QuizTheme       @relation(fields: [themeId], references: [id])
   source           QuizSource      @relation(fields: [sourceId], references: [id])
+  feedback         QuizQuestionFeedback[]
 
   @@index([categoryId])
   @@index([subCategoryId])
@@ -500,6 +501,25 @@ model QuizQuestion {
   @@index([questionType])
   @@index([publishedDate])
   @@index([createdAt])
+}
+
+model QuizQuestionFeedback {
+  id           String       @id @default(uuid())
+  questionId   String
+  vote         QuizVoteType
+  fingerprint  String       // Browser-generated session ID for anonymous voting
+  createdAt    DateTime     @default(now())
+
+  question     QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([questionId, fingerprint])
+  @@index([questionId])
+  @@index([fingerprint])
+}
+
+enum QuizVoteType {
+  GOOD
+  BAD
 }
 
 enum QuestionDifficulty {

@@ -2,13 +2,14 @@
 
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import { FiThumbsUp, FiThumbsDown, FiCheck, FiPlus } from "react-icons/fi";
 
 type Option = {
   label: string;
   text: string;
 };
 
-type QuizQuestion = {
+export type QuizQuestion = {
   id: string;
   questionText: string;
   answerText: string;
@@ -24,9 +25,19 @@ type QuizQuestion = {
   source: { name: string; slug: string };
 };
 
+export type FeedbackData = {
+  good: number;
+  bad: number;
+  userVote: string | null;
+};
+
 type QuestionCardProps = {
   question: QuizQuestion;
   index: number;
+  isSelected?: boolean;
+  onToggleSelect?: (question: QuizQuestion) => void;
+  feedbackData?: FeedbackData;
+  onVote?: (questionId: string, vote: "GOOD" | "BAD") => void;
 };
 
 const difficultyColours: Record<string, string> = {
@@ -109,7 +120,14 @@ const questionTypeColours: Record<string, string> = {
   BIGGEST_GAIN_LOSS: "bg-emerald-600/20 text-emerald-300",
 };
 
-export default function QuestionCard({ question, index }: QuestionCardProps) {
+export default function QuestionCard({
+  question,
+  index,
+  isSelected = false,
+  onToggleSelect,
+  feedbackData,
+  onVote,
+}: QuestionCardProps) {
   const [showAnswer, setShowAnswer] = useState(false);
 
   let parsedOptions: Option[] = [];
@@ -126,40 +144,61 @@ export default function QuestionCard({ question, index }: QuestionCardProps) {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2, delay: index * 0.03 }}
-      className="bg-gray-800/70 border border-gray-700/50 rounded-lg overflow-hidden hover:border-gray-600/50 transition-colors"
+      className={`bg-gray-800/70 border rounded-lg overflow-hidden transition-colors ${
+        isSelected
+          ? "border-blue-500/60 ring-1 ring-blue-500/30"
+          : "border-gray-700/50 hover:border-gray-600/50"
+      }`}
     >
       <div className="p-5">
-        {/* Badges row */}
-        <div className="flex flex-wrap items-center gap-2 mb-3">
-          <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-medium">
-            {question.category.name}
-          </span>
-          {question.subCategory && (
-            <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-200">
-              {question.subCategory.name}
+        {/* Top row: badges + select button */}
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-medium">
+              {question.category.name}
             </span>
-          )}
-          <span
-            className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-              difficultyColours[question.difficulty] || "bg-gray-600/20 text-gray-300"
-            }`}
-          >
-            {question.difficulty.charAt(0) + question.difficulty.slice(1).toLowerCase()}
-          </span>
-          <span
-            className={`text-xs px-2 py-0.5 rounded-full ${
-              questionTypeColours[question.questionType] || "bg-gray-600/20 text-gray-300"
-            }`}
-          >
-            {questionTypeLabels[question.questionType] || question.questionType}
-          </span>
-          {question.year && (
-            <span className="text-xs text-gray-500">{question.year}</span>
-          )}
-          {question.country.code !== "WORLD" && (
-            <span className="text-xs text-gray-500">
-              {question.country.name}
+            {question.subCategory && (
+              <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-200">
+                {question.subCategory.name}
+              </span>
+            )}
+            <span
+              className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                difficultyColours[question.difficulty] || "bg-gray-600/20 text-gray-300"
+              }`}
+            >
+              {question.difficulty.charAt(0) + question.difficulty.slice(1).toLowerCase()}
             </span>
+            <span
+              className={`text-xs px-2 py-0.5 rounded-full ${
+                questionTypeColours[question.questionType] || "bg-gray-600/20 text-gray-300"
+              }`}
+            >
+              {questionTypeLabels[question.questionType] || question.questionType}
+            </span>
+            {question.year && (
+              <span className="text-xs text-gray-500">{question.year}</span>
+            )}
+            {question.country.code !== "WORLD" && (
+              <span className="text-xs text-gray-500">
+                {question.country.name}
+              </span>
+            )}
+          </div>
+
+          {/* Select button */}
+          {onToggleSelect && (
+            <button
+              onClick={() => onToggleSelect(question)}
+              className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                isSelected
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-700/50 text-gray-400 hover:bg-gray-600/50 hover:text-gray-200"
+              }`}
+              title={isSelected ? "Remove from quiz" : "Add to quiz"}
+            >
+              {isSelected ? <FiCheck size={16} /> : <FiPlus size={16} />}
+            </button>
           )}
         </div>
 
@@ -197,7 +236,7 @@ export default function QuestionCard({ question, index }: QuestionCardProps) {
           {showAnswer ? "Hide Answer" : "Show Answer"}
         </button>
 
-        {/* Answer */}
+        {/* Answer + Feedback */}
         {showAnswer && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
@@ -214,6 +253,39 @@ export default function QuestionCard({ question, index }: QuestionCardProps) {
               <p className="text-gray-400 text-sm mt-2">
                 {question.explanation}
               </p>
+            )}
+
+            {/* Feedback buttons */}
+            {onVote && (
+              <div className="flex items-center gap-4 mt-3 pt-3 border-t border-gray-700/30">
+                <span className="text-xs text-gray-500">Good question?</span>
+                <button
+                  onClick={() => onVote(question.id, "GOOD")}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-all ${
+                    feedbackData?.userVote === "GOOD"
+                      ? "bg-green-500/20 text-green-300 ring-1 ring-green-500/30"
+                      : "bg-gray-700/30 text-gray-400 hover:bg-gray-700/50 hover:text-gray-200"
+                  }`}
+                >
+                  <FiThumbsUp size={14} />
+                  {feedbackData && feedbackData.good > 0 && (
+                    <span>{feedbackData.good}</span>
+                  )}
+                </button>
+                <button
+                  onClick={() => onVote(question.id, "BAD")}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-all ${
+                    feedbackData?.userVote === "BAD"
+                      ? "bg-red-500/20 text-red-300 ring-1 ring-red-500/30"
+                      : "bg-gray-700/30 text-gray-400 hover:bg-gray-700/50 hover:text-gray-200"
+                  }`}
+                >
+                  <FiThumbsDown size={14} />
+                  {feedbackData && feedbackData.bad > 0 && (
+                    <span>{feedbackData.bad}</span>
+                  )}
+                </button>
+              </div>
             )}
           </motion.div>
         )}

@@ -20,6 +20,10 @@ const {
   deleteCategory,
   createTheme,
   deleteTheme,
+  submitFeedback,
+  getBatchFeedback,
+  luckyDip,
+  getQuestionsByIds,
 } = require("../controllers/quizDatabase");
 
 // ─── Public routes ──────────────────────────────────────────────────────────
@@ -31,7 +35,11 @@ router.get("/sub-categories", getSubCategories);
 router.get("/countries", getCountries);
 router.get("/themes", getThemes);
 router.get("/sources", getSources);
+router.get("/lucky-dip", luckyDip);
+router.post("/by-ids", getQuestionsByIds);
+router.post("/feedback/batch", getBatchFeedback);
 router.get("/:id", getQuestionById);
+router.post("/:id/feedback", submitFeedback);
 
 // ─── Admin routes (protected via app.js middleware) ─────────────────────────
 
