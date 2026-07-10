@@ -15,6 +15,8 @@ const config: Config = {
         'primary': '#673ab7',
         'primary-dark': '#512da8',
         'primary-light': '#9c27b0',
+        'cta': '#673ab7',
+        'cta-dark': '#512da8',
         'background': '#f0ebf8',
         'surface': '#ffffff',
         'text-primary': '#202124',
