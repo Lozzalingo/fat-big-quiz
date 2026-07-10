@@ -1209,6 +1209,8 @@ model EventProduct {
   shortDesc    String?  @db.Text
   coverImage   String?
   category     String?
+  tags         String?  @db.Text // JSON array of category tag slugs for multi-tagging
+  format       String? // e.g. "in-person", "virtual", "outdoors", "indoors", "hybrid"
   themes       String?  @db.Text
   maxGroupSize Int?
   venue        String?  @db.Text
