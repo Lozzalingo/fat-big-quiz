@@ -298,6 +298,9 @@ model User {
   createdAt             DateTime       @default(now())
   userName              String?        @unique
   stripeCustomerId      String?        // Stripe customer ID for subscriptions
+  stripeSubscriptionId  String?        // Active Stripe subscription ID
+  subscriptionStatus    String?        // active, cancelled, past_due, trialing, none
+  subscriptionExpiresAt DateTime?      // When current billing period ends
   BlogPosts             BlogPost[]     @relation("AuthorPosts")
   Comments              Comment[]
   purchases             Purchase[]
