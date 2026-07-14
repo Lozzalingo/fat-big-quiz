@@ -61,7 +61,9 @@ export function createFBQBookingApi(): BookingFormApi {
       try {
         const res = await fetch(`${API_BASE}/api/bookings/bookings?limit=100`);
         if (!res.ok) return [];
-        const bookings: BookingCalendarSource[] = await res.json();
+        const json = await res.json();
+        // API returns { data: [...], pagination: {...} } - extract the array
+        const bookings: BookingCalendarSource[] = Array.isArray(json) ? json : (json.data || []);
         const events: CalEvent[] = [];
         for (const b of bookings) {
           const ev = bookingToCalEvent(b, { visibility: "public" });
