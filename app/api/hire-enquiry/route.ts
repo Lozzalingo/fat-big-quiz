@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
       preferredDay,
       preferredTime,
       duration,
-      venueName,
+      venueAddress,
       venueType,
       venueCapacity,
       message,
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // Validate required fields
-    if (!tier || !frequency || !venueName || !contactName || !contactEmail) {
+    if (!tier || !frequency || !venueAddress || !contactName || !contactEmail) {
       console.error("[HireEnquiry] Missing required fields");
       return NextResponse.json(
         { error: "Please fill in all required fields." },
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
             preferredDay,
             preferredTime,
             duration,
-            venueName,
+            venueAddress,
             venueType,
             venueCapacity,
             message,
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
 
     // TODO: Send notification email to hire@fatbigquiz.com
     // TODO: Send confirmation email to the enquirer
-    console.log("[HireEnquiry] Enquiry processed successfully for:", venueName);
+    console.log("[HireEnquiry] Enquiry processed successfully for:", venueAddress);
 
     return NextResponse.json({
       success: true,

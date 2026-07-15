@@ -4,11 +4,9 @@ import {
   FaCheck,
   FaTv,
   FaMicrophone,
-  FaMusic,
   FaUsers,
   FaCalendarAlt,
   FaStar,
-  FaVolumeUp,
   FaGamepad,
   FaHandshake,
   FaChartLine,
@@ -20,6 +18,7 @@ import {
   FaLaptop,
 } from "react-icons/fa";
 import { HeroSection, FAQSection } from "@/components/landing";
+import { EventGallery } from "@lozzalingo/events-ui/components";
 import HireEnquiryForm from "./HireEnquiryForm";
 
 export const metadata: Metadata = {
@@ -35,6 +34,27 @@ export const metadata: Metadata = {
     ],
   },
 };
+
+const GALLERY_IMAGES = [
+  "/hire-gallery/quiz-night-2.jpg",
+  "/hire-gallery/quiz-night-6.jpg",
+  "/hire-gallery/quiz-night-9.jpg",
+  "/hire-gallery/quiz-night-11.jpg",
+  "/hire-gallery/quiz-night-12.jpg",
+  "/hire-gallery/quiz-night-16.jpg",
+  "/hire-gallery/quiz-night-19.jpg",
+  "/hire-gallery/quiz-night-30.jpg",
+  "/hire-gallery/quiz-crowd-1.jpg",
+  "/hire-gallery/quiz-crowd-2.jpg",
+  "/hire-gallery/quiz-crowd-3.jpg",
+  "/hire-gallery/quiz-crowd-4.jpg",
+  "/hire-gallery/quiz-crowd-5.jpg",
+  "/hire-gallery/quiz-crowd-6.jpg",
+  "/hire-gallery/quiz-crowd-7.jpg",
+  "/hire-gallery/quiz-event-1.jpg",
+  "/hire-gallery/fake-news.jpg",
+  "/hire-gallery/higher-or-lower.jpg",
+];
 
 export default function HirePage() {
   const showFeatures = [
@@ -174,7 +194,7 @@ export default function HirePage() {
         subtitle="Recurring quiz nights that fill your venue, week after week"
         description="Professional quiz hosting for pubs, members clubs, gyms, hotels, and restaurants. Two tiers to suit your space and budget. Fresh content every session, zero hassle for you."
         badge="Venue Contracts"
-        image="/fat-big-quiz-event.png"
+        backgroundImage="/fat-big-quiz-event.png"
         primaryCta={{
           text: "Get a Quote",
           href: "#enquiry",
@@ -215,8 +235,15 @@ export default function HirePage() {
         </div>
       </div>
 
+      {/* Gallery */}
+      <div className="py-16 md:py-24 bg-background">
+        <div className="max-w-screen-xl mx-auto px-4 md:px-8">
+          <EventGallery images={GALLERY_IMAGES} title="Fat Big Quiz Hire" />
+        </div>
+      </div>
+
       {/* Two Tiers Comparison */}
-      <div id="tiers" className="py-16 md:py-24 bg-background">
+      <div id="tiers" className="py-16 md:py-24 bg-white">
         <div className="max-w-screen-xl mx-auto px-4 md:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">
@@ -270,7 +297,7 @@ export default function HirePage() {
             </div>
 
             {/* Unplugged */}
-            <div className="bg-white rounded-2xl p-8 border border-border hover:shadow-xl transition relative overflow-hidden">
+            <div className="bg-background rounded-2xl p-8 border border-border hover:shadow-xl transition relative overflow-hidden">
               <div className="absolute top-4 right-4 bg-text-secondary text-white text-xs font-bold px-3 py-1 rounded-full">
                 Stripped Back
               </div>
@@ -301,7 +328,7 @@ export default function HirePage() {
                 ))}
               </ul>
 
-              <div className="bg-background rounded-xl p-4 border border-border">
+              <div className="bg-white rounded-xl p-4 border border-border">
                 <p className="text-sm text-text-secondary">
                   <span className="font-semibold text-text-primary">Best for:</span> Smaller pubs,
                   restaurants, coworking spaces, gyms, and venues without AV infrastructure.
@@ -313,7 +340,7 @@ export default function HirePage() {
       </div>
 
       {/* Venue Types */}
-      <div className="py-16 md:py-24 bg-white">
+      <div className="py-16 md:py-24 bg-background">
         <div className="max-w-screen-xl mx-auto px-4 md:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">
@@ -329,7 +356,7 @@ export default function HirePage() {
             {venueTypes.map((venue, index) => (
               <div
                 key={index}
-                className="flex items-start gap-4 p-6 rounded-xl bg-background border border-border hover:shadow-md transition"
+                className="flex items-start gap-4 p-6 rounded-xl bg-white border border-border hover:shadow-md transition"
               >
                 <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
                   <venue.icon className="text-xl text-primary" />
@@ -345,7 +372,7 @@ export default function HirePage() {
       </div>
 
       {/* How It Works */}
-      <div className="py-16 md:py-24 bg-background">
+      <div className="py-16 md:py-24 bg-white">
         <div className="max-w-screen-xl mx-auto px-4 md:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">
@@ -389,7 +416,7 @@ export default function HirePage() {
       </div>
 
       {/* Enquiry Form */}
-      <div id="enquiry" className="py-16 md:py-24 bg-white">
+      <div id="enquiry" className="py-16 md:py-24 bg-background">
         <div className="max-w-screen-xl mx-auto px-4 md:px-8">
           <div className="grid md:grid-cols-2 gap-12 items-start">
             {/* Left column - info */}
@@ -438,21 +465,17 @@ export default function HirePage() {
                 </div>
               </div>
 
-              <div className="bg-background rounded-xl p-6 border border-border">
+              <div className="bg-white rounded-xl p-6 border border-border">
                 <h4 className="font-semibold text-text-primary mb-2">Prefer to chat?</h4>
                 <p className="text-sm text-text-secondary">
                   Drop us an email at{" "}
                   <a
-                    href="mailto:hire@fatbigquiz.com"
+                    href="mailto:info@fatbigquiz.com"
                     className="text-primary hover:underline font-medium"
                   >
-                    hire@fatbigquiz.com
+                    info@fatbigquiz.com
                   </a>{" "}
-                  or call us on{" "}
-                  <a href="tel:+447000000000" className="text-primary hover:underline font-medium">
-                    07000 000 000
-                  </a>
-                  .
+                  and we will arrange a call at a time that suits you.
                 </p>
               </div>
             </div>

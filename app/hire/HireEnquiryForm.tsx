@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { FaPaperPlane } from "react-icons/fa";
+import React, { useState, useRef, useCallback, useEffect } from "react";
+import { FaPaperPlane, FaMapMarkerAlt } from "react-icons/fa";
 
 interface FormData {
   tier: "the-show" | "unplugged" | "";
@@ -9,7 +9,7 @@ interface FormData {
   preferredDay: string;
   preferredTime: string;
   duration: string;
-  venueName: string;
+  venueAddress: string;
   venueType: string;
   venueCapacity: string;
   message: string;
@@ -24,7 +24,7 @@ const INITIAL_FORM: FormData = {
   preferredDay: "",
   preferredTime: "",
   duration: "",
-  venueName: "",
+  venueAddress: "",
   venueType: "",
   venueCapacity: "",
   message: "",
@@ -33,11 +33,69 @@ const INITIAL_FORM: FormData = {
   contactPhone: "",
 };
 
+interface AddressSuggestion {
+  label: string;
+  raw: Record<string, unknown>;
+}
+
 export default function HireEnquiryForm() {
   const [form, setForm] = useState<FormData>(INITIAL_FORM);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Address lookup state
+  const [addressSuggestions, setAddressSuggestions] = useState<AddressSuggestion[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
+
+  // Photon address search (same as shared booking form)
+  const searchAddress = useCallback((query: string) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (query.length < 3) {
+      setAddressSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5`
+        );
+        const data = await res.json();
+        const results = (data.features || []).map((f: Record<string, unknown>) => {
+          const p = f.properties as Record<string, string | undefined>;
+          const parts = [
+            p.name,
+            p.housenumber && p.street ? `${p.housenumber} ${p.street}` : p.street,
+            p.city || p.town || p.village,
+            p.state,
+            p.postcode,
+            p.country,
+          ].filter(Boolean);
+          return { label: parts.join(", "), raw: p };
+        });
+        setAddressSuggestions(results);
+        setShowSuggestions(results.length > 0);
+        console.log(`[HireEnquiry] Address search returned ${results.length} results`);
+      } catch (err) {
+        console.error("[HireEnquiry] Address search failed:", err);
+        setAddressSuggestions([]);
+      }
+    }, 300);
+  }, []);
+
+  // Close suggestions on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (suggestionsRef.current && !suggestionsRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -209,20 +267,48 @@ export default function HireEnquiryForm() {
           Venue Details
         </h4>
         <div className="space-y-4">
-          <div>
+          {/* Venue Address with Autocomplete */}
+          <div className="relative" ref={suggestionsRef}>
             <label className="block text-sm font-medium text-text-primary mb-2">
-              Venue name *
+              Venue address *
             </label>
             <input
               type="text"
-              name="venueName"
-              value={form.venueName}
-              onChange={handleChange}
+              name="venueAddress"
+              value={form.venueAddress}
+              onChange={(e) => {
+                setForm({ ...form, venueAddress: e.target.value });
+                searchAddress(e.target.value);
+              }}
+              onFocus={() => {
+                if (addressSuggestions.length > 0) setShowSuggestions(true);
+              }}
               required
-              placeholder="e.g. The Crown & Anchor"
+              placeholder="Start typing an address..."
+              autoComplete="off"
               className="w-full px-4 py-3 rounded-lg border border-border bg-background text-text-primary focus:ring-2 focus:ring-primary focus:border-transparent"
             />
+            {showSuggestions && addressSuggestions.length > 0 && (
+              <div className="absolute z-50 w-full mt-1 bg-white border border-border rounded-lg shadow-lg overflow-hidden">
+                {addressSuggestions.map((s, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    className="w-full text-left px-4 py-3 text-sm text-text-primary hover:bg-background transition flex items-start gap-2 border-b border-border last:border-0"
+                    onClick={() => {
+                      setForm((prev) => ({ ...prev, venueAddress: s.label }));
+                      setShowSuggestions(false);
+                      console.log("[HireEnquiry] Address selected:", s.label);
+                    }}
+                  >
+                    <FaMapMarkerAlt className="text-text-secondary mt-0.5 flex-shrink-0" />
+                    <span>{s.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-text-primary mb-2">
