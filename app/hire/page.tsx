@@ -36,24 +36,24 @@ export const metadata: Metadata = {
 };
 
 const GALLERY_IMAGES = [
-  "/hire-gallery/quiz-night-2.jpg",
-  "/hire-gallery/quiz-night-6.jpg",
-  "/hire-gallery/quiz-night-9.jpg",
-  "/hire-gallery/quiz-night-11.jpg",
-  "/hire-gallery/quiz-night-12.jpg",
   "/hire-gallery/quiz-night-16.jpg",
-  "/hire-gallery/quiz-night-19.jpg",
-  "/hire-gallery/quiz-night-30.jpg",
-  "/hire-gallery/quiz-crowd-1.jpg",
-  "/hire-gallery/quiz-crowd-2.jpg",
   "/hire-gallery/quiz-crowd-3.jpg",
-  "/hire-gallery/quiz-crowd-4.jpg",
-  "/hire-gallery/quiz-crowd-5.jpg",
-  "/hire-gallery/quiz-crowd-6.jpg",
-  "/hire-gallery/quiz-crowd-7.jpg",
+  "/hire-gallery/quickfire.jpg",
+  "/hire-gallery/quiz-night-9.jpg",
   "/hire-gallery/quiz-event-1.jpg",
-  "/hire-gallery/fake-news.jpg",
   "/hire-gallery/higher-or-lower.jpg",
+  "/hire-gallery/quiz-crowd-1.jpg",
+  "/hire-gallery/quiz-night-30.jpg",
+  "/hire-gallery/say-what-you-can-see.jpg",
+  "/hire-gallery/quiz-night-12.jpg",
+  "/hire-gallery/quiz-crowd-7.jpg",
+  "/hire-gallery/fake-news.jpg",
+  "/hire-gallery/quiz-night-2.jpg",
+  "/hire-gallery/quiz-crowd-4.jpg",
+  "/hire-gallery/quiz-night-19.jpg",
+  "/hire-gallery/quiz-crowd-2.jpg",
+  "/hire-gallery/quiz-night-6.jpg",
+  "/hire-gallery/quiz-night-11.jpg",
 ];
 
 export default function HirePage() {
@@ -194,7 +194,7 @@ export default function HirePage() {
         subtitle="Recurring quiz nights that fill your venue, week after week"
         description="Professional quiz hosting for pubs, members clubs, gyms, hotels, and restaurants. Two tiers to suit your space and budget. Fresh content every session, zero hassle for you."
         badge="Venue Contracts"
-        backgroundImage="/fat-big-quiz-event.png"
+        backgroundImage="/fat-big-quiz-hire-hero.jpg"
         primaryCta={{
           text: "Get a Quote",
           href: "#enquiry",
@@ -291,7 +291,7 @@ export default function HirePage() {
               <div className="bg-white/60 rounded-xl p-4 border border-primary/10">
                 <p className="text-sm text-text-secondary">
                   <span className="font-semibold text-text-primary">Best for:</span> Large pubs,
-                  hotels, members clubs with 80+ capacity and a stage area or open floor plan.
+                  hotels, members clubs with 50+ capacity and a stage area or open floor plan.
                 </p>
               </div>
             </div>
@@ -385,17 +385,20 @@ export default function HirePage() {
               {
                 step: "1",
                 title: "Enquire",
-                description: "Tell us about your venue, preferred tier, and schedule.",
+                description:
+                  "Tell us about your venue, preferred tier, schedule, and what you want to achieve.",
               },
               {
                 step: "2",
-                title: "We Visit",
-                description: "We check out your space and discuss what works best.",
+                title: "We Set Up a Call / Visit",
+                description:
+                  "We discuss your space and what works best. If it's Unplugged and simple we can start right away, however, if it's more complex we draw up a plan.",
               },
               {
                 step: "3",
                 title: "Trial Night",
-                description: "A one-off session so you can see the audience response.",
+                description:
+                  "Once the plan is agreed, we run a one-off session so you can see the audience response.",
               },
               {
                 step: "4",

@@ -50,37 +50,64 @@ export default function HireEnquiryForm() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
-  // Photon address search (same as shared booking form)
-  const searchAddress = useCallback((query: string) => {
+  // UK postcode lookup via postcodes.io (free, no API key needed)
+  const searchPostcode = useCallback((query: string) => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (query.length < 3) {
+    const trimmed = query.trim();
+    if (trimmed.length < 2) {
       setAddressSuggestions([]);
       setShowSuggestions(false);
       return;
     }
     debounceRef.current = setTimeout(async () => {
       try {
-        const res = await fetch(
-          `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5`
-        );
-        const data = await res.json();
-        const results = (data.features || []).map((f: Record<string, unknown>) => {
-          const p = f.properties as Record<string, string | undefined>;
-          const parts = [
-            p.name,
-            p.housenumber && p.street ? `${p.housenumber} ${p.street}` : p.street,
-            p.city || p.town || p.village,
-            p.state,
-            p.postcode,
-            p.country,
-          ].filter(Boolean);
-          return { label: parts.join(", "), raw: p };
-        });
+        // Use autocomplete for partial postcodes, lookup for complete ones
+        const isFullPostcode = /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i.test(trimmed);
+        let results: AddressSuggestion[] = [];
+
+        if (isFullPostcode) {
+          // Full postcode - get exact result
+          const res = await fetch(
+            `https://api.postcodes.io/postcodes/${encodeURIComponent(trimmed)}`
+          );
+          const data = await res.json();
+          if (data.status === 200 && data.result) {
+            const r = data.result;
+            const label = [r.postcode, r.admin_ward, r.admin_district, r.region].filter(Boolean).join(", ");
+            results = [{ label, raw: r }];
+          }
+        } else {
+          // Partial postcode - autocomplete
+          const res = await fetch(
+            `https://api.postcodes.io/postcodes/${encodeURIComponent(trimmed)}/autocomplete`
+          );
+          const data = await res.json();
+          if (data.status === 200 && data.result) {
+            // Fetch details for each suggestion (up to 5)
+            const postcodes = (data.result as string[]).slice(0, 5);
+            const lookupRes = await fetch("https://api.postcodes.io/postcodes", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ postcodes }),
+            });
+            const lookupData = await lookupRes.json();
+            if (lookupData.status === 200 && lookupData.result) {
+              results = lookupData.result
+                .filter((item: any) => item.result)
+                .map((item: any) => {
+                  const r = item.result;
+                  const label = [r.postcode, r.admin_ward, r.admin_district, r.region].filter(Boolean).join(", ");
+                  return { label, raw: r };
+                });
+            }
+          }
+        }
+
         setAddressSuggestions(results);
         setShowSuggestions(results.length > 0);
-        console.log(`[HireEnquiry] Address search returned ${results.length} results`);
+        console.log(`[HireEnquiry] Postcode search returned ${results.length} results`);
       } catch (err) {
-        console.error("[HireEnquiry] Address search failed:", err);
+        console.error("[HireEnquiry] Postcode search failed:", err);
         setAddressSuggestions([]);
       }
     }, 300);
@@ -267,10 +294,10 @@ export default function HireEnquiryForm() {
           Venue Details
         </h4>
         <div className="space-y-4">
-          {/* Venue Address with Autocomplete */}
+          {/* Venue Address via Postcode Lookup */}
           <div className="relative" ref={suggestionsRef}>
             <label className="block text-sm font-medium text-text-primary mb-2">
-              Venue address *
+              Venue postcode *
             </label>
             <input
               type="text"
@@ -278,13 +305,13 @@ export default function HireEnquiryForm() {
               value={form.venueAddress}
               onChange={(e) => {
                 setForm({ ...form, venueAddress: e.target.value });
-                searchAddress(e.target.value);
+                searchPostcode(e.target.value);
               }}
               onFocus={() => {
                 if (addressSuggestions.length > 0) setShowSuggestions(true);
               }}
               required
-              placeholder="Start typing an address..."
+              placeholder="e.g. SW1A 1AA"
               autoComplete="off"
               className="w-full px-4 py-3 rounded-lg border border-border bg-background text-text-primary focus:ring-2 focus:ring-primary focus:border-transparent"
             />
