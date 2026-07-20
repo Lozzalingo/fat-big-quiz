@@ -277,11 +277,17 @@ export default function QuizDatabaseClient() {
             fetch(`${API}/api/quiz-database/stats`),
           ]);
 
-        setCategories(await catRes.json());
-        setSubCategories(await subCatRes.json());
-        setCountries(await countryRes.json());
-        setThemes(await themeRes.json());
-        setStats(await statsRes.json());
+        const catData = await catRes.json();
+        const subCatData = await subCatRes.json();
+        const countryData = await countryRes.json();
+        const themeData = await themeRes.json();
+        const statsData = await statsRes.json();
+
+        setCategories(Array.isArray(catData) ? catData : []);
+        setSubCategories(Array.isArray(subCatData) ? subCatData : []);
+        setCountries(Array.isArray(countryData) ? countryData : []);
+        setThemes(Array.isArray(themeData) ? themeData : []);
+        setStats(statsData?.total !== undefined ? statsData : null);
       } catch (error) {
         console.error("[QuizDB] Error loading lookups:", error);
       }
