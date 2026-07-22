@@ -212,8 +212,13 @@ async function incrementDownload(request, response) {
     }
 
     // Create a simple signed token
+    const downloadSecret = process.env.DOWNLOAD_SECRET;
+    if (!downloadSecret) {
+      console.error('[Purchase] DOWNLOAD_SECRET not configured - cannot generate download token');
+      return response.status(500).json({ error: 'Server misconfigured' });
+    }
     const token = crypto
-      .createHmac("sha256", process.env.DOWNLOAD_SECRET || "fallback-secret")
+      .createHmac("sha256", downloadSecret)
       .update(`${purchaseId}-${Date.now()}`)
       .digest("hex");
 

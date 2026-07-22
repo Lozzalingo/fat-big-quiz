@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import RatingPercentElement from "./RatingPercentElement";
 import SingleReview from "./SingleReview";
 import { formatCategoryName } from "@/utils/categoryFormatting";
+import { Product } from "@/types/products";
 
 const ProductTabs = ({ product }: { product: Product }) => {
   const [currentProductTab, setCurrentProductTab] = useState<number>(0);

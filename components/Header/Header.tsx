@@ -35,10 +35,10 @@ const Header = () => {
       price: number;
       image: string;
       slug:string
-      stockAvailabillity: number;
+      stockAvailability: number;
     }[] = [];
     
-    wishlist.map((item: any) => productArray.push({id: item?.product?.id, title: item?.product?.title, price: item?.product?.price, image: item?.product?.mainImage, slug: item?.product?.slug, stockAvailabillity: item?.product?.inStock}));
+    wishlist.map((item: any) => productArray.push({id: item?.product?.id, title: item?.product?.title, price: item?.product?.price, image: item?.product?.mainImage, slug: item?.product?.slug, stockAvailability: item?.product?.inStock}));
     
     setWishlist(productArray);
   };

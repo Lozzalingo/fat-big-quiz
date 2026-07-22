@@ -6,6 +6,7 @@ import {
 import React, { useEffect, useState, useRef } from "react";
 import toast from "react-hot-toast";
 import { FaImage, FaFileDownload, FaTimes, FaPlus, FaGripVertical, FaStar } from "react-icons/fa";
+import { Category } from "@/types/categories";
 
 type ProductType = "PHYSICAL" | "DIGITAL_DOWNLOAD" | "SUBSCRIPTION" | "EVENT";
 

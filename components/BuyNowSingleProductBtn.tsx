@@ -3,6 +3,7 @@ import { useProductStore } from "@/app/store/store";
 import React from "react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import { SingleProductBtnProps } from "@/types/products";
 
 const BuyNowSingleProductBtn = ({
   product,

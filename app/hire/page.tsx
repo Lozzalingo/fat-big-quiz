@@ -162,7 +162,7 @@ export default function HirePage() {
     {
       question: "Do you provide all the equipment?",
       answer:
-        "Yes. For The Show, we bring the full rig: PA, screen, lighting, stage, props. For Unplugged, we bring a portable speaker, quiz packs, and game equipment. All you need is the space.",
+        "Yes. For The Show, we bring audio, stage, props, and a projector. For Unplugged, we bring a portable speaker, quiz packs, and game equipment. All you need is the space.",
     },
     {
       question: "How far in advance do I need to book?",

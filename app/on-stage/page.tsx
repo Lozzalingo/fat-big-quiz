@@ -542,8 +542,7 @@ export default function OnStagePage() {
 
             {/* Right column - form */}
             <BookingForm
-              productName="Fat Big Quiz On Stage"
-              source="on-stage"
+              preselectedProductSlug="fat-big-quiz-on-stage"
             />
           </div>
         </div>

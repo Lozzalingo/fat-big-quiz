@@ -5,6 +5,7 @@ import ProductItem from "./ProductItem";
 import Heading from "./Heading";
 import GradientContainer from "./GradientContainer";
 import { useScroll } from "@/utils/ScrollContext";
+import { Product } from "@/types/products";
 
 // Props include products to allow pre-fetching
 type ProductsSectionProps = {

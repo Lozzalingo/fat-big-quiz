@@ -1,6 +1,7 @@
 import React from "react";
 import ProductItem from "./ProductItem";
 import SetTotalPages from "./SetTotalPages";
+import { Product } from "@/types/products";
 
 const Products = async ({ slug }: any) => {
   // getting all data from URL slug and preparing everything for sending GET request

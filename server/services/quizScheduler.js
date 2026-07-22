@@ -195,6 +195,21 @@ async function runBlogScrape() {
     });
 
     console.log(`[QuizDB Scheduler] Blog scrape complete: ${totalImported} imported, ${totalSkipped} skipped`);
+
+    // Post-scrape LLM classification
+    if (totalImported > 0) {
+      const hasApiKey = !!(process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY || process.env.DEEPSEEK_API_KEY);
+      if (hasApiKey) {
+        console.log(`[QuizDB Scheduler] Running LLM classification on ${totalImported} new blog questions...`);
+        try {
+          const { classifyNewlyImported } = require("./questionClassifier");
+          const classifyStats = await classifyNewlyImported(source.id, totalImported);
+          console.log(`[QuizDB Scheduler] Classification done: ${classifyStats.classified} classified, ${classifyStats.flagged} flagged`);
+        } catch (classifyErr) {
+          console.error("[QuizDB Scheduler] Post-scrape classification error:", classifyErr.message);
+        }
+      }
+    }
   } catch (error) {
     console.error("[QuizDB Scheduler] Blog scrape failed:", error);
   } finally {

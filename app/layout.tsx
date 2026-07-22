@@ -4,6 +4,7 @@ import Script from "next/script";
 import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import { Footer } from "@/components";
+import CartSidebar from "@/components/CartSidebar";
 import SessionProvider from "@/utils/SessionProvider";
 import Providers from "@/Providers";
 import { getServerSession } from "next-auth";
@@ -96,6 +97,7 @@ export default async function RootLayout({
               privacyUrl="/privacy"
             />
             <EnhancedHeader />
+            <CartSidebar />
             <main className="flex-grow">
               <Providers>{children}</Providers>
             </main>

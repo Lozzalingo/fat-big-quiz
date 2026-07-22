@@ -8,6 +8,7 @@ interface CustomButtonProps {
   customWidth: string;
   textSize: string;
   trackButton?: string;
+  onClick?: () => void;
 }
 
 const CustomButton = ({
@@ -17,13 +18,15 @@ const CustomButton = ({
   buttonType,
   customWidth,
   textSize,
-  trackButton
+  trackButton,
+  onClick
 }: CustomButtonProps) => {
 
 
   return (
     <button
       type={`${buttonType}`}
+      onClick={onClick}
       data-track-button={trackButton || `Admin:${text}`}
       className={`${customWidth !== "no" && `w-${customWidth}`} uppercase bg-white px-${paddingX} py-${paddingY} text-${textSize} border border-black border-gray-300 font-bold text-blue-600 shadow-sm hover:bg-black hover:bg-gray-100 focus:outline-none focus:ring-2`}
     >

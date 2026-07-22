@@ -7,12 +7,14 @@ export type ProductInCart = {
   price: number;
   image: string;
   amount: number;
+  slug?: string;
 };
 
 export type State = {
   products: ProductInCart[];
   allQuantity: number;
   total: number;
+  sidebarOpen: boolean;
 };
 
 export type Actions = {
@@ -21,6 +23,8 @@ export type Actions = {
   updateCartAmount: (id: string, quantity: number) => void;
   calculateTotals: () => void;
   clearCart: () => void;
+  openSidebar: () => void;
+  closeSidebar: () => void;
 };
 
 export const useProductStore = create<State & Actions>()(
@@ -29,6 +33,9 @@ export const useProductStore = create<State & Actions>()(
       products: [],
       allQuantity: 0,
       total: 0,
+      sidebarOpen: false,
+      openSidebar: () => set({ sidebarOpen: true }),
+      closeSidebar: () => set({ sidebarOpen: false }),
       addToCart: (newProduct) => {
         set((state) => {
           const cartItem = state.products.find(

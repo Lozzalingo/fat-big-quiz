@@ -16,7 +16,7 @@ interface ProductInWishlist {
   price: number;
   image: string;
   slug: string;
-  stockAvailabillity: boolean;
+  stockAvailability: number;
 }
 
 const WishItem = ({
@@ -25,11 +25,11 @@ const WishItem = ({
   price,
   image,
   slug,
-  stockAvailabillity,
+  stockAvailability,
 }: ProductInWishlist) => {
   const { data: session } = useSession();
   const { removeFromWishlist } = useWishlistStore();
-  const { addToCart, calculateTotals } = useProductStore();
+  const { addToCart, calculateTotals, openSidebar } = useProductStore();
   const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
 
@@ -69,8 +69,8 @@ const WishItem = ({
       amount: 1,
     });
     calculateTotals();
-    toast.success("Added to cart");
-    router.push("/cart");
+    openSidebar();
+    console.log("[Cart] Product added from wishlist:", title);
   };
 
   useEffect(() => {
@@ -98,7 +98,7 @@ const WishItem = ({
 
       {/* Status */}
       <td className="py-4 text-sm hidden sm:table-cell">
-        {stockAvailabillity ? (
+        {stockAvailability ? (
           <span className="text-green-600">In stock</span>
         ) : (
           <span className="text-red-600">Out of stock</span>
@@ -112,7 +112,7 @@ const WishItem = ({
             className="text-xs uppercase tracking-wide px-3 py-2 border border-black hover:bg-black hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleAddToCart}
             data-track-button="Wishlist:Add to Cart"
-            disabled={!stockAvailabillity}
+            disabled={!stockAvailability}
           >
             Add to Cart
           </button>

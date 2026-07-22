@@ -1,4 +1,5 @@
 const { PrismaClient } = require("@prisma/client");
+const { classifyNewlyImported } = require("../services/questionClassifier");
 const prisma = new PrismaClient();
 
 // ─── Helper: Parse scraper format ───────────────────────────────────────────
@@ -528,6 +529,19 @@ async function importQuestions(req, res) {
     });
 
     console.log(`[QuizDB] Import complete: ${imported} imported, ${duplicatesSkipped} duplicates skipped, ${errors} errors`);
+
+    // Trigger post-import LLM classification (non-blocking)
+    if (imported > 0) {
+      const hasApiKey = !!(process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY || process.env.DEEPSEEK_API_KEY);
+      if (hasApiKey) {
+        console.log(`[QuizDB] Triggering post-import classification for ${imported} new questions...`);
+        classifyNewlyImported(source.id, imported).catch((err) => {
+          console.error("[QuizDB] Post-import classification error:", err.message);
+        });
+      } else {
+        console.log("[QuizDB] No LLM API key configured - skipping post-import classification");
+      }
+    }
 
     return res.json({
       imported,

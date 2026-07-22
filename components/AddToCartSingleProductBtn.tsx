@@ -3,9 +3,10 @@
 import React from "react";
 import { useProductStore } from "@/app/store/store";
 import toast from "react-hot-toast";
+import { SingleProductBtnProps } from "@/types/products";
 
 const AddToCartSingleProductBtn = ({ product, quantityCount } : SingleProductBtnProps) => {
-  const { addToCart, calculateTotals } = useProductStore();
+  const { addToCart, calculateTotals, openSidebar } = useProductStore();
 
   const handleAddToCart = () => {
     addToCart({
@@ -16,7 +17,8 @@ const AddToCartSingleProductBtn = ({ product, quantityCount } : SingleProductBtn
       amount: quantityCount
     });
     calculateTotals();
-    toast.success("Product added to the cart");
+    openSidebar();
+    console.log("[Cart] Product added to cart:", product?.title);
   };
   return (
     <button

@@ -50,7 +50,7 @@
         return response.status(409).json({ error: "A user with this email already exists." });
       }
 
-      const hashedPassword = await bcrypt.hash(password, 5);
+      const hashedPassword = await bcrypt.hash(password, 10);
 
       const userData = {
         email: normalisedEmail,
@@ -100,7 +100,7 @@
       if (userName) updateData.userName = userName;
       if (firstName) updateData.firstName = firstName;
       if (lastName) updateData.lastName = lastName;
-      if (password) updateData.password = await bcrypt.hash(password, 5);
+      if (password) updateData.password = await bcrypt.hash(password, 10);
 
       if (Object.keys(updateData).length === 0) {
         console.log("[User] Update rejected — no fields provided");

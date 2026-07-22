@@ -22,7 +22,7 @@ const WishlistPage = () => {
       price: number;
       image: string;
       slug: string;
-      stockAvailabillity: number;
+      stockAvailability: number;
     }[] = [];
 
     wishlist.map((item: any) =>
@@ -32,7 +32,7 @@ const WishlistPage = () => {
         price: item?.product?.price,
         image: item?.product?.mainImage,
         slug: item?.product?.slug,
-        stockAvailabillity: item?.product?.inStock,
+        stockAvailability: item?.product?.inStock,
       })
     );
 
@@ -94,7 +94,7 @@ const WishlistPage = () => {
                       price={item?.price}
                       image={item?.image}
                       slug={item?.slug}
-                      stockAvailabillity={item?.stockAvailabillity}
+                      stockAvailability={item?.stockAvailability}
                       key={nanoid()}
                     />
                   ))}

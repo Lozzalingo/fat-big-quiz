@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { ProductInWishlist } from "@/types/products";
 
 export type State = {
   wishlist: ProductInWishlist[];

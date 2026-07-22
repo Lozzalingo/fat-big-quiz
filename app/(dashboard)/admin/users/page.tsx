@@ -4,6 +4,7 @@ import { getUserAvatarUrl } from "@/utils/cdn";
 import { nanoid } from "nanoid";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
+import { User } from "@/types/user";
 
 const DashboardUsers = () => {
   const [users, setUsers] = useState<User[]>([]);

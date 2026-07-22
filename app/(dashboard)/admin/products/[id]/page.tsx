@@ -7,7 +7,8 @@ import React, { useEffect, useState, useRef } from "react";
 import toast from "react-hot-toast";
 import { FaImage, FaFileDownload, FaTimes, FaPlus, FaGripVertical, FaStar } from "react-icons/fa";
 import { useRouter } from "next/navigation";
-import { getProductImageUrl, getDownloadFileUrl } from "@/utils/cdn";
+import { getProductImageUrl, getDownloadUrl } from "@/utils/cdn";
+import { Category } from "@/types/categories";
 
 type ProductType = "PHYSICAL" | "DIGITAL_DOWNLOAD" | "SUBSCRIPTION" | "EVENT";
 
@@ -494,7 +495,7 @@ const DashboardProductDetails = ({
         // Upload additional images in parallel (non-primary)
         const additionalImages = uploadedImages.filter(img => !img.isPrimary);
         const imageUploadPromises = additionalImages.map(async (img) => {
-          let fileName = img.filename;
+          let fileName: string | null | undefined = img.filename;
 
           // If it's a new image, upload it first
           if (!img.isExisting && img.file) {

@@ -6,6 +6,7 @@ import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { FaHeartCrack } from "react-icons/fa6";
 import { FaHeart } from "react-icons/fa6";
+import { Product } from "@/types/products";
 
 interface AddToWishlistBtnProps {
   product: Product;
@@ -42,7 +43,7 @@ const AddToWishlistBtn = ({ product, slug }: AddToWishlistBtnProps) => {
                 price: product?.price,
                 image: product?.mainImage,
                 slug: product?.slug,
-                stockAvailabillity: product?.inStock,
+                stockAvailability: product?.inStock,
               });
               toast.success("Product added to the wishlist");
             })

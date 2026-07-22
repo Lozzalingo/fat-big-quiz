@@ -1633,6 +1633,28 @@ async function main() {
 
   const total = await prisma.quizQuestion.count();
   console.log(`[Scraper] Database now contains ${total} total questions`);
+
+  // Post-scrape LLM classification for newly imported questions
+  if (!dryRun && totalImported > 0) {
+    const hasApiKey = !!(process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY || process.env.DEEPSEEK_API_KEY);
+    if (hasApiKey) {
+      console.log(`\n[Scraper] Running LLM classification on ${totalImported} newly imported questions...`);
+      try {
+        const { classifyQuestions } = require("../services/questionClassifier");
+        const classifyStats = await classifyQuestions({
+          where: { status: "UNVERIFIED" },
+          limit: totalImported,
+          concurrency: 5,
+        });
+        console.log(`[Scraper] Classification done: ${classifyStats.classified} classified, ${classifyStats.flagged} flagged, ${classifyStats.errors} errors`);
+      } catch (err) {
+        console.error("[Scraper] Post-scrape classification error:", err.message);
+      }
+    } else {
+      console.log("\n[Scraper] No LLM API key configured - skipping post-scrape classification");
+      console.log("[Scraper] Run manually: node server/scripts/classifyQuestions.js");
+    }
+  }
 }
 
 main()

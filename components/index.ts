@@ -53,3 +53,4 @@ export { default as DiscountCodeForm } from "./DiscountCodeForm";
 export { default as MainHeaderClient } from "./MainHeaderClient";
 export { default as VisitorTracker } from "./VisitorTracker";
 export { default as ShopSearch } from "./ShopSearch";
+export { default as CartSidebar } from "./CartSidebar";

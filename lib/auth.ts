@@ -45,7 +45,7 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
   },
   callbacks: {
-    async signIn({ account }: { user: AuthUser; account: Account }) {
+    async signIn({ account }: { user: AuthUser; account: Account | null }) {
       if (account?.provider == "credentials") {
         return true;
       }

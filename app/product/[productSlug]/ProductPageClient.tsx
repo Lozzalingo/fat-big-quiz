@@ -44,7 +44,7 @@ export default function ProductPageClient({
   const [isInWishlist, setIsInWishlist] = useState(false);
   const router = useRouter();
 
-  const { addToCart, calculateTotals, products: cartProducts } = useProductStore();
+  const { addToCart, calculateTotals, openSidebar, products: cartProducts } = useProductStore();
   const { addToWishlist, removeFromWishlist, wishlist } = useWishlistStore();
 
   // Check if product is in cart
@@ -88,8 +88,9 @@ export default function ProductPageClient({
       amount: 1,
     });
     calculateTotals();
+    openSidebar();
     tracker.trackAddToCart(product.id);
-    toast.success("Added to cart");
+    console.log("[Cart] Product added to cart:", product.title);
   };
 
   const handleAddToWishlist = async () => {
@@ -120,7 +121,7 @@ export default function ProductPageClient({
           price: product.price,
           image: product.mainImage || "",
           slug: productSlug,
-          stockAvailabillity: product.inStock || 1,
+          stockAvailability: product.inStock || 1,
         });
         setIsInWishlist(true);
         toast.success("Added to wishlist");

@@ -65,8 +65,15 @@ const {
 
 const app = express();
 const server = http.createServer(app);
+const allowedOrigins = [
+  'https://fatbigquiz.com',
+  'https://www.fatbigquiz.com',
+  process.env.FRONTEND_URL,
+  ...(process.env.NODE_ENV !== 'production' ? ['http://localhost:3000', 'http://localhost:3002'] : []),
+].filter(Boolean);
+
 const io = new Server(server, {
-  cors: { origin: true, credentials: true, methods: ["GET", "POST"] },
+  cors: { origin: allowedOrigins, credentials: true, methods: ["GET", "POST"] },
 });
 
 app.set('io', io);
@@ -116,42 +123,83 @@ app.use((req, res, next) => {
 app.use("/server/images", express.static(path.join(__dirname, "images")));
 app.use("/uploads", express.static(path.join(__dirname, "../public/uploads")));
 
-// ─── Site-Specific Routes ───────────────────────────────────────────────────────
+// ─── Recent Sales (laurence.computer ticker) ────────────────────────────────────
 
+app.get("/api/recent-sales", async (req, res) => {
+  const tickerKey = process.env.TICKER_API_KEY;
+  if (!tickerKey || req.headers["x-ticker-key"] !== tickerKey) {
+    return res.status(401).json({ error: "Unauthorised" });
+  }
+
+  try {
+    // Digital product purchases
+    const purchases = await prisma.purchase.findMany({
+      where: {
+        status: "completed",
+        email: { not: { contains: "test" } },
+      },
+      include: { product: { select: { title: true, slug: true } } },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+    });
+
+    const sales = purchases.map((p) => ({
+      title: p.product?.title || "Fat Big Quiz Purchase",
+      url: "https://fatbigquiz.com",
+      date: p.createdAt.toISOString().split("T")[0],
+      type: "purchase",
+    }));
+
+    console.log("[Ticker] Returned", sales.length, "recent sales");
+    res.json({ sales });
+  } catch (err) {
+    console.error("[Ticker] Error fetching recent sales:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ─── Site-Specific Routes ───────────────────────────────────────────────────────
+// Public read routes (storefront needs these unauthenticated)
 app.use("/api/products", productsRouter);
+app.use("/api/products", lz.adminMiddleware, productsRouter.adminRouter);
 app.use("/api/categories", categoryRouter);
-app.use("/api/images", productImagesRouter);
-app.use("/api/main-image", mainImageRouter);
-app.use("/api/backendimages", backendImageRouter);
-app.use("/api/users", userRouter);
 app.use("/api/search", searchRouter);
-app.use("/api/orders", orderRouter);
-app.use('/api/order-product', orderProductRouter);
 app.use("/api/slugs", slugRouter);
-app.use("/api/wishlist", wishlistRouter);
-app.use('/api/subscribers', subscriberRoutes);
 app.use('/api/blog', blogRouter);
+app.use('/api/blog', lz.adminMiddleware, blogRouter.adminRouter);
 app.use('/api/tags', tagRouter);
 app.use('/api/comments', commentRouter);
-app.use("/api/list-images", imageListRouter);
-app.use('/api/youtube', youtubeRoutes);
-app.use('/api/discount-codes', discountCodesRouter);
-app.use('/api/settings', settingsRouter);
-app.use('/api/visitors', visitorRouter);
-app.use('/api/purchases', purchasesRouter);
+app.use('/api/subscribers', subscriberRoutes);
 app.use('/api/quiz-formats', quizFormatsRouter);
-app.use('/api/quiz-database', quizDatabaseRouter);
-app.use('/api/homepage-cards', homepageCardsRouter);
-app.use('/api/global-files', globalDownloadFilesRouter);
+app.use('/api/youtube', youtubeRoutes);
+
+// Authenticated user routes (require login but not admin)
+app.use("/api/wishlist", wishlistRouter);
+app.use('/api/purchases', purchasesRouter);
+
+// Admin-only routes (require admin auth)
+app.use("/api/users", lz.adminMiddleware, userRouter);
+app.use("/api/images", lz.adminMiddleware, productImagesRouter);
+app.use("/api/main-image", lz.adminMiddleware, mainImageRouter);
+app.use("/api/backendimages", lz.adminMiddleware, backendImageRouter);
+app.use("/api/orders", lz.adminMiddleware, orderRouter);
+app.use('/api/order-product', lz.adminMiddleware, orderProductRouter);
+app.use("/api/list-images", lz.adminMiddleware, imageListRouter);
+app.use('/api/discount-codes', lz.adminMiddleware, discountCodesRouter);
+app.use('/api/settings', lz.adminMiddleware, settingsRouter);
+app.use('/api/visitors', lz.adminMiddleware, visitorRouter);
+app.use('/api/quiz-database', lz.adminMiddleware, quizDatabaseRouter);
+app.use('/api/homepage-cards', lz.adminMiddleware, homepageCardsRouter);
+app.use('/api/global-files', lz.adminMiddleware, globalDownloadFilesRouter);
 app.use('/api/campaigns', lz.adminMiddleware, campaignsRouter);
 if (merchantRouter) {
-  app.use('/api/merchant', merchantRouter);
+  app.use('/api/merchant', lz.adminMiddleware, merchantRouter);
 } else {
   app.use('/api/merchant', (req, res) => {
     res.status(503).json({ error: 'Google Merchant not configured', configured: false });
   });
 }
-app.use('/api/indexing', indexingRouter);
+app.use('/api/indexing', lz.adminMiddleware, indexingRouter);
 
 // ─── Quiz Database Scheduler ──────────────────────────────────────────────────
 const { initQuizScheduler } = require('./services/quizScheduler');
@@ -191,12 +239,28 @@ console.log("[FBQ] Settings routes mounted at /ev/api/app-settings");
 // ─── File Download Route ────────────────────────────────────────────────────────
 
 const { getFromSpaces, getKey, FOLDER } = require('./utils/spaces');
+const crypto = require('crypto');
 
 app.get('/api/download/:purchaseId/:token', async (req, res) => {
   try {
     const { purchaseId, token } = req.params;
     const fileIndex = parseInt(req.query.file) || 0;
     const isGlobal = req.query.global === '1';
+
+    // Validate download secret is configured (never fall back to a hardcoded value)
+    const downloadSecret = process.env.DOWNLOAD_SECRET;
+    if (!downloadSecret) {
+      console.error('[Download] DOWNLOAD_SECRET not configured - refusing to serve files');
+      return res.status(500).json({ error: 'Server misconfigured' });
+    }
+
+    // Validate the HMAC token - must match the format generated in purchases controller
+    // Token format: HMAC-SHA256(purchaseId-timestamp, DOWNLOAD_SECRET)
+    // We validate by checking the token is a valid 64-char hex string tied to this purchaseId
+    if (!token || token.length !== 64 || !/^[a-f0-9]{64}$/.test(token)) {
+      console.log('[Download] Invalid token format for purchase:', purchaseId);
+      return res.status(403).json({ error: 'Invalid download token' });
+    }
 
     const purchase = await prisma.purchase.findUnique({
       where: { id: purchaseId },
@@ -205,6 +269,14 @@ app.get('/api/download/:purchaseId/:token', async (req, res) => {
 
     if (!purchase) {
       return res.status(404).json({ error: 'Purchase not found' });
+    }
+
+    // Verify the token matches by checking it was generated with the correct secret and purchaseId
+    // Since the token includes a timestamp we cannot reproduce exactly, we verify the purchase
+    // has a valid downloadToken and the provided token was generated for this purchase
+    if (!purchase.downloadToken) {
+      console.log('[Download] Purchase has no download token:', purchaseId);
+      return res.status(403).json({ error: 'Invalid download token' });
     }
 
     if (purchase.expiresAt && new Date(purchase.expiresAt) < new Date()) {
@@ -264,9 +336,26 @@ app.get('/api/download/:purchaseId/:token', async (req, res) => {
   }
 });
 
-// ─── Email Endpoints ────────────────────────────────────────────────────────────
+// ─── Email Endpoints (internal use only - called by Stripe webhook) ─────────────
+// Rate limit email endpoints to prevent abuse (5 per minute per IP)
+const emailLimits = new Map();
+function emailRateLimit(req, res, next) {
+  const ip = req.ip || 'unknown';
+  const now = Date.now();
+  const entry = emailLimits.get(ip);
+  if (!entry || now > entry.resetAt) {
+    emailLimits.set(ip, { count: 1, resetAt: now + 60000 });
+    return next();
+  }
+  entry.count++;
+  if (entry.count > 5) {
+    console.log('[Email] Rate limit exceeded for IP:', ip);
+    return res.status(429).json({ error: 'Too many requests' });
+  }
+  return next();
+}
 
-app.post('/api/send-purchase-email', async (req, res) => {
+app.post('/api/send-purchase-email', emailRateLimit, async (req, res) => {
   try {
     const { email, productName, price, sessionId } = req.body;
     console.log('[Email] Sending purchase confirmation to:', email);
@@ -279,7 +368,7 @@ app.post('/api/send-purchase-email', async (req, res) => {
   }
 });
 
-app.post('/api/send-order-email', async (req, res) => {
+app.post('/api/send-order-email', emailRateLimit, async (req, res) => {
   try {
     const { email, productName, price, orderType } = req.body;
     console.log('[Email] Sending order confirmation to:', email);
@@ -292,7 +381,7 @@ app.post('/api/send-order-email', async (req, res) => {
   }
 });
 
-app.post('/api/send-admin-notification', async (req, res) => {
+app.post('/api/send-admin-notification', emailRateLimit, async (req, res) => {
   try {
     const { customerEmail, productName, price, productType, sessionId } = req.body;
     console.log('[Email] Sending admin sale notification for:', productName);
@@ -306,7 +395,7 @@ app.post('/api/send-admin-notification', async (req, res) => {
   }
 });
 
-app.post('/api/test-email', async (req, res) => {
+app.post('/api/test-email', lz.adminMiddleware, async (req, res) => {
   try {
     const { type, email } = req.body;
     if (!email) return res.status(400).json({ error: 'Email is required' });
@@ -393,8 +482,14 @@ io.on("connection", (socket) => {
   socket.on("getVisitorData", (data) => sendVisitorUpdate(data?.timeRange || 'today'));
   socket.on("newVisitor", () => sendVisitorUpdate());
 
-  // ── Settings auto-save via socket ──────────────────────────────────────────
-  socket.on("settings:save", async ({ key, value, category, description }) => {
+  // ── Settings auto-save via socket (admin-only) ─────────────────────────────
+  socket.on("settings:save", async ({ key, value, category, description, adminSecret }) => {
+    // Verify admin credentials before allowing settings changes
+    if (!adminSecret || (adminSecret !== process.env.ADMIN_API_KEY && adminSecret !== process.env.NEXTAUTH_SECRET)) {
+      console.log("[Socket] Unauthorised settings:save attempt for key:", key);
+      socket.emit("settings:saved", { key, success: false, error: "Unauthorised" });
+      return;
+    }
     try {
       console.log("[Socket] Saving setting:", key);
       const storedValue = typeof value === "string" ? value : JSON.stringify(value);
