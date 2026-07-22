@@ -6,9 +6,7 @@ import { PrismaClient } from "@prisma/client";
 let stripe: Stripe;
 function getStripe() {
   if (!stripe) {
-    stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-      apiVersion: "2026-02-25.clover",
-    });
+    stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
   }
   return stripe;
 }

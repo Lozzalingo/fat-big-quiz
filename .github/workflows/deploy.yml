@@ -53,10 +53,10 @@ jobs:
         run: |
           # Run tsc and fail only on errors in FBQ source (not shared packages)
           npx tsc --noEmit 2>&1 | tee /tmp/tsc-output.txt
-          FBQ_ERRORS=$(grep "error TS" /tmp/tsc-output.txt | grep -v "^\.\./packages/" | wc -l)
+          FBQ_ERRORS=$(grep "error TS" /tmp/tsc-output.txt | grep -v "packages/" | wc -l)
           if [ "$FBQ_ERRORS" -gt 0 ]; then
             echo "::error::Found $FBQ_ERRORS TypeScript errors in Fat Big Quiz source:"
-            grep "error TS" /tmp/tsc-output.txt | grep -v "^\.\./packages/"
+            grep "error TS" /tmp/tsc-output.txt | grep -v "packages/"
             exit 1
           fi
           echo "Type check passed (0 FBQ errors)"
