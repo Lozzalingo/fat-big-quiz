@@ -35,7 +35,19 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          # Rewrite @lozzalingo/* deps to point to local packages/ checkout
+          node -e "
+            const pkg = require('./package.json');
+            for (const [k,v] of Object.entries(pkg.dependencies || {})) {
+              if (k.startsWith('@lozzalingo/')) {
+                const name = k.replace('@lozzalingo/', '');
+                pkg.dependencies[k] = 'file:./packages/' + name;
+              }
+            }
+            require('fs').writeFileSync('./package.json', JSON.stringify(pkg, null, 2));
+          "
+          npm install
 
       - name: Type check
         run: |
