@@ -819,6 +819,116 @@ enum EventFormat {
   HYBRID
 }
 
+// ─── UNIFIED SALES TRACKING ────────────────────────────────────────────────────
+
+enum SalesChannel {
+  WEBSITE
+  ETSY
+}
+
+enum SaleStatus {
+  PENDING      // Checkout started (website) - enables abandoned cart tracking
+  PAID         // Payment confirmed
+  COMPLETED    // Fully fulfilled (shipped or downloaded)
+  REFUNDED
+  CANCELLED
+}
+
+model Sale {
+  id                String       @id @default(uuid())
+  channel           SalesChannel
+
+  // External IDs (duplicate detection)
+  externalReceiptId String?      @unique  // Etsy receipt ID or Stripe session ID
+  stripeSessionId   String?               // Stripe checkout session (website sales)
+  stripePaymentId   String?               // Stripe payment intent
+
+  // Buyer info
+  buyerEmail        String
+  buyerName         String?
+  buyerPhone        String?
+  buyerUserId       String?               // Etsy buyer user ID or local user ID
+  paymentMethod     String?               // "card", "paypal", etc.
+
+  // Financials (integers in pence - minor currency units)
+  subtotal          Int          @default(0)
+  shippingCost      Int          @default(0)
+  shippingDiscount  Int          @default(0)
+  taxTotal          Int          @default(0)
+  vatTotal          Int          @default(0)
+  discountTotal     Int          @default(0)
+  grandTotal        Int          @default(0)
+  processingFees    Int          @default(0)  // Card processing fees (Etsy/Stripe)
+  orderNet          Int          @default(0)  // Grand total minus fees - what you actually receive
+  currency          String       @default("GBP")
+
+  // Buyer geography
+  shippingLine1     String?
+  shippingLine2     String?
+  shippingCity      String?
+  shippingState     String?
+  shippingPostalCode String?
+  shippingCountry   String?               // Full name: "United Kingdom"
+  shippingCountryISO String?              // ISO code: "GB"
+
+  // Status and timing
+  status            SaleStatus   @default(PENDING)
+  paidAt            DateTime?
+  completedAt       DateTime?
+
+  // CRM link
+  customerId        String?
+
+  // Raw payload for debugging
+  rawPayload        String?      @db.LongText
+
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  items             SaleItem[]
+
+  @@index([channel])
+  @@index([buyerEmail])
+  @@index([status])
+  @@index([createdAt])
+  @@index([customerId])
+  @@index([stripeSessionId])
+}
+
+model SaleItem {
+  id                    String   @id @default(uuid())
+  saleId                String
+
+  // External IDs
+  externalTransactionId String?  // Etsy transaction ID
+  externalListingId     String?  // Etsy listing ID
+  externalProductId     String?  // Etsy product ID
+
+  // Local product link (nullable - only set if matched to a local Product)
+  productId             String?
+
+  // Denormalised product info (always stored)
+  title                 String
+  description           String?  @db.Text
+  sku                   String?
+  quantity              Int      @default(1)
+  unitPrice             Int      @default(0)  // In pence
+  currency              String   @default("GBP")
+  isDigital             Boolean  @default(false)
+  variations            String?  @db.Text     // JSON array of variations
+
+  // Per-item discounts and tax
+  couponCode            String?
+  couponDiscount        Int      @default(0)  // In pence
+  vatAmount             Int      @default(0)  // VAT paid by buyer on this item, in pence
+
+  sale                  Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+
+  @@index([saleId])
+  @@index([externalTransactionId])
+  @@index([productId])
+}
+
 // ====== Shared Package Models ======
 
 // @lozzalingo/logging

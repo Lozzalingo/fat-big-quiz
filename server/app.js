@@ -54,6 +54,7 @@ try {
 }
 const indexingRouter = require('./routes/indexing');
 const campaignsRouter = require('./routes/campaigns');
+const salesRouter = require('./routes/sales');
 const {
   sendPurchaseConfirmationEmail,
   sendOrderConfirmationEmail,
@@ -171,13 +172,33 @@ app.get("/api/recent-sales", async (req, res) => {
       _ts: s.createdAt.getTime(),
     }));
 
+    // 3. Etsy sales (from unified sales tracker)
+    const etsySales = await prisma.sale.findMany({
+      where: {
+        channel: "ETSY",
+        status: { in: ["PAID", "COMPLETED"] },
+        buyerEmail: { not: { contains: "test" } },
+      },
+      include: { items: { take: 1, select: { title: true } } },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+    });
+
+    const etsySalesMapped = etsySales.map((s) => ({
+      title: s.items[0]?.title || "Fat Big Quiz - Etsy Order",
+      url: "https://fatbigquiz.com/shop",
+      date: s.createdAt.toISOString().split("T")[0],
+      type: "etsy",
+      _ts: s.createdAt.getTime(),
+    }));
+
     // Combine, sort by most recent, take top 5, strip internal timestamp
-    const allSales = [...purchaseSales, ...subscriptionSales]
+    const allSales = [...purchaseSales, ...subscriptionSales, ...etsySalesMapped]
       .sort((a, b) => b._ts - a._ts)
       .slice(0, 5)
       .map(({ _ts, ...sale }) => sale);
 
-    console.log("[Ticker] Returned", allSales.length, "recent sales (purchases:", purchaseSales.length, ", subscriptions:", subscriptionSales.length, ")");
+    console.log("[Ticker] Returned", allSales.length, "recent sales (purchases:", purchaseSales.length, ", subscriptions:", subscriptionSales.length, ", etsy:", etsySalesMapped.length, ")");
     res.json({ sales: allSales });
   } catch (err) {
     console.error("[Ticker] Error fetching recent sales:", err);
@@ -221,11 +242,25 @@ app.get("/api/sales-summary", async (req, res) => {
       },
     });
 
-    const totalOrders = purchases.length + activeSubscribers;
-    const subscriptionRevenuePence = activeSubscribers * 999;
-    const totalRevenuePence = purchaseRevenuePence + subscriptionRevenuePence;
+    // 3. Etsy sales revenue (from unified sales tracker)
+    const etsyRevenueResult = await prisma.sale.aggregate({
+      where: {
+        channel: "ETSY",
+        status: { in: ["PAID", "COMPLETED"] },
+        buyerEmail: { not: { contains: "test" } },
+      },
+      _sum: { grandTotal: true },
+      _count: { id: true },
+    });
 
-    console.log("[Ticker] Sales summary: revenue", totalRevenuePence, "pence, orders", totalOrders);
+    const etsyRevenuePence = etsyRevenueResult._sum.grandTotal || 0;
+    const etsyOrderCount = etsyRevenueResult._count.id || 0;
+
+    const totalOrders = purchases.length + activeSubscribers + etsyOrderCount;
+    const subscriptionRevenuePence = activeSubscribers * 999;
+    const totalRevenuePence = purchaseRevenuePence + subscriptionRevenuePence + etsyRevenuePence;
+
+    console.log("[Ticker] Sales summary: revenue", totalRevenuePence, "pence, orders", totalOrders, "(etsy:", etsyOrderCount, ")");
 
     res.json({
       brand: "Fat Big Quiz",
@@ -254,6 +289,10 @@ app.use('/api/comments', commentRouter);
 app.use('/api/subscribers', subscriberRoutes);
 app.use('/api/quiz-formats', quizFormatsRouter);
 app.use('/api/youtube', youtubeRoutes);
+
+// Sales tracking (webhook + checkout creation - no admin auth)
+app.use('/api/sales', salesRouter);
+app.use('/api/sales', lz.adminMiddleware, salesRouter.adminRouter);
 
 // Authenticated user routes (require login but not admin)
 app.use("/api/wishlist", wishlistRouter);
