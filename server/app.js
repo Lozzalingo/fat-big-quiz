@@ -158,17 +158,17 @@ app.get("/api/recent-sales", async (req, res) => {
         stripeSubscriptionId: { not: null },
         email: { not: { contains: "test" } },
       },
-      select: { email: true, updatedAt: true },
-      orderBy: { updatedAt: "desc" },
+      select: { email: true, createdAt: true },
+      orderBy: { createdAt: "desc" },
       take: 5,
     });
 
     const subscriptionSales = subscribers.map((s) => ({
       title: "Fat Big Quiz - Quiz Database Pro",
       url: "https://fatbigquiz.com/quiz-database",
-      date: s.updatedAt.toISOString().split("T")[0],
+      date: s.createdAt.toISOString().split("T")[0],
       type: "subscription",
-      _ts: s.updatedAt.getTime(),
+      _ts: s.createdAt.getTime(),
     }));
 
     // Combine, sort by most recent, take top 5, strip internal timestamp
