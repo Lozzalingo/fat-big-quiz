@@ -132,7 +132,7 @@ app.get("/api/recent-sales", async (req, res) => {
   }
 
   try {
-    // Digital product purchases
+    // 1. Digital product purchases (printable quiz packs)
     const purchases = await prisma.purchase.findMany({
       where: {
         status: "completed",
@@ -143,17 +143,99 @@ app.get("/api/recent-sales", async (req, res) => {
       take: 5,
     });
 
-    const sales = purchases.map((p) => ({
-      title: p.product?.title || "Fat Big Quiz Purchase",
-      url: "https://fatbigquiz.com",
+    const purchaseSales = purchases.map((p) => ({
+      title: p.product?.title || "Fat Big Quiz - Quiz Pack",
+      url: "https://fatbigquiz.com/shop",
       date: p.createdAt.toISOString().split("T")[0],
       type: "purchase",
+      _ts: p.createdAt.getTime(),
     }));
 
-    console.log("[Ticker] Returned", sales.length, "recent sales");
-    res.json({ sales });
+    // 2. Quiz Database subscriptions (active subscribers)
+    const subscribers = await prisma.user.findMany({
+      where: {
+        subscriptionStatus: "active",
+        stripeSubscriptionId: { not: null },
+        email: { not: { contains: "test" } },
+      },
+      select: { email: true, updatedAt: true },
+      orderBy: { updatedAt: "desc" },
+      take: 5,
+    });
+
+    const subscriptionSales = subscribers.map((s) => ({
+      title: "Fat Big Quiz - Quiz Database Pro",
+      url: "https://fatbigquiz.com/quiz-database",
+      date: s.updatedAt.toISOString().split("T")[0],
+      type: "subscription",
+      _ts: s.updatedAt.getTime(),
+    }));
+
+    // Combine, sort by most recent, take top 5, strip internal timestamp
+    const allSales = [...purchaseSales, ...subscriptionSales]
+      .sort((a, b) => b._ts - a._ts)
+      .slice(0, 5)
+      .map(({ _ts, ...sale }) => sale);
+
+    console.log("[Ticker] Returned", allSales.length, "recent sales (purchases:", purchaseSales.length, ", subscriptions:", subscriptionSales.length, ")");
+    res.json({ sales: allSales });
   } catch (err) {
     console.error("[Ticker] Error fetching recent sales:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ─── Sales Summary (laurence.computer leaderboard) ──────────────────────────────
+
+app.get("/api/sales-summary", async (req, res) => {
+  const tickerKey = process.env.TICKER_API_KEY;
+  if (!tickerKey || req.headers["x-ticker-key"] !== tickerKey) {
+    return res.status(401).json({ error: "Unauthorised" });
+  }
+
+  try {
+    // 1. Printable download purchases
+    const purchases = await prisma.purchase.findMany({
+      where: {
+        status: "completed",
+        email: { not: { contains: "test" } },
+      },
+      include: { product: { select: { price: true } } },
+      orderBy: { createdAt: "asc" },
+    });
+
+    const purchaseRevenuePence = purchases.reduce(
+      (sum, p) => sum + Math.round((p.product?.price || 0) * 100),
+      0
+    );
+    const firstPurchaseDate = purchases.length > 0
+      ? purchases[0].createdAt.toISOString().split("T")[0]
+      : null;
+
+    // 2. Quiz Database subscriptions (£9.99/mo each active subscriber)
+    const activeSubscribers = await prisma.user.count({
+      where: {
+        subscriptionStatus: "active",
+        stripeSubscriptionId: { not: null },
+        email: { not: { contains: "test" } },
+      },
+    });
+
+    const totalOrders = purchases.length + activeSubscribers;
+    const subscriptionRevenuePence = activeSubscribers * 999;
+    const totalRevenuePence = purchaseRevenuePence + subscriptionRevenuePence;
+
+    console.log("[Ticker] Sales summary: revenue", totalRevenuePence, "pence, orders", totalOrders);
+
+    res.json({
+      brand: "Fat Big Quiz",
+      total_revenue_pence: totalRevenuePence,
+      total_orders: totalOrders,
+      first_sale_date: firstPurchaseDate,
+      currency: "GBP",
+    });
+  } catch (err) {
+    console.error("[Ticker] Error fetching sales summary:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
