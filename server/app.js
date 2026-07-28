@@ -398,6 +398,9 @@ app.use('/api/discount-codes', lz.adminMiddleware, discountCodesRouter);
 app.use('/api/settings', lz.adminMiddleware, settingsRouter);
 app.use('/api/visitors', lz.adminMiddleware, visitorRouter);
 app.use('/api/quiz-database', lz.adminMiddleware, quizDatabaseRouter);
+// Public homepage cards endpoint (before admin middleware)
+const { getPublicHomepageCards } = require('./controllers/homepageCards');
+app.get('/api/homepage-cards/public', getPublicHomepageCards);
 app.use('/api/homepage-cards', lz.adminMiddleware, homepageCardsRouter);
 app.use('/api/global-files', lz.adminMiddleware, globalDownloadFilesRouter);
 app.use('/api/campaigns', lz.adminMiddleware, campaignsRouter);

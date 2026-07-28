@@ -11,7 +11,7 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_API_BASE_URL=https://fatbigquiz.com/api
+      - NEXT_PUBLIC_API_BASE_URL=https://fatbigquiz.com
       - NEXT_PUBLIC_BASE_URL=https://fatbigquiz.com
       - NEXT_PUBLIC_DO_SPACES_CDN_ENDPOINT=https://aitshirts-laurence-dot-computer.sfo3.cdn.digitaloceanspaces.com
       - NEXT_PUBLIC_DO_SPACES_FOLDER=fat-big-quiz
