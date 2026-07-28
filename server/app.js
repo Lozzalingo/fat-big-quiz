@@ -214,8 +214,13 @@ app.get("/api/sales-summary", async (req, res) => {
     return res.status(401).json({ error: "Unauthorised" });
   }
 
+  // Product ID for virtual Fat Big Quiz (all other event product IDs are in-person)
+  const VIRTUAL_PRODUCT_ID = '070ce2a7-f85d-4a20-b08e-2f72bde520b7';
+
   try {
-    // 1. Printable download purchases
+    const summary = [];
+
+    // 1. Printable download purchases (digital product, virtual)
     const purchases = await prisma.purchase.findMany({
       where: {
         status: "completed",
@@ -229,9 +234,18 @@ app.get("/api/sales-summary", async (req, res) => {
       (sum, p) => sum + Math.round((p.product?.price || 0) * 100),
       0
     );
-    const firstPurchaseDate = purchases.length > 0
-      ? purchases[0].createdAt.toISOString().split("T")[0]
-      : null;
+
+    if (purchases.length > 0) {
+      summary.push({
+        brand: "Fat Big Quiz - Printable Downloads",
+        total_revenue_pence: purchaseRevenuePence,
+        total_orders: purchases.length,
+        total_customers: purchases.length,
+        first_sale_date: purchases[0].createdAt.toISOString().split("T")[0],
+        event_type: "virtual",
+        currency: "GBP",
+      });
+    }
 
     // 2. Quiz Database subscriptions (£9.99/mo each active subscriber)
     const activeSubscribers = await prisma.user.count({
@@ -242,7 +256,19 @@ app.get("/api/sales-summary", async (req, res) => {
       },
     });
 
-    // 3. Etsy sales revenue (from unified sales tracker)
+    if (activeSubscribers > 0) {
+      summary.push({
+        brand: "Fat Big Quiz - Quiz Database Subscriptions",
+        total_revenue_pence: activeSubscribers * 999,
+        total_orders: activeSubscribers,
+        total_customers: activeSubscribers,
+        first_sale_date: null,
+        event_type: "virtual",
+        currency: "GBP",
+      });
+    }
+
+    // 3. Etsy sales revenue
     const etsyRevenueResult = await prisma.sale.aggregate({
       where: {
         channel: "ETSY",
@@ -251,24 +277,81 @@ app.get("/api/sales-summary", async (req, res) => {
       },
       _sum: { grandTotal: true },
       _count: { id: true },
+      _min: { createdAt: true },
     });
 
-    const etsyRevenuePence = etsyRevenueResult._sum.grandTotal || 0;
-    const etsyOrderCount = etsyRevenueResult._count.id || 0;
+    if (etsyRevenueResult._count.id > 0) {
+      summary.push({
+        brand: "Fat Big Quiz - Etsy Sales",
+        total_revenue_pence: etsyRevenueResult._sum.grandTotal || 0,
+        total_orders: etsyRevenueResult._count.id,
+        total_customers: etsyRevenueResult._count.id,
+        first_sale_date: etsyRevenueResult._min.createdAt
+          ? etsyRevenueResult._min.createdAt.toISOString().split("T")[0]
+          : null,
+        event_type: "virtual",
+        currency: "GBP",
+      });
+    }
 
-    const totalOrders = purchases.length + activeSubscribers + etsyOrderCount;
-    const subscriptionRevenuePence = activeSubscribers * 999;
-    const totalRevenuePence = purchaseRevenuePence + subscriptionRevenuePence + etsyRevenuePence;
-
-    console.log("[Ticker] Sales summary: revenue", totalRevenuePence, "pence, orders", totalOrders, "(etsy:", etsyOrderCount, ")");
-
-    res.json({
-      brand: "Fat Big Quiz",
-      total_revenue_pence: totalRevenuePence,
-      total_orders: totalOrders,
-      first_sale_date: firstPurchaseDate,
-      currency: "GBP",
+    // 4. Event bookings (private and public, split by in-person vs virtual)
+    const completedStatuses = ["PAID", "COMPLETED", "DEPOSIT_PAID", "CONFIRMED"];
+    const eventBookings = await prisma.booking.findMany({
+      where: {
+        status: { in: completedStatuses },
+        totalAmount: { gt: 0 },
+      },
+      select: {
+        totalAmount: true,
+        groupSize: true,
+        bookingType: true,
+        productId: true,
+        eventDate: true,
+      },
+      orderBy: { eventDate: "asc" },
     });
+
+    // Group by bookingType + event_type (virtual vs in-person)
+    const eventGroups = {};
+    for (const b of eventBookings) {
+      const isVirtual = b.productId === VIRTUAL_PRODUCT_ID;
+      const key = `${b.bookingType || "PRIVATE"}_${isVirtual ? "virtual" : "in_person"}`;
+      if (!eventGroups[key]) {
+        eventGroups[key] = {
+          bookingType: b.bookingType || "PRIVATE",
+          eventType: isVirtual ? "virtual" : "in_person",
+          revenue: 0,
+          orders: 0,
+          customers: 0,
+          firstDate: null,
+        };
+      }
+      eventGroups[key].revenue += b.totalAmount;
+      eventGroups[key].orders += 1;
+      eventGroups[key].customers += b.groupSize || 1;
+      if (!eventGroups[key].firstDate || b.eventDate < eventGroups[key].firstDate) {
+        eventGroups[key].firstDate = b.eventDate;
+      }
+    }
+
+    for (const group of Object.values(eventGroups)) {
+      const label = group.bookingType === "PUBLIC" ? "Public Events" : "Private Events";
+      const formatLabel = group.eventType === "virtual" ? " (Virtual)" : "";
+      summary.push({
+        brand: `Fat Big Quiz - ${label}${formatLabel}`,
+        total_revenue_pence: group.revenue,
+        total_orders: group.orders,
+        total_customers: group.customers,
+        first_sale_date: group.firstDate
+          ? group.firstDate.toISOString().split("T")[0]
+          : null,
+        event_type: group.eventType,
+        currency: "GBP",
+      });
+    }
+
+    console.log(`[Ticker] Sales summary: ${summary.length} product lines`);
+    res.json(summary);
   } catch (err) {
     console.error("[Ticker] Error fetching sales summary:", err);
     res.status(500).json({ error: "Internal server error" });
