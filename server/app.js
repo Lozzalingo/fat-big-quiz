@@ -220,7 +220,7 @@ app.get("/api/sales-summary", async (req, res) => {
   try {
     const summary = [];
 
-    // 1. Printable download purchases (digital product, virtual)
+    // 1. Printable Downloads (direct site purchases + Etsy sales merged)
     const purchases = await prisma.purchase.findMany({
       where: {
         status: "completed",
@@ -230,18 +230,49 @@ app.get("/api/sales-summary", async (req, res) => {
       orderBy: { createdAt: "asc" },
     });
 
-    const purchaseRevenuePence = purchases.reduce(
+    const directRevenuePence = purchases.reduce(
       (sum, p) => sum + Math.round((p.product?.price || 0) * 100),
       0
     );
+    const firstDirectDate = purchases.length > 0
+      ? purchases[0].createdAt
+      : null;
 
-    if (purchases.length > 0) {
+    const etsyResult = await prisma.sale.aggregate({
+      where: {
+        channel: "ETSY",
+        status: { in: ["PAID", "COMPLETED"] },
+        buyerEmail: { not: { contains: "test" } },
+      },
+      _sum: { grandTotal: true },
+      _count: { id: true },
+      _min: { paidAt: true },
+    });
+
+    const etsyRevenuePence = etsyResult._sum.grandTotal || 0;
+    const etsyOrders = etsyResult._count.id || 0;
+    const firstEtsyDate = etsyResult._min.paidAt || null;
+
+    const totalPrintableRevenue = directRevenuePence + etsyRevenuePence;
+    const totalPrintableOrders = purchases.length + etsyOrders;
+
+    // Use the earliest date from either source
+    let firstPrintableDate = null;
+    if (firstDirectDate && firstEtsyDate) {
+      firstPrintableDate = firstDirectDate < firstEtsyDate ? firstDirectDate : firstEtsyDate;
+    } else {
+      firstPrintableDate = firstDirectDate || firstEtsyDate;
+    }
+
+    if (totalPrintableOrders > 0) {
       summary.push({
         brand: "Fat Big Quiz - Printable Downloads",
-        total_revenue_pence: purchaseRevenuePence,
-        total_orders: purchases.length,
-        total_customers: purchases.length,
-        first_sale_date: purchases[0].createdAt.toISOString().split("T")[0],
+        total_revenue_pence: totalPrintableRevenue,
+        total_orders: totalPrintableOrders,
+        total_customers: totalPrintableOrders,
+        first_sale_date: firstPrintableDate
+          ? firstPrintableDate.toISOString().split("T")[0]
+          : null,
         event_type: "virtual",
         currency: "GBP",
       });
@@ -263,32 +294,6 @@ app.get("/api/sales-summary", async (req, res) => {
         total_orders: activeSubscribers,
         total_customers: activeSubscribers,
         first_sale_date: null,
-        event_type: "virtual",
-        currency: "GBP",
-      });
-    }
-
-    // 3. Etsy sales revenue
-    const etsyRevenueResult = await prisma.sale.aggregate({
-      where: {
-        channel: "ETSY",
-        status: { in: ["PAID", "COMPLETED"] },
-        buyerEmail: { not: { contains: "test" } },
-      },
-      _sum: { grandTotal: true },
-      _count: { id: true },
-      _min: { createdAt: true },
-    });
-
-    if (etsyRevenueResult._count.id > 0) {
-      summary.push({
-        brand: "Fat Big Quiz - Etsy Sales",
-        total_revenue_pence: etsyRevenueResult._sum.grandTotal || 0,
-        total_orders: etsyRevenueResult._count.id,
-        total_customers: etsyRevenueResult._count.id,
-        first_sale_date: etsyRevenueResult._min.createdAt
-          ? etsyRevenueResult._min.createdAt.toISOString().split("T")[0]
-          : null,
         event_type: "virtual",
         currency: "GBP",
       });

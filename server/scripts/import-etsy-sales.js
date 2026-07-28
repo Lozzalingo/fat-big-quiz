@@ -19,7 +19,7 @@ const path = require("path");
 
 const prisma = new PrismaClient();
 
-const ETSY_SALES_DIR = "/Users/laurencestephan/Downloads/Etsy Sales";
+const ETSY_SALES_DIR = process.env.ETSY_SALES_DIR || "/Users/laurencestephan/Downloads/Etsy Sales";
 const YEARS = [2021, 2022, 2023, 2024, 2025, 2026];
 
 // ─── CLI Args ──────────────────────────────────────────────────────────────────
