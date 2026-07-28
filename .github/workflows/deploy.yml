@@ -174,6 +174,41 @@ jobs:
             done
 
             if [ "$HEALTHY" = "true" ]; then
+              echo "=== Basic health OK, running smoke tests ==="
+
+              # Smoke test: homepage cards API returns data
+              CARDS=$(curl -sf http://localhost:3001/api/homepage-cards/public 2>/dev/null)
+              CARD_COUNT=$(echo "$CARDS" | python3 -c "import sys,json; print(len(json.load(sys.stdin)))" 2>/dev/null || echo "0")
+              echo "Homepage cards: $CARD_COUNT"
+
+              # Smoke test: events API returns data
+              EVENTS=$(curl -sf http://localhost:3001/ev/api/products 2>/dev/null)
+              EVENT_COUNT=$(echo "$EVENTS" | python3 -c "import sys,json; print(len(json.load(sys.stdin)))" 2>/dev/null || echo "0")
+              echo "Event products: $EVENT_COUNT"
+
+              # Smoke test: blog API returns data
+              BLOG=$(curl -sf http://localhost:3001/api/blog 2>/dev/null)
+              BLOG_COUNT=$(echo "$BLOG" | python3 -c "import sys,json; print(len(json.load(sys.stdin).get('posts',[])))" 2>/dev/null || echo "0")
+              echo "Blog posts: $BLOG_COUNT"
+
+              SMOKE_PASS=true
+              if [ "$CARD_COUNT" -lt 5 ]; then
+                echo "WARNING: Expected at least 5 homepage cards, got $CARD_COUNT"
+                SMOKE_PASS=false
+              fi
+              if [ "$EVENT_COUNT" -lt 15 ]; then
+                echo "WARNING: Expected at least 15 event products, got $EVENT_COUNT"
+                SMOKE_PASS=false
+              fi
+
+              if [ "$SMOKE_PASS" = "false" ]; then
+                echo "=== SMOKE TESTS FAILED - data endpoints returning insufficient data ==="
+                echo "Deploy kept live (containers healthy) but data may be missing."
+                echo "Check database and API routes."
+              else
+                echo "=== All smoke tests passed ==="
+              fi
+
               echo "=== Deploy successful ==="
               docker rmi fatbigquiz-frontend:rollback 2>/dev/null || true
               docker rmi fatbigquiz-api:rollback 2>/dev/null || true

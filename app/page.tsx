@@ -7,14 +7,33 @@ import { FaRocket, FaDownload } from "react-icons/fa";
 
 export default async function Home() {
   // Fetch blog posts and homepage cards in parallel
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
   const [blogData, cardsData] = await Promise.all([
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/blog?limit=3`, { cache: "no-store" })
-      .then((res) => res.json())
-      .catch(() => ({ posts: [] })),
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/homepage-cards/public`, { cache: "no-store" })
-      .then((res) => res.json())
+    fetch(`${API_BASE}/api/blog?limit=3`, { cache: "no-store" })
+      .then((res) => {
+        if (!res.ok) {
+          console.error(`[Homepage] Blog fetch failed: ${res.status} ${res.statusText} (${API_BASE}/api/blog?limit=3)`);
+          return { posts: [] };
+        }
+        return res.json();
+      })
+      .catch((err) => {
+        console.error("[Homepage] Blog fetch error:", err.message);
+        return { posts: [] };
+      }),
+    fetch(`${API_BASE}/api/homepage-cards/public`, { cache: "no-store" })
+      .then((res) => {
+        if (!res.ok) {
+          console.error(`[Homepage] Cards fetch failed: ${res.status} ${res.statusText} (${API_BASE}/api/homepage-cards/public)`);
+          return [];
+        }
+        return res.json();
+      })
       .then((data) => (Array.isArray(data) ? data : []))
-      .catch(() => []),
+      .catch((err) => {
+        console.error("[Homepage] Cards fetch error:", err.message);
+        return [];
+      }),
   ]);
 
   // Transform cards to match ProductShowcase format
