@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   FaArrowRight,
   FaPlay,
@@ -60,12 +61,16 @@ const ProductShowcase: React.FC<ProductShowcaseProps> = ({
         {/* Image or Gradient Header - maintains aspect ratio */}
         {product.image ? (
           <div className="relative overflow-hidden aspect-[4/3]">
-            <img
+            <Image
               src={product.image}
               alt={product.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              fill
+              sizes="(max-width: 768px) 50vw, 33vw"
+              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              loading={index < 3 ? "eager" : "lazy"}
+              quality={75}
             />
-            <div className="absolute top-2 left-2">
+            <div className="absolute top-2 left-2 z-10">
               <span
                 className={`${config.color} text-white text-xs font-semibold px-2.5 py-1 rounded-full`}
               >
