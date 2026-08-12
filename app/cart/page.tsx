@@ -4,7 +4,7 @@ import {
   Breadcrumb,
   QuantityInputCart,
 } from "@/components";
-import React from "react";
+import React, { useState } from "react";
 import { FaXmark } from "react-icons/fa6";
 import { useProductStore } from "../store/store";
 import Link from "next/link";
@@ -14,6 +14,7 @@ import { getProductImageUrl } from "@/utils/cdn";
 const CartPage = () => {
   const { products, removeFromCart, calculateTotals, total } =
     useProductStore();
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   const handleRemoveItem = (id: string) => {
     removeFromCart(id);
@@ -115,13 +116,44 @@ const CartPage = () => {
                   </div>
                 </div>
 
-                <Link
-                  href="/checkout"
+                <button
+                  onClick={async () => {
+                    if (isCheckingOut) return;
+                    setIsCheckingOut(true);
+                    console.log("[Cart] Starting Stripe checkout for", products.length, "item(s)");
+                    try {
+                      const response = await fetch("/api/checkout", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          items: products.map((p) => ({
+                            id: p.id,
+                            title: p.title,
+                            price: p.price,
+                            image: p.image,
+                            amount: p.amount,
+                            productType: "DIGITAL_DOWNLOAD",
+                          })),
+                        }),
+                      });
+                      if (!response.ok) {
+                        const data = await response.json();
+                        throw new Error(data.error || "Checkout failed");
+                      }
+                      const { url } = await response.json();
+                      if (url) window.location.href = url;
+                    } catch (err: any) {
+                      console.error("[Cart] Checkout error:", err);
+                      toast.error(err.message || "Checkout failed. Please try again.");
+                      setIsCheckingOut(false);
+                    }
+                  }}
+                  disabled={isCheckingOut}
                   data-track-button="Cart:Proceed to Checkout"
-                  className="mt-6 block w-full bg-black text-white text-center text-xs font-medium uppercase tracking-wide py-3 hover:bg-gray-800 transition-colors"
+                  className="mt-6 block w-full bg-black text-white text-center text-xs font-medium uppercase tracking-wide py-3 hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Checkout
-                </Link>
+                  {isCheckingOut ? "Processing..." : "Checkout"}
+                </button>
 
                 <Link
                   href="/shop"

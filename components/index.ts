@@ -28,7 +28,6 @@ export { default as SingleReview } from "./SingleReview";
 export { default as CustomButton } from "./CustomButton";
 export { default as QuantityInputCart } from "./QuantityInputCart";
 export { default as AddToCartSingleProductBtn } from "./AddToCartSingleProductBtn";
-export { default as BuyNowSingleProductBtn } from "./BuyNowSingleProductBtn";
 export { default as SingleProductDynamicFields } from "./SingleProductDynamicFields";
 export { default as CartElement } from "./CartElement";
 export { default as ProductItemRating } from "./ProductItemRating";
@@ -45,7 +44,6 @@ export { default as DashboardSidebar } from "@/components/Dashboard/DashboardSid
 export { default as StatsElement } from "./StatsElement";
 export { default as DashboardProductTable } from "@/components/Dashboard/DashboardProductTable";
 export { default as AdminOrders } from "./AdminOrders";
-export { default as OrderItem } from "./OrderItem";
 export { default as CommentVoting } from "./CommentVoting";
 export { default as CommentsSection } from "./CommentsSection";
 export { default as DiscountCodeForm } from "./DiscountCodeForm";

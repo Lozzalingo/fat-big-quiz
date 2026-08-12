@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { FaXmark, FaTrash } from "react-icons/fa6";
 import { FaShoppingCart } from "react-icons/fa";
@@ -17,6 +17,8 @@ const CartSidebar = () => {
     removeFromCart,
     calculateTotals,
   } = useProductStore();
+
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   // Lock body scroll when sidebar is open
   useEffect(() => {
@@ -45,6 +47,48 @@ const CartSidebar = () => {
     console.log("[CartSidebar] Removing item:", id);
     removeFromCart(id);
     calculateTotals();
+  };
+
+  const handleCheckout = async () => {
+    if (products.length === 0 || isCheckingOut) return;
+
+    setIsCheckingOut(true);
+    console.log("[CartSidebar] Starting Stripe checkout for", products.length, "item(s)");
+
+    try {
+      const items = products.map((p) => ({
+        id: p.id,
+        title: p.title,
+        price: p.price,
+        image: p.image,
+        amount: p.amount,
+        productType: "DIGITAL_DOWNLOAD",
+      }));
+
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Checkout failed");
+      }
+
+      const { url } = await response.json();
+      if (url) {
+        console.log("[CartSidebar] Redirecting to Stripe Checkout");
+        window.location.href = url;
+      }
+    } catch (err: any) {
+      console.error("[CartSidebar] Checkout error:", err);
+      // Fallback to cart page if Stripe checkout fails
+      closeSidebar();
+      window.location.href = "/cart";
+    } finally {
+      setIsCheckingOut(false);
+    }
   };
 
   return (
@@ -150,15 +194,19 @@ const CartSidebar = () => {
               </span>
             </div>
 
-            {/* Checkout button */}
-            <Link
-              href="/checkout"
-              onClick={closeSidebar}
+            {/* Checkout button - goes to Stripe */}
+            <button
+              onClick={handleCheckout}
+              disabled={isCheckingOut}
               data-track-button="CartSidebar:Checkout"
-              className="block w-full bg-primary text-white text-center text-xs font-medium uppercase tracking-wide py-3.5 hover:bg-primary/90 transition-colours"
+              className="block w-full bg-primary text-white text-center text-xs font-medium uppercase tracking-wide py-3.5 hover:bg-primary/90 transition-colours disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Checkout
-            </Link>
+              {isCheckingOut ? (
+                <span className="animate-pulse">Processing...</span>
+              ) : (
+                "Checkout"
+              )}
+            </button>
 
             {/* View cart link */}
             <Link

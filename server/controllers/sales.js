@@ -151,6 +151,16 @@ async function receiveEtsyWebhook(req, res) {
 
 async function createWebsiteSale(req, res) {
   try {
+    // Auth: require webhook key or ticker key
+    const webhookKey = process.env.WEBHOOK_API_KEY;
+    const tickerKey = process.env.TICKER_API_KEY;
+    const providedKey = req.headers["x-webhook-key"] || req.headers["x-ticker-key"];
+
+    if (!providedKey || (providedKey !== webhookKey && providedKey !== tickerKey)) {
+      console.log("[Sales] Website sale rejected - invalid or missing auth key");
+      return res.status(401).json({ error: "Unauthorised" });
+    }
+
     const {
       buyerEmail, buyerName, buyerPhone, userId,
       items, // Array of { productId, title, unitPrice, quantity, isDigital, sku }
