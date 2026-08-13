@@ -212,7 +212,8 @@ jobs:
                   TEST_RESULT=$(API_BASE=http://localhost:3001 ADMIN_API_KEY=$ADMIN_KEY node --test /root/fat-big-quiz/test/critical-path.test.js 2>&1) || true
                   echo "$TEST_RESULT" | tail -20
                   if echo "$TEST_RESULT" | grep -q "fail [1-9]"; then
-                    echo "WARNING: Some critical-path tests failed (non-blocking)"
+                    echo "=== CRITICAL-PATH TESTS FAILED - triggering rollback ==="
+                    HEALTHY=false
                   else
                     echo "=== All critical-path tests passed ==="
                   fi

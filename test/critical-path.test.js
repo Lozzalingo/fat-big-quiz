@@ -67,11 +67,11 @@ describe('Ops/Health', () => {
 
 // ─── Products ───────────────────────────────────────────────────
 describe('Products', () => {
-  it('GET /api/products returns 200 with array', async () => {
+  it('GET /api/products returns 200 with products array', async () => {
     const res = await api('GET', '/api/products');
     assert.equal(res.status, 200);
     const data = await res.json();
-    assert.ok(Array.isArray(data), 'should return array');
+    assert.ok(Array.isArray(data.products), 'should return { products: [...] }');
   });
 
   it('GET /api/products/:invalidSlug returns 404', async () => {
@@ -82,36 +82,41 @@ describe('Products', () => {
 
 // ─── Users ──────────────────────────────────────────────────────
 describe('Users', () => {
-  it('GET /api/users returns 200 with array', async () => {
+  it('GET /api/users returns 403 without admin key', async () => {
     const res = await api('GET', '/api/users');
+    assert.equal(res.status, 403);
+  });
+
+  it('GET /api/users returns 200 with users array with admin key', async () => {
+    const res = await api('GET', '/api/users', null, adminHeaders());
     assert.equal(res.status, 200);
     const data = await res.json();
-    assert.ok(Array.isArray(data), 'should return array');
+    assert.ok(Array.isArray(data.users), 'should return { users: [...] }');
   });
 
   it('user responses do not expose password hash', async () => {
-    const res = await api('GET', '/api/users');
+    const res = await api('GET', '/api/users', null, adminHeaders());
     const data = await res.json();
-    if (data.length > 0) {
-      assert.equal(data[0].password, undefined, 'password should be stripped');
+    if (data.users.length > 0) {
+      assert.equal(data.users[0].password, undefined, 'password should be stripped');
     }
   });
 
   it('POST /api/users rejects missing email', async () => {
-    const res = await api('POST', '/api/users', { password: 'test12345' });
+    const res = await api('POST', '/api/users', { password: 'test12345' }, adminHeaders());
     assert.ok([400, 500].includes(res.status), 'should reject missing email');
   });
 
   it('POST /api/users rejects duplicate email', async () => {
     // First get an existing email
-    const usersRes = await api('GET', '/api/users');
-    const users = await usersRes.json();
+    const usersRes = await api('GET', '/api/users', null, adminHeaders());
+    const { users } = await usersRes.json();
     if (users.length > 0) {
       const res = await api('POST', '/api/users', {
         email: users[0].email,
         password: 'test12345',
         firstName: 'Test',
-      });
+      }, adminHeaders());
       assert.equal(res.status, 409, 'should return 409 for duplicate');
     }
   });
@@ -192,19 +197,19 @@ describe('Purchases', () => {
 
 // ─── Orders ─────────────────────────────────────────────────────
 describe('Orders', () => {
-  it('GET /api/orders returns 200', async () => {
+  it('GET /api/orders returns 403 without admin key', async () => {
     const res = await api('GET', '/api/orders');
-    assert.equal(res.status, 200);
-  });
-
-  it('GET /api/shared-orders requires admin key', async () => {
-    const res = await api('GET', '/api/shared-orders');
     assert.equal(res.status, 403);
   });
 
-  it('GET /api/shared-orders returns 200 with admin key', async () => {
-    const res = await api('GET', '/api/shared-orders', null, adminHeaders());
+  it('GET /api/orders returns 200 with admin key', async () => {
+    const res = await api('GET', '/api/orders', null, adminHeaders());
     assert.equal(res.status, 200);
+  });
+
+  it('GET /api/shared-orders returns 404 (route removed)', async () => {
+    const res = await api('GET', '/api/shared-orders', null, adminHeaders());
+    assert.equal(res.status, 404);
   });
 });
 
