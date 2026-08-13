@@ -33,19 +33,19 @@ async function processYoutubeVideo(req, res) {
     // Run the Python script as a child process
     const command = `python3 ${scriptPath} --url "${url}" --output "${outputFile}"`;
     
-    console.log(`Executing command: ${command}`);
+    console.log(`[YouTube] Executing command: ${command}`);
     
     exec(command, async (error, stdout, stderr) => {
       if (error) {
-        console.error(`Error executing Python script: ${error.message}`);
+        console.error(`[YouTube] Error executing Python script: ${error.message}`);
         return res.status(500).json({ error: 'Failed to process YouTube video', details: error.message });
       }
       
       if (stderr) {
-        console.error(`Python script stderr: ${stderr}`);
+        console.error(`[YouTube] Python script stderr: ${stderr}`);
       }
       
-      console.log(`Python script stdout: ${stdout}`);
+      console.log(`[YouTube] Python script stdout: ${stdout}`);
       
       try {
         // Check if output file exists
@@ -68,12 +68,12 @@ async function processYoutubeVideo(req, res) {
           blog: blogResponse.data
         });
       } catch (fileError) {
-        console.error(`Error processing output file: ${fileError.message}`);
+        console.error(`[YouTube] Error processing output file: ${fileError.message}`);
         return res.status(500).json({ error: 'Error processing blog data', details: fileError.message });
       }
     });
   } catch (error) {
-    console.error(`Error in processYoutubeVideo: ${error.message}`);
+    console.error(`[YouTube] Error in processYoutubeVideo: ${error.message}`);
     return res.status(500).json({ error: 'Server error', details: error.message });
   }
 }
@@ -109,12 +109,12 @@ async function previewYoutubeVideo(req, res) {
     
     exec(command, (error, stdout, stderr) => {
       if (error) {
-        console.error(`Error executing Python script: ${error.message}`);
+        console.error(`[YouTube] Error executing Python script: ${error.message}`);
         return res.status(500).json({ error: 'Failed to process YouTube video', details: error.message });
       }
       
       if (stderr) {
-        console.error(`Python script stderr: ${stderr}`);
+        console.error(`[YouTube] Python script stderr: ${stderr}`);
       }
       
       try {
@@ -134,12 +134,12 @@ async function previewYoutubeVideo(req, res) {
           preview: blogData
         });
       } catch (fileError) {
-        console.error(`Error processing output file: ${fileError.message}`);
+        console.error(`[YouTube] Error processing output file: ${fileError.message}`);
         return res.status(500).json({ error: 'Error processing blog data', details: fileError.message });
       }
     });
   } catch (error) {
-    console.error(`Error in previewYoutubeVideo: ${error.message}`);
+    console.error(`[YouTube] Error in previewYoutubeVideo: ${error.message}`);
     return res.status(500).json({ error: 'Server error', details: error.message });
   }
 }
