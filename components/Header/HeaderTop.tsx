@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
@@ -11,6 +11,8 @@ import { useWishlistStore } from "@/app/store/wishlistStore";
 import CartElement from "@/components/CartElement";
 import HeartElement from "@/components/HeartElement";
 import { getUserAvatarUrl } from "@/utils/cdn";
+import { useGetUserByEmail } from "@/hooks/useGetUserByEmail";
+import { useWishlist } from "@/hooks/useWishlist";
 
 import {
   FaRegUser,
