@@ -203,12 +203,14 @@ jobs:
 
               if [ "$SMOKE_PASS" = "false" ]; then
                 echo "=== SMOKE TESTS FAILED - data endpoints returning insufficient data ==="
-                echo "Deploy kept live (containers healthy) but data may be missing."
-                echo "Check database and API routes."
+                echo "Rolling back to previous version..."
+                HEALTHY=false
               else
                 echo "=== All smoke tests passed ==="
               fi
+            fi
 
+            if [ "$HEALTHY" = "true" ]; then
               echo "=== Deploy successful ==="
               docker rmi fatbigquiz-frontend:rollback 2>/dev/null || true
               docker rmi fatbigquiz-api:rollback 2>/dev/null || true

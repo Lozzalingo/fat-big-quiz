@@ -1,147 +1,115 @@
 # Fat Big Quiz - Deployment Guide
 
+## Overview
+
+Deployment is fully automated via GitHub Actions. Pushing to `main` triggers a build-and-deploy pipeline that builds Docker images, transfers them to the production server, and restarts containers with health checks and automatic rollback.
+
 ## Server Details
+
 - **Server IP:** 157.245.42.21
 - **User:** root
 - **Project Path:** /root/fat-big-quiz
 - **GitHub:** https://github.com/Lozzalingo/fat-big-quiz
 
 ## Container Names
-- `fatbigquiz-frontend` - Next.js frontend (port 3000)
+
+- `fatbigquiz_frontend` - Next.js frontend (port 3000)
 - `fatbigquiz_api` - Express API (port 3001)
 - `fatbigquiz_db` - MySQL database
 
-## Network
-- `fat-big-quiz_fatbigquiz_network`
+---
+
+## Automated Deployment (CI/CD)
+
+Every push to `main` triggers `.github/workflows/deploy.yml` which:
+
+1. **Type checks** TypeScript (FBQ source only, shared package errors filtered out)
+2. **Lints** with ESLint
+3. **Builds** Docker images for frontend and API
+4. **Transfers** images to the production server via SCP
+5. **Syncs** docker-compose.yml to the server
+6. **Restarts** containers with health checks (3 retries)
+7. **Runs smoke tests** verifying homepage cards (>=5), event products (>=15), and blog posts
+8. **Auto-rolls back** if health checks or smoke tests fail
+
+### Manual and Cache-Clear Deploys
+
+To trigger a deploy without code changes (e.g. to clear the Docker cache):
+
+```bash
+gh workflow run deploy.yml -f no_cache=true
+```
+
+Or use the GitHub Actions "Run workflow" button in the browser with `no_cache: true`.
+
+**Do not create empty commits** to trigger deploys. Use `workflow_dispatch` instead.
 
 ---
 
-## Pre-Deployment: Commit to GitHub
+## Environment Variables
 
-**ALWAYS commit your changes to GitHub before deploying!**
+### Production (.env)
 
-```bash
-# 1. Check what's changed
-git status
+The production `.env` file lives at `/root/fat-big-quiz/.env` on the server. Docker Compose reads it and passes variables to containers via `${VAR}` syntax in `docker-compose.yml`.
 
-# 2. Stage all changes
-git add -A
+**Important:** `NEXT_PUBLIC_*` variables are baked into the Next.js build at image build time via the `environment` block in `docker-compose.yml`. Changing them requires a full rebuild and redeploy.
 
-# 3. Commit with a descriptive message
-git commit -m "Description of changes"
+Key variables:
+- `DATABASE_URL` - MySQL connection string
+- `DO_SPACES_KEY/SECRET` - DigitalOcean Spaces credentials
+- `STRIPE_SECRET_KEY/WEBHOOK_SECRET` - Stripe payment keys
+- `NEXTAUTH_SECRET` - NextAuth.js session encryption
+- `TICKER_API_KEY` - API key for laurence.computer ticker
+- `ADMIN_API_KEY` - Admin endpoint authentication
 
-# 4. Push to GitHub
-git push origin main
-```
+### NEXT_PUBLIC_API_BASE_URL
 
-This ensures:
-- Code is backed up
-- Changes are tracked with history
-- Easy rollback if something breaks
-- Team collaboration possible
+**Must be `https://fatbigquiz.com`** (no `/api` suffix). The code already appends `/api/` to all endpoint paths. Setting it to `https://fatbigquiz.com/api` causes all API calls to double-prefix to `/api/api/...` and fail silently.
 
 ---
 
-## Rebuilding & Restarting Containers
+## Nginx Proxy (quiz_app_nginx)
 
-### Frontend
+The `quiz_app_nginx` container handles SSL termination and proxying for fatbigquiz.com:
 
-```bash
-# 1. Copy changed files to server
-scp /path/to/file root@157.245.42.21:/root/fat-big-quiz/path/to/file
+- `/api/` -> Express port 3001
+- `/ev/` -> Express port 3001 (events API)
+- `/stripe/webhook` -> Express port 3001
+- `/socket.io/` -> Express port 3001
+- Everything else -> Next.js port 3000
 
-# 2. Rebuild image (use cached build - much faster ~4 seconds vs 3-5 min)
-cd /root/fat-big-quiz && docker build -t fatbigquiz-frontend .
-# Only use --no-cache if changes aren't being picked up
+Config source: `/root/quiz-app-python/nginx.conf` on the server (bind-mounted read-only).
 
-# 3. Restart container - ALWAYS use --env-file
-docker stop fatbigquiz-frontend && docker rm fatbigquiz-frontend
-docker run -d \
-  --name fatbigquiz-frontend \
-  --restart unless-stopped \
-  -p 3000:3000 \
-  --network fat-big-quiz_fatbigquiz_network \
-  --env-file /root/fat-big-quiz/.env \
-  fatbigquiz-frontend
-```
-
-### API (Backend)
-
-```bash
-# 1. Copy changed files to server
-scp /path/to/file root@157.245.42.21:/root/fat-big-quiz/server/path/to/file
-
-# 2. Rebuild image (cached build is fast, use --no-cache only if needed)
-cd /root/fat-big-quiz/server && docker build -t fatbigquiz_api .
-
-# 3. Restart container - ALWAYS use --env-file
-docker stop fatbigquiz_api && docker rm fatbigquiz_api
-docker run -d \
-  --name fatbigquiz_api \
-  --restart unless-stopped \
-  -p 3001:3001 \
-  --network fat-big-quiz_fatbigquiz_network \
-  --env-file /root/fat-big-quiz/.env \
-  fatbigquiz_api
-```
-
----
-
-## CRITICAL: Environment Variables
-
-**ALWAYS use `--env-file /root/fat-big-quiz/.env`** when starting containers.
-
----
-
-## Google Service Account Files (NOT in Git!)
-
-These files contain private keys and must be manually copied to the server. They are in `.gitignore` and NOT stored in the repository.
-
-| File | Purpose | Search Console Permission |
-|------|---------|--------------------------|
-| `server/config/google-merchant-credentials.json` | Google Merchant Center API | N/A |
-| `server/config/google-service-account.json` | Google Indexing API | Owner on fatbigquiz.com |
-
-### Setup Instructions
-
-1. Download JSON keys from [Google Cloud Console](https://console.cloud.google.com/) → IAM & Admin → Service Accounts
-2. Upload to server:
-   ```bash
-   scp your-key.json root@157.245.42.21:/root/fat-big-quiz/server/config/google-service-account.json
-   chmod 600 /root/fat-big-quiz/server/config/google-service-account.json
-   ```
-3. For Indexing API: Add the service account email as **Owner** in [Search Console](https://search.google.com/search-console) → Settings → Users and Permissions
-
-See `docs/google-indexing-setup.md` for detailed setup.
-
-**NEVER manually pass individual `-e` flags** like:
-```bash
-# DO NOT DO THIS - you will miss variables!
-docker run -e DATABASE_URL='...' -e SPACES_KEY='...' ...
-```
-
-The `.env` file contains all required variables:
-- Database connection (DATABASE_URL)
-- DigitalOcean Spaces (DO_SPACES_KEY, DO_SPACES_SECRET, DO_SPACES_REGION, DO_SPACES_ENDPOINT, DO_SPACES_BUCKET, DO_SPACES_CDN_ENDPOINT, DO_SPACES_FOLDER)
-- Stripe (STRIPE_SECRET_KEY)
-- NextAuth (NEXTAUTH_SECRET, NEXTAUTH_URL)
-- And more...
+**Important:** If the `quiz_app_nginx` container is rebuilt, the `/ev/` proxy rule must be verified. It was added manually and is not part of the quiz-app-python repo.
 
 ---
 
 ## Database Schema Changes
 
+Prisma migrations are applied during the Docker build. For manual schema changes:
+
 ```bash
-# 1. Copy updated schema
-scp /path/to/schema.prisma root@157.245.42.21:/root/fat-big-quiz/server/prisma/schema.prisma
+# Connect to the database
+docker exec -it fatbigquiz_db mysql -u root -p fatbigquiz
 
-# 2. Alter column directly if needed (for simple changes)
-docker exec fatbigquiz_db mysql -u root -p'mysql_root_secure_2024' fatbigquiz -e "ALTER TABLE ..."
+# Or run a specific migration
+docker exec fatbigquiz_api npx prisma migrate deploy
+```
 
-# 3. Rebuild API to regenerate Prisma client
-cd /root/fat-big-quiz/server && docker build -t fatbigquiz_api .
+---
 
-# 4. Restart API with --env-file
+## Google Service Account Files
+
+These files contain private keys and are NOT in git:
+
+| File | Purpose |
+|------|---------|
+| `server/config/google-merchant-credentials.json` | Google Merchant Center API |
+| `server/config/google-service-account.json` | Google Indexing API |
+
+Upload to server:
+```bash
+scp your-key.json root@157.245.42.21:/root/fat-big-quiz/server/config/google-service-account.json
 ```
 
 ---
@@ -149,28 +117,41 @@ cd /root/fat-big-quiz/server && docker build -t fatbigquiz_api .
 ## Checking Logs
 
 ```bash
-# Frontend logs
-docker logs fatbigquiz-frontend
-
 # API logs
 docker logs fatbigquiz_api
+docker logs -f fatbigquiz_api    # follow in real-time
 
-# Follow logs in real-time
-docker logs -f fatbigquiz_api
+# Frontend logs
+docker logs fatbigquiz_frontend
+
+# All services
+docker compose logs --tail 50
 ```
 
 ---
 
-## Common Issues
+## Smoke Tests
 
-### "Region is missing" error on uploads
-- **Cause:** API container missing DO_SPACES_REGION env var
-- **Fix:** Restart API with `--env-file`
+Post-deploy smoke tests run automatically in CI. You can also run them manually:
 
-### "NO_SECRET" NextAuth error
-- **Cause:** Frontend missing NEXTAUTH_SECRET env var
-- **Fix:** Restart frontend with `--env-file`
+```bash
+./scripts/smoke-test.sh https://fatbigquiz.com
+```
 
-### Database connection errors
-- **Cause:** Wrong DATABASE_URL or container not on correct network
-- **Fix:** Ensure `--network fat-big-quiz_fatbigquiz_network` and `--env-file`
+This checks all key pages (homepage, events, shop, blog, hire) and API endpoints (homepage cards, event products, blog posts, health check).
+
+---
+
+## Troubleshooting
+
+### API calls returning 404 or HTML
+- Check `NEXT_PUBLIC_API_BASE_URL` is `https://fatbigquiz.com` (no `/api` suffix)
+- Check Nginx has the correct proxy rules for `/api/` and `/ev/`
+
+### Events page empty
+- Verify Nginx has the `/ev/` location block proxying to port 3001
+- Test directly: `curl http://localhost:3001/ev/api/products`
+
+### Homepage cards missing
+- Verify `/api/homepage-cards/public` is registered before admin middleware in `server/app.js`
+- Test directly: `curl http://localhost:3001/api/homepage-cards/public`
