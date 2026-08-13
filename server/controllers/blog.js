@@ -90,13 +90,10 @@ async function getAllBlogPosts(request, response) {
   }
 }
 
-async function getBlogPostBySlug(request, response) {
+async function _getBlogPost(where, request, response) {
   try {
-    const { slug } = request.params;
     const post = await prisma.blogPost.findUnique({
-      where: {
-        slug,
-      },
+      where,
       include: {
         author: {
           select: {
@@ -129,78 +126,33 @@ async function getBlogPostBySlug(request, response) {
             },
           },
           orderBy: {
-            createdAt: 'desc',
+            createdAt: "desc",
           },
         },
       },
     });
-    
+
     if (!post) {
       return response.status(404).json({ error: "Blog post not found" });
     }
-    
-    return response.json(post);
+
+    return post;
   } catch (error) {
     console.error("[Blog] Error fetching blog post:", error);
-    return response.status(500).json({ error: "Error fetching blog post" });
+    response.status(500).json({ error: "Error fetching blog post" });
+    return null;
   }
 }
 
+async function getBlogPostBySlug(request, response) {
+  const post = await _getBlogPost({ slug: request.params.slug }, request, response);
+  if (post) return response.json(post);
+}
+
 async function getBlogPostById(request, response) {
-    try {
-      const { id } = request.params;
-      const post = await prisma.blogPost.findUnique({
-        where: {
-          id,
-        },
-        include: {
-          author: {
-            select: {
-              firstName: true,
-              avatar: true,
-              bio: true,
-              name: true,
-            },
-          },
-          category: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-          tags: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-          comments: {
-            include: {
-              user: {
-                select: {
-                  firstName: true, 
-                  lastName: true, 
-                  avatar: true,
-                },
-              },
-            },
-            orderBy: {
-              createdAt: "desc",
-            },
-          },
-        },
-      });
-  
-      if (!post) {
-        return response.status(404).json({ error: "Blog post not found" });
-      }
-  
-      response.json({ post });
-    } catch (error) {
-      console.error("[Blog] Error fetching blog post:", error);
-      response.status(500).json({ error: "Error fetching blog post" });
-    }
-  }
+  const post = await _getBlogPost({ id: request.params.id }, request, response);
+  if (post) return response.json({ post });
+}
 
 async function createBlogPost(request, response) {
   try {
