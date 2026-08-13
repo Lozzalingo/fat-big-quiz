@@ -170,8 +170,8 @@ const CampaignsPage = () => {
                   <p className="font-medium">{c.subject}</p>
                   <p className="text-sm text-gray-400">
                     {c.status === "sent"
-                      ? `Sent to ${c.sentCount} on ${new Date(c.sentAt).toLocaleDateString()}`
-                      : `Draft — ${new Date(c.createdAt).toLocaleDateString()}`}
+                      ? `Sent to ${c.sentCount} on ${new Date(c.sentAt).toLocaleDateString("en-GB")}`
+                      : `Draft - ${new Date(c.createdAt).toLocaleDateString("en-GB")}`}
                   </p>
                 </div>
                 <div className="flex gap-2">

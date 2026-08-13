@@ -1,59 +1,18 @@
 "use client";
 import { Breadcrumb, WishItem } from "@/components";
-import React, { useEffect } from "react";
+import React from "react";
 import { useWishlistStore } from "../store/wishlistStore";
 import { nanoid } from "nanoid";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { useGetUserByEmail } from "@/hooks/useGetUserByEmail";
+import { useWishlist } from "@/hooks/useWishlist";
 
 const WishlistPage = () => {
   const { data: session } = useSession();
-  const { wishlist, setWishlist } = useWishlistStore();
-
-  const getWishlistByUserId = async (id: string) => {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/wishlist/${id}`, {
-      cache: "no-store",
-    });
-    const wishlist = await response.json();
-
-    const productArray: {
-      id: string;
-      title: string;
-      price: number;
-      image: string;
-      slug: string;
-      stockAvailability: number;
-    }[] = [];
-
-    wishlist.map((item: any) =>
-      productArray.push({
-        id: item?.product?.id,
-        title: item?.product?.title,
-        price: item?.product?.price,
-        image: item?.product?.mainImage,
-        slug: item?.product?.slug,
-        stockAvailability: item?.product?.inStock,
-      })
-    );
-
-    setWishlist(productArray);
-  };
-
-  const getUserByEmail = async () => {
-    if (session?.user?.email) {
-      fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/email/${session?.user?.email}`, {
-        cache: "no-store",
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          getWishlistByUserId(data?.id);
-        });
-    }
-  };
-
-  useEffect(() => {
-    getUserByEmail();
-  }, [session?.user?.email, wishlist.length]);
+  const { wishlist } = useWishlistStore();
+  const { user } = useGetUserByEmail(session?.user?.email || null);
+  useWishlist(user?.id || null);
 
   return (
     <div className="text-black bg-white">

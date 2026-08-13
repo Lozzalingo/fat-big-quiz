@@ -39,6 +39,9 @@ next-env.d.ts
 # local assets
 /Cards
 
+# Shared packages (checked out locally by CI, not part of this repo)
+/packages
+
 # Sensitive files - NEVER commit these
 server/config/google-merchant-credentials.json
 server/config/google-service-account.json

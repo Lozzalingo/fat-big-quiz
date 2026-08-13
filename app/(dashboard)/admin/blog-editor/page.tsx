@@ -86,7 +86,7 @@ const DashboardBlog = () => {
                         {post.published ? "Yes" : "No"}
                       </span>
                     </td>
-                    <td>{new Date(post.createdAt).toLocaleDateString()}</td>
+                    <td>{new Date(post.createdAt).toLocaleDateString("en-GB")}</td>
                     <td>{post.author?.firstName || "Unknown"}</td>
                     <td>{post.category?.name || "Uncategorized"}</td>
                     <td>
