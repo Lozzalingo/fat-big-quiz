@@ -1,7 +1,6 @@
 import type { BookingFormApi, BookingPayload, NormalizedProduct, NormalizedLocation, CalEvent } from "@lozzalingo/booking-form/types";
 import { bookingToCalEvent, type BookingCalendarSource } from "@lozzalingo/booking-form/lib/booking-calendar";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+import { API_BASE } from "@/utils/api";
 
 /**
  * Fat Big Quiz implementation of the BookingFormApi interface.

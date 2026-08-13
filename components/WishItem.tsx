@@ -3,12 +3,14 @@
 import { useWishlistStore } from "@/app/store/wishlistStore";
 import { useProductStore } from "@/app/store/store";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import toast from "react-hot-toast";
 import { FaXmark } from "react-icons/fa6";
 import { useSession } from "next-auth/react";
 import { getProductImageUrl } from "@/utils/cdn";
 import Link from "next/link";
+import { useGetUserByEmail } from "@/hooks/useGetUserByEmail";
+import { getApiBaseUrl } from "@/utils/api";
 
 interface ProductInWishlist {
   id: string;
@@ -31,32 +33,24 @@ const WishItem = ({
   const { removeFromWishlist } = useWishlistStore();
   const { addToCart, calculateTotals, openSidebar } = useProductStore();
   const router = useRouter();
-  const [userId, setUserId] = useState<string | null>(null);
 
-  const getUserByEmail = async () => {
-    if (!session?.user?.email) return;
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/email/${session.user.email}`,
-        { cache: "no-store" }
-      );
-      const data = await response.json();
-      setUserId(data?.id);
-    } catch (error) {
-      toast.error("Failed to fetch user data");
-    }
-  };
+  const { user } = useGetUserByEmail(session?.user?.email);
+  const userId = user?.id ?? null;
 
   const deleteItemFromWishlist = async (productId: string) => {
-    if (userId) {
-      fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/wishlist/${userId}/${productId}`, {
-        method: "DELETE",
-      }).then(() => {
-        removeFromWishlist(productId);
-        toast.success("Removed from wishlist");
-      });
-    } else {
+    if (!userId) {
       toast.error("You need to be logged in");
+      return;
+    }
+    try {
+      await fetch(`${getApiBaseUrl()}/api/wishlist/${userId}/${productId}`, {
+        method: "DELETE",
+      });
+      removeFromWishlist(productId);
+      toast.success("Removed from wishlist");
+    } catch (error) {
+      console.error("[Wishlist] Failed to remove item from wishlist:", error);
+      toast.error("Failed to remove item from wishlist");
     }
   };
 
@@ -72,10 +66,6 @@ const WishItem = ({
     openSidebar();
     console.log("[Cart] Product added from wishlist:", title);
   };
-
-  useEffect(() => {
-    getUserByEmail();
-  }, [session?.user?.email]);
 
   return (
     <tr className="hover:bg-gray-50">

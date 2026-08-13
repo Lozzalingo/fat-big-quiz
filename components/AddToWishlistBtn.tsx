@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { FaHeartCrack } from "react-icons/fa6";
 import { FaHeart } from "react-icons/fa6";
 import { Product } from "@/types/products";
+import { getApiBaseUrl } from "@/utils/api";
 
 interface AddToWishlistBtnProps {
   product: Product;
@@ -19,83 +20,70 @@ const AddToWishlistBtn = ({ product, slug }: AddToWishlistBtnProps) => {
   const [isProductInWishlist, setIsProductInWishlist] = useState<boolean>();
 
   const addToWishlistFun = async () => {
-    // getting user by email so I can get his user id
-    if (session?.user?.email) {
-      // sending fetch request to get user id because we will need it for saving wish item
-      fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/email/${session?.user?.email}`, {
-        cache: "no-store",
-      })
-        .then((response) => response.json())
-        .then((data) =>
-          fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/wishlist`, {
-            method: "POST",
-            headers: {
-              Accept: "application/json, text/plain, */*",
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ productId: product?.id, userId: data?.id }),
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              addToWishlist({
-                id: product?.id,
-                title: product?.title,
-                price: product?.price,
-                image: product?.mainImage,
-                slug: product?.slug,
-                stockAvailability: product?.inStock,
-              });
-              toast.success("Product added to the wishlist");
-            })
-        );
-    } else {
+    if (!session?.user?.email) {
       toast.error("You need to be logged in to add a product to the wishlist");
+      return;
+    }
+    try {
+      const userRes = await fetch(`${getApiBaseUrl()}/api/users/email/${session.user.email}`, {
+        cache: "no-store",
+      });
+      const userData = await userRes.json();
+      await fetch(`${getApiBaseUrl()}/api/wishlist`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json, text/plain, */*",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ productId: product?.id, userId: userData?.id }),
+      });
+      addToWishlist({
+        id: product?.id,
+        title: product?.title,
+        price: product?.price,
+        image: product?.mainImage,
+        slug: product?.slug,
+        stockAvailability: product?.inStock,
+      });
+      toast.success("Product added to the wishlist");
+    } catch (error) {
+      console.error("[Wishlist] Failed to add product to wishlist:", error);
+      toast.error("Failed to add product to the wishlist");
     }
   };
 
   const removeFromWishlistFun = async () => {
-    if (session?.user?.email) {
-      // sending fetch request to get user id because we will need to delete wish item
-      fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/email/${session?.user?.email}`, {
+    if (!session?.user?.email) return;
+    try {
+      const userRes = await fetch(`${getApiBaseUrl()}/api/users/email/${session.user.email}`, {
         cache: "no-store",
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          return fetch(
-            `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/wishlist/${data?.id}/${product?.id}`,
-            {
-              method: "DELETE",
-            }
-          );
-        })
-        .then((response) => {
-          removeFromWishlist(product?.id);
-          toast.success("Product removed from the wishlist");
-        });
+      });
+      const userData = await userRes.json();
+      await fetch(`${getApiBaseUrl()}/api/wishlist/${userData?.id}/${product?.id}`, {
+        method: "DELETE",
+      });
+      removeFromWishlist(product?.id);
+      toast.success("Product removed from the wishlist");
+    } catch (error) {
+      console.error("[Wishlist] Failed to remove product from wishlist:", error);
+      toast.error("Failed to remove product from the wishlist");
     }
   };
 
   const isInWishlist = async () => {
-    // sending fetch request to get user id because we will need it for cheching whether the product is in wishlist
-    if (session?.user?.email) {
-      fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/email/${session?.user?.email}`, {
+    if (!session?.user?.email) return;
+    try {
+      const userRes = await fetch(`${getApiBaseUrl()}/api/users/email/${session.user.email}`, {
         cache: "no-store",
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          // checking is product in wishlist
-          return fetch(
-            `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/wishlist/${data?.id}/${product?.id}`
-          );
-        })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data[0]?.id) {
-            setIsProductInWishlist(() => true);
-          } else {
-            setIsProductInWishlist(() => false);
-          }
-        });
+      });
+      const userData = await userRes.json();
+      const wishlistRes = await fetch(
+        `${getApiBaseUrl()}/api/wishlist/${userData?.id}/${product?.id}`
+      );
+      const wishlistData = await wishlistRes.json();
+      setIsProductInWishlist(!!wishlistData[0]?.id);
+    } catch (error) {
+      console.error("[Wishlist] Failed to check wishlist status:", error);
     }
   };
 

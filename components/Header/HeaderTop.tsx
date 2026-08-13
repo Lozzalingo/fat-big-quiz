@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
@@ -35,14 +35,18 @@ import {
 const EnhancedHeader = () => {
   const { data: session }: any = useSession();
   const pathname = usePathname();
-  const { wishlist, setWishlist, wishQuantity } = useWishlistStore();
+  const { wishQuantity } = useWishlistStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
-  const [avatar, setAvatar] = useState<string | null>(null);
-  const [role, setRole] = useState<string | null>(null);
 
   const isAdminPage = pathname?.startsWith("/admin") === true;
+
+  const { user } = useGetUserByEmail(session?.user?.email);
+  useWishlist(user?.id ?? null);
+
+  const userId = user?.id ?? null;
+  const avatar = (user?.avatar as string | null) ?? null;
+  const role = (user?.role as string | null) ?? null;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -57,62 +61,6 @@ const EnhancedHeader = () => {
     setTimeout(() => signOut(), 800);
     toast.success("Logout successful!");
   };
-
-  const getWishlistByUserId = async (id: string) => {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/wishlist/${id}`, {
-        cache: "no-store",
-      });
-      const wishlist = await response.json();
-      const productArray: {
-        id: string;
-        title: string;
-        price: number;
-        image: string;
-        slug: string;
-        stockAvailability: number;
-      }[] = [];
-
-      wishlist.map((item: any) =>
-        productArray.push({
-          id: item?.product?.id,
-          title: item?.product?.title,
-          price: item?.product?.price,
-          image: item?.product?.mainImage,
-          slug: item?.product?.slug,
-          stockAvailability: item?.product?.inStock,
-        })
-      );
-
-      setWishlist(productArray);
-    } catch (error) {
-      console.error("Error fetching wishlist:", error);
-    }
-  };
-
-  const getUserByEmail = async () => {
-    if (session?.user?.email) {
-      try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/email/${session?.user?.email}`,
-          { cache: "no-store" }
-        );
-        const data = await response.json();
-        if (data?.id) {
-          setUserId(data.id);
-          setAvatar(data.avatar || null);
-          setRole(data.role || "user");
-          getWishlistByUserId(data.id);
-        }
-      } catch (error) {
-        console.error("Error fetching user:", error);
-      }
-    }
-  };
-
-  useEffect(() => {
-    getUserByEmail();
-  }, [session?.user?.email, wishlist.length]);
 
   const getImageSrc = (avatar: string | null) => {
     return avatar ? getUserAvatarUrl(avatar) : "/default-avatar.png";
