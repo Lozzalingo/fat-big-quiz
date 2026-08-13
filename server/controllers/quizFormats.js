@@ -1,5 +1,6 @@
 const prisma = require("../utils/prisma");
-const { uploadToSpaces, deleteFromSpaces, getKey } = require("../utils/spaces");
+const { uploadToSpaces } = require("../utils/spaces");
+const { deleteSpacesFile } = require("../utils/fileManager");
 
 /**
  * Get all quiz formats
@@ -163,9 +164,7 @@ async function deleteQuizFormat(request, response) {
         const images = JSON.parse(existing.explainerImages);
         for (const image of images) {
           if (image && !image.startsWith("http")) {
-            const imageKey = getKey(image, "quiz-formats/explainers");
-            await deleteFromSpaces(imageKey);
-            console.log(`[QuizFormats] Deleted explainer image: ${imageKey}`);
+            await deleteSpacesFile(image, "quiz-formats/explainers", "QuizFormats");
           }
         }
       } catch (err) {
@@ -273,13 +272,7 @@ async function removeExplainerImage(request, response) {
 
     // Delete from storage
     if (imageToDelete && !imageToDelete.startsWith("http")) {
-      try {
-        const imageKey = getKey(imageToDelete, "quiz-formats/explainers");
-        await deleteFromSpaces(imageKey);
-        console.log(`[QuizFormats] Deleted explainer image: ${imageKey}`);
-      } catch (err) {
-        console.error("[QuizFormats] Error deleting from storage:", err);
-      }
+      await deleteSpacesFile(imageToDelete, "quiz-formats/explainers", "QuizFormats");
     }
 
     // Remove from array

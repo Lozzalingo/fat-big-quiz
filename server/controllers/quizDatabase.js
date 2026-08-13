@@ -1,5 +1,6 @@
 const prisma = require("../utils/prisma");
 const { classifyNewlyImported } = require("../services/questionClassifier");
+const { parsePagination } = require("../utils/pagination");
 
 // ─── Helper: Parse scraper format ───────────────────────────────────────────
 // Splits "Question text [A) Option1 | B) Option2 | C) Option3 | D) Option4]"
@@ -30,8 +31,6 @@ function parseScraperQuestion(raw) {
 async function getAllQuestions(req, res) {
   try {
     const {
-      page = 1,
-      limit = 20,
       categoryId,
       subCategoryId,
       countryId,
@@ -46,9 +45,7 @@ async function getAllQuestions(req, res) {
       search,
     } = req.query;
 
-    const pageNum = Math.max(1, parseInt(page));
-    const limitNum = Math.min(100, Math.max(1, parseInt(limit)));
-    const skip = (pageNum - 1) * limitNum;
+    const { page: pageNum, limit: limitNum, skip } = parsePagination(req.query, 20, 100);
 
     const where = {};
 

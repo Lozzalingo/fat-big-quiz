@@ -1,5 +1,6 @@
 const prisma = require("../utils/prisma");
-const { deleteFromSpaces, getKey } = require("../utils/spaces");
+const { deleteSpacesFile } = require("../utils/fileManager");
+const { BLOG_POST_LIST_INCLUDES } = require("../utils/prismaIncludes");
 
 async function getAllBlogPosts(request, response) {
   try {
@@ -257,24 +258,7 @@ async function createBlogPost(request, response) {
     // Return the created post with its relationships
     const createdPost = await prisma.blogPost.findUnique({
       where: { id: blogPost.id },
-      include: {
-        author: {
-          select: {
-            firstName: true,
-            name: true,
-          },
-        },
-        category: {
-          select: {
-            name: true,
-          },
-        },
-        tags: {
-          select: {
-            name: true,
-          },
-        },
-      },
+      include: BLOG_POST_LIST_INCLUDES,
     });
     
     return response.status(201).json(createdPost);
@@ -361,24 +345,7 @@ async function updateBlogPost(request, response) {
     // Return the updated post with its relationships
     const result = await prisma.blogPost.findUnique({
       where: { id },
-      include: {
-        author: {
-          select: {
-            firstName: true,
-            name: true,
-          },
-        },
-        category: {
-          select: {
-            name: true,
-          },
-        },
-        tags: {
-          select: {
-            name: true,
-          },
-        },
-      },
+      include: BLOG_POST_LIST_INCLUDES,
     });
     
     return response.json(result);
@@ -403,14 +370,8 @@ async function deleteBlogPost(request, response) {
     }
 
     // Delete cover image from Spaces
-    if (existingPost.coverImage && !existingPost.coverImage.startsWith('http')) {
-      try {
-        const imageKey = getKey(existingPost.coverImage, 'blog');
-        await deleteFromSpaces(imageKey);
-        console.log(`[Blog] Deleted blog cover image from Spaces: ${imageKey}`);
-      } catch (err) {
-        console.error(`[Blog] Error deleting blog cover image: ${err.message}`);
-      }
+    if (!existingPost.coverImage?.startsWith('http')) {
+      await deleteSpacesFile(existingPost.coverImage, 'blog', 'Blog');
     }
 
     // Delete the blog post (comments will be cascaded due to your schema)
@@ -456,26 +417,9 @@ async function searchBlogPosts(request, response) {
           published: true, // Only search published posts
         },
       },
-      include: {
-        author: {
-          select: {
-            firstName: true,
-            name: true,
-          },
-        },
-        category: {
-          select: {
-            name: true,
-          },
-        },
-        tags: {
-          select: {
-            name: true,
-          },
-        },
-      },
+      include: BLOG_POST_LIST_INCLUDES,
     });
-    
+
     return response.json(posts);
   } catch (error) {
     console.error("[Blog] Error searching blog posts:", error);

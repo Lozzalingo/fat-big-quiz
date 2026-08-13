@@ -1,5 +1,6 @@
 // Sales Controller - Unified sales tracking (Website + Etsy)
 const prisma = require("../utils/prisma");
+const { parsePagination } = require("../utils/pagination");
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -253,9 +254,7 @@ async function updateSaleByStripeSession(stripeSessionId, updateData) {
 
 async function getAllSales(req, res) {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
-    const skip = (page - 1) * limit;
+    const { page, limit, skip } = parsePagination(req.query, 20, 100);
 
     // Filters
     const where = {};

@@ -1,5 +1,7 @@
 const prisma = require("../utils/prisma");
-const { deleteFromSpaces, getKey } = require("../utils/spaces");
+const { deleteSpacesFile } = require("../utils/fileManager");
+const { parsePagination } = require("../utils/pagination");
+const { PRODUCT_INCLUDES } = require("../utils/prismaIncludes");
 const merchantApi = require("../services/merchantApi");
 const { formatProductForMerchant } = require("../utils/merchantFeed");
 const googleIndexing = require("../services/googleIndexing");
@@ -91,17 +93,12 @@ async function getAllProducts(request, response) {
   if(mode === "admin"){
     try {
       const adminProducts = await prisma.product.findMany({
-        include: {
-          legacyCategory: { select: { name: true } },
-          quizFormat: { select: { id: true, name: true, displayName: true } },
-          categories: {
-            include: { category: { select: { id: true, name: true } } },
-          },
-        },
+        include: PRODUCT_INCLUDES,
         orderBy: { displayOrder: "asc" },
       });
       return response.json(adminProducts);
     } catch (error) {
+      console.error("[Products] Error fetching admin products:", error);
       return response.status(500).json({ error: "Error fetching products" });
     }
   }else{
@@ -111,7 +108,7 @@ async function getAllProducts(request, response) {
     let sortByValue = "defaultSort";
   
     // getting current page
-    const page = Number(request.query.page) ? Number(request.query.page) : 1;
+    const { page } = parsePagination(request.query, 12, 12);
   
     if (dividerLocation !== -1) {
       const queryArray = request.url
@@ -399,13 +396,7 @@ async function createProduct(request, response) {
           })),
         } : undefined,
       },
-      include: {
-        legacyCategory: { select: { name: true } },
-        quizFormat: { select: { id: true, name: true, displayName: true } },
-        categories: {
-          include: { category: { select: { id: true, name: true } } },
-        },
-      },
+      include: PRODUCT_INCLUDES,
     });
     // Auto-sync to Google Merchant Center (non-blocking)
     syncProductToMerchant(product.id).catch(() => {});
@@ -499,13 +490,7 @@ async function updateProduct(request, response) {
     // Fetch the updated product with all relations
     const productWithRelations = await prisma.product.findUnique({
       where: { id },
-      include: {
-        legacyCategory: { select: { name: true } },
-        quizFormat: { select: { id: true, name: true, displayName: true } },
-        categories: {
-          include: { category: { select: { id: true, name: true } } },
-        },
-      },
+      include: PRODUCT_INCLUDES,
     });
 
     // Auto-sync to Google Merchant Center (non-blocking)
@@ -554,40 +539,26 @@ async function deleteProduct(request, response) {
 
     if (product) {
       // Delete main image from Spaces
-      if (product.mainImage && !product.mainImage.startsWith('http')) {
-        try {
-          const imageKey = getKey(product.mainImage, 'products/images');
-          await deleteFromSpaces(imageKey);
-          console.log(`[Products] Deleted product image from Spaces: ${imageKey}`);
-        } catch (err) {
-          console.error(`[Products] Error deleting product image: ${err.message}`);
-        }
+      if (!product.mainImage?.startsWith('http')) {
+        await deleteSpacesFile(product.mainImage, 'products/images', 'Products');
       }
 
       // Delete download files from Spaces
       if (product.downloadFile) {
+        let downloadFiles;
         try {
-          // Parse download files (could be JSON array or single filename)
-          let downloadFiles;
-          try {
-            downloadFiles = JSON.parse(product.downloadFile);
-            if (!Array.isArray(downloadFiles)) {
-              downloadFiles = [product.downloadFile];
-            }
-          } catch {
+          downloadFiles = JSON.parse(product.downloadFile);
+          if (!Array.isArray(downloadFiles)) {
             downloadFiles = [product.downloadFile];
           }
+        } catch {
+          downloadFiles = [product.downloadFile];
+        }
 
-          // Delete each download file
-          for (const file of downloadFiles) {
-            if (!file.startsWith('http')) {
-              const fileKey = getKey(file, 'downloads');
-              await deleteFromSpaces(fileKey);
-              console.log(`[Products] Deleted download file from Spaces: ${fileKey}`);
-            }
+        for (const file of downloadFiles) {
+          if (!file.startsWith('http')) {
+            await deleteSpacesFile(file, 'downloads', 'Products');
           }
-        } catch (err) {
-          console.error(`[Products] Error deleting download files: ${err.message}`);
         }
       }
     }
@@ -718,13 +689,7 @@ async function duplicateProduct(request, response) {
           })),
         } : undefined,
       },
-      include: {
-        legacyCategory: { select: { name: true } },
-        quizFormat: { select: { id: true, name: true, displayName: true } },
-        categories: {
-          include: { category: { select: { id: true, name: true } } },
-        },
-      },
+      include: PRODUCT_INCLUDES,
     });
 
     return response.status(201).json(duplicate);
@@ -755,13 +720,7 @@ async function reorderProducts(request, response) {
 
     // Return updated products list
     const products = await prisma.product.findMany({
-      include: {
-        legacyCategory: { select: { name: true } },
-        quizFormat: { select: { id: true, name: true, displayName: true } },
-        categories: {
-          include: { category: { select: { id: true, name: true } } },
-        },
-      },
+      include: PRODUCT_INCLUDES,
       orderBy: { displayOrder: "asc" },
     });
 
@@ -928,11 +887,7 @@ async function getVariantsByParent(request, response) {
     const variants = await prisma.product.findMany({
       where: { parentId },
       include: {
-        legacyCategory: { select: { name: true } },
-        quizFormat: { select: { id: true, name: true, displayName: true } },
-        categories: {
-          include: { category: { select: { id: true, name: true } } },
-        },
+        ...PRODUCT_INCLUDES,
         shopImages: true,
       },
       orderBy: { displayOrder: "asc" },

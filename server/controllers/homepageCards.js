@@ -1,5 +1,6 @@
 const prisma = require("../utils/prisma");
-const { uploadToSpaces, deleteFromSpaces, getKey } = require("../utils/spaces");
+const { uploadToSpaces } = require("../utils/spaces");
+const { deleteSpacesFile } = require("../utils/fileManager");
 
 /**
  * Get all homepage cards (public - only active ones, ordered)
@@ -151,13 +152,7 @@ async function deleteHomepageCard(request, response) {
 
     // Delete image from storage if exists
     if (existing.image && !existing.image.startsWith("http") && !existing.image.startsWith("/")) {
-      try {
-        const imageKey = getKey(existing.image, "homepage-cards");
-        await deleteFromSpaces(imageKey);
-        console.log(`[HomepageCards] Deleted homepage card image: ${imageKey}`);
-      } catch (err) {
-        console.error("[HomepageCards] Error deleting image from storage:", err);
-      }
+      await deleteSpacesFile(existing.image, "homepage-cards", "HomepageCards");
     }
 
     await prisma.homepageCard.delete({
@@ -192,13 +187,7 @@ async function uploadHomepageCardImage(request, response) {
 
     // Delete old image if exists
     if (existing.image && !existing.image.startsWith("http") && !existing.image.startsWith("/")) {
-      try {
-        const oldImageKey = getKey(existing.image, "homepage-cards");
-        await deleteFromSpaces(oldImageKey);
-        console.log(`[HomepageCards] Deleted old homepage card image: ${oldImageKey}`);
-      } catch (err) {
-        console.error("[HomepageCards] Error deleting old image:", err);
-      }
+      await deleteSpacesFile(existing.image, "homepage-cards", "HomepageCards");
     }
 
     const uploadedFile = request.files.uploadedFile;
@@ -248,13 +237,7 @@ async function removeHomepageCardImage(request, response) {
 
     // Delete from storage
     if (existing.image && !existing.image.startsWith("http") && !existing.image.startsWith("/")) {
-      try {
-        const imageKey = getKey(existing.image, "homepage-cards");
-        await deleteFromSpaces(imageKey);
-        console.log(`[HomepageCards] Deleted homepage card image: ${imageKey}`);
-      } catch (err) {
-        console.error("[HomepageCards] Error deleting from storage:", err);
-      }
+      await deleteSpacesFile(existing.image, "homepage-cards", "HomepageCards");
     }
 
     // Update card to remove image

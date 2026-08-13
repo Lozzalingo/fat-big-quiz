@@ -1,23 +1,11 @@
 const prisma = require("../utils/prisma");
+const { DISCOUNT_CODE_SELECT } = require("../utils/prismaIncludes");
 
 // Get all discount codes
 const getAllDiscountCodes = async (req, res) => {
   try {
     const discountCodes = await prisma.discountCode.findMany({
-      select: {
-        id: true,
-        code: true,
-        discountType: true,
-        discountValue: true,
-        startDate: true,
-        endDate: true,
-        minPurchase: true,
-        maxRedemptions: true,
-        currentRedemptions: true,
-        isActive: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+      select: DISCOUNT_CODE_SELECT,
     });
     res.status(200).json(discountCodes);
   } catch (error) {
@@ -32,20 +20,7 @@ const getDiscountCodeById = async (req, res) => {
   try {
     const discountCode = await prisma.discountCode.findUnique({
       where: { id },
-      select: {
-        id: true,
-        code: true,
-        discountType: true,
-        discountValue: true,
-        startDate: true,
-        endDate: true,
-        minPurchase: true,
-        maxRedemptions: true,
-        currentRedemptions: true,
-        isActive: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+      select: DISCOUNT_CODE_SELECT,
     });
     if (!discountCode) {
       return res.status(404).json({ error: 'Discount code not found' });
@@ -91,20 +66,7 @@ const createDiscountCode = async (req, res) => {
         maxRedemptions: maxRedemptions ? parseInt(maxRedemptions) : null,
         isActive: isActive !== undefined ? isActive : true,
       },
-      select: {
-        id: true,
-        code: true,
-        discountType: true,
-        discountValue: true,
-        startDate: true,
-        endDate: true,
-        minPurchase: true,
-        maxRedemptions: true,
-        currentRedemptions: true,
-        isActive: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+      select: DISCOUNT_CODE_SELECT,
     });
     res.status(201).json(discountCode);
   } catch (error) {
@@ -158,20 +120,7 @@ const updateDiscountCode = async (req, res) => {
           : existingCode.maxRedemptions,
         isActive: isActive !== undefined ? isActive : existingCode.isActive,
       },
-      select: {
-        id: true,
-        code: true,
-        discountType: true,
-        discountValue: true,
-        startDate: true,
-        endDate: true,
-        minPurchase: true,
-        maxRedemptions: true,
-        currentRedemptions: true,
-        isActive: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+      select: DISCOUNT_CODE_SELECT,
     });
     res.status(200).json(discountCode);
   } catch (error) {

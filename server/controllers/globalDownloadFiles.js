@@ -1,5 +1,6 @@
 const prisma = require("../utils/prisma");
-const { uploadToSpaces, deleteFromSpaces, getKey } = require("../utils/spaces");
+const { uploadToSpaces } = require("../utils/spaces");
+const { deleteSpacesFile } = require("../utils/fileManager");
 
 // Get all global download files (admin)
 async function getAllGlobalFiles(request, response) {
@@ -131,13 +132,7 @@ async function deleteGlobalFile(request, response) {
 
     // Delete file from CDN if exists
     if (existingFile.fileName) {
-      try {
-        const fileKey = getKey(existingFile.fileName, "global-bonus");
-        await deleteFromSpaces(fileKey);
-      } catch (err) {
-        console.error("[GlobalFiles] Error deleting file from CDN:", err);
-        // Continue with database deletion even if CDN delete fails
-      }
+      await deleteSpacesFile(existingFile.fileName, "global-bonus", "GlobalFiles");
     }
 
     await prisma.globalDownloadFile.delete({
@@ -186,12 +181,7 @@ async function uploadGlobalFile(request, response) {
 
     // Delete old file if exists
     if (existingFile.fileName) {
-      try {
-        const oldFileKey = getKey(existingFile.fileName, "global-bonus");
-        await deleteFromSpaces(oldFileKey);
-      } catch (err) {
-        console.error("[GlobalFiles] Error deleting old file:", err);
-      }
+      await deleteSpacesFile(existingFile.fileName, "global-bonus", "GlobalFiles");
     }
 
     // Upload new file
