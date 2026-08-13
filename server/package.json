@@ -1,13 +1,13 @@
 {
-  "name": "razvoj_veb_aplikacija",
+  "name": "fat-big-quiz-api",
   "version": "1.0.0",
-  "description": "",
+  "description": "Fat Big Quiz Express API server",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
+  "author": "Lozzalingo",
   "license": "ISC",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.964.0",
