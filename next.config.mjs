@@ -38,6 +38,20 @@ const nextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        source: '/terms-and-conditions',
+        destination: '/terms',
+        permanent: true,
+      },
+      {
+        source: '/privacy-policy',
+        destination: '/privacy',
+        permanent: true,
+      },
+    ];
+  },
   // Set to workspace root so standalone traces node_modules from the monorepo
   outputFileTracingRoot: path.join(__dirname, '../'),
   webpack: (config, { dev }) => {

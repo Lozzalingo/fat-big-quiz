@@ -15,7 +15,7 @@ export default function NotFound() {
             >
               Go back home
             </Link>
-            <Link href="#" className="text-sm font-semibold text-black hover:underline hover:underline-offset-4">
+            <Link href="/contact" className="text-sm font-semibold text-black hover:underline hover:underline-offset-4">
               Contact support <span aria-hidden="true">&rarr;</span>
             </Link>
           </div>

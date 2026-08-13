@@ -128,7 +128,14 @@ const RegisterPage = () => {
               required
               className="w-3.5 h-3.5 rounded border-gray-300 text-primary focus:ring-primary"
             />
-            I accept the terms and privacy policy
+            I accept the{" "}
+            <a href="/terms" target="_blank" className="text-primary hover:underline">
+              terms
+            </a>{" "}
+            and{" "}
+            <a href="/privacy" target="_blank" className="text-primary hover:underline">
+              privacy policy
+            </a>
           </label>
 
           {error && (

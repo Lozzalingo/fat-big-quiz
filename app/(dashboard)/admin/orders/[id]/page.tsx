@@ -362,11 +362,8 @@ const AdminSingleOrder = () => {
             </div>
           ))}
           <div className="flex flex-col gap-y-2 mt-10">
-            <p className="text-2xl">Subtotal: £{order?.total}</p>
-            <p className="text-2xl">Tax 20%: £{order?.total / 5}</p>
-            <p className="text-2xl">Shipping: £5</p>
-            <p className="text-3xl font-semibold">
-              Total: £{order?.total + order?.total / 5 + 5}
+            <p className="text-2xl">
+              Total: <span className="font-semibold">£{order?.total?.toFixed(2)}</span>
             </p>
           </div>
           <div className="flex gap-x-2 max-sm:flex-col mt-5">
