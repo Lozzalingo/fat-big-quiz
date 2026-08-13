@@ -423,11 +423,14 @@ app.use('/api/order-product', lz.adminMiddleware, orderProductRouter);
 app.use("/api/list-images", lz.adminMiddleware, imageListRouter);
 app.use('/api/discount-codes', lz.adminMiddleware, discountCodesRouter);
 app.use('/api/settings', lz.adminMiddleware, settingsRouter);
-// Visitor tracking endpoints are public (frontend calls these)
-app.post('/api/visitors/track', visitorRouter);
-app.post('/api/visitors/update', visitorRouter);
-app.post('/api/visitors/event', visitorRouter);
-// Visitor analytics endpoints are admin-only
+// Visitor tracking POSTs are public (frontend calls these), analytics GETs are admin-only
+app.use('/api/visitors', (req, res, next) => {
+  const publicPosts = ['/track', '/update', '/event'];
+  if (req.method === 'POST' && publicPosts.includes(req.path)) {
+    return visitorRouter(req, res, next);
+  }
+  next();
+});
 app.use('/api/visitors', lz.adminMiddleware, visitorRouter);
 app.use('/api/quiz-database', lz.adminMiddleware, quizDatabaseRouter);
 // Public homepage cards endpoint (before admin middleware)
