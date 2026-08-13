@@ -131,7 +131,8 @@ async function _getBlogPost(where, request, response) {
     });
 
     if (!post) {
-      return response.status(404).json({ error: "Blog post not found" });
+      response.status(404).json({ error: "Blog post not found" });
+      return null;
     }
 
     return post;

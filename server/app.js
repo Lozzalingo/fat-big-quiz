@@ -82,6 +82,19 @@ const io = new Server(server, {
 
 app.set('io', io);
 
+// ─── Admin guard for core-mounted routes ─────────────────────────────────────
+// Core mounts ops, logging, settings, and storage routes without admin auth.
+// We add an admin key check middleware BEFORE core initialises so it runs first.
+const ADMIN_PROTECTED_CORE_PATHS = ['/api/ops', '/api/logs', '/api/app-settings', '/api/storage'];
+app.use(ADMIN_PROTECTED_CORE_PATHS, (req, res, next) => {
+  const adminKey = process.env.ADMIN_API_KEY;
+  const provided = req.headers['x-admin-key'];
+  if (!adminKey || provided !== adminKey) {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  next();
+});
+
 // ─── Lozzalingo Core ──────────────────────────────────────────────────────────
 // Reads lozzalingo.yaml, registers all shared packages (config, logging, email,
 // subscribers, settings, ops, storage, auth, bookings, outreach, calendar,
@@ -410,6 +423,11 @@ app.use('/api/order-product', lz.adminMiddleware, orderProductRouter);
 app.use("/api/list-images", lz.adminMiddleware, imageListRouter);
 app.use('/api/discount-codes', lz.adminMiddleware, discountCodesRouter);
 app.use('/api/settings', lz.adminMiddleware, settingsRouter);
+// Visitor tracking endpoints are public (frontend calls these)
+app.post('/api/visitors/track', visitorRouter);
+app.post('/api/visitors/update', visitorRouter);
+app.post('/api/visitors/event', visitorRouter);
+// Visitor analytics endpoints are admin-only
 app.use('/api/visitors', lz.adminMiddleware, visitorRouter);
 app.use('/api/quiz-database', lz.adminMiddleware, quizDatabaseRouter);
 // Public homepage cards endpoint (before admin middleware)
