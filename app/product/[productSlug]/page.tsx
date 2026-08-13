@@ -70,7 +70,7 @@ export async function generateMetadata({ params }: SingleProductPageProps): Prom
 
   const data = await fetch(
     `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/slugs/${productSlug}`,
-    { cache: "no-store" }
+    { next: { revalidate: 300 } }
   );
   const product = await data.json();
 
@@ -148,7 +148,7 @@ const SingleProductPage = async ({ params }: SingleProductPageProps) => {
 
   const data = await fetch(
     `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/slugs/${productSlug}`,
-    { cache: "no-store" }
+    { next: { revalidate: 300 } }
   );
   const product = await data.json();
 

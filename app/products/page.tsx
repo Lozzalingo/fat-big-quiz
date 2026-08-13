@@ -62,7 +62,7 @@ export default async function ProductsPage() {
   try {
     const res = await fetch(
       `${KALLUNA_API}/api/experiences?providerSlug=fat-big-quiz&parentsOnly=true&limit=50`,
-      { cache: "no-store" }
+      { next: { revalidate: 300 } }
     );
     if (res.ok) {
       const data = await res.json();

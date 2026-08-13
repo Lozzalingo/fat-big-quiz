@@ -10,10 +10,22 @@ const prisma = require("../utils/prisma");
 
   async function getAllUsers(request, response) {
     try {
-      console.log("[User] Fetching all users");
-      const users = await prisma.user.findMany({});
-      console.log(`[User] Found ${users.length} users`);
-      return response.json(users.map(sanitiseUser));
+      const page = parseInt(request.query.page) || 1;
+      const limit = parseInt(request.query.limit) || 50;
+      console.log(`[User] Fetching users (page ${page}, limit ${limit})`);
+      const [users, total] = await Promise.all([
+        prisma.user.findMany({
+          skip: (page - 1) * limit,
+          take: limit,
+          orderBy: { createdAt: "desc" },
+        }),
+        prisma.user.count(),
+      ]);
+      console.log(`[User] Found ${users.length} of ${total} users`);
+      return response.json({
+        users: users.map(sanitiseUser),
+        pagination: { total, pages: Math.ceil(total / limit), currentPage: page, perPage: limit },
+      });
     } catch (error) {
       console.error("[User] Error fetching users:", error.message);
       return response.status(500).json({ error: "Error fetching users" });

@@ -12,60 +12,25 @@ async function searchProducts(request, response) {
         const products = await prisma.product.findMany({
             where: {
                 OR: [
-                    {
-                        title: {
-                            contains: query
-                        }
-                    },
-                    {
-                        description: {
-                            contains: query
-                        }
-                    },
-                    {
-                        // Search in tags JSON string
-                        tags: {
-                            contains: query
-                        }
-                    },
-                    {
-                        // Search by category name (legacy single category)
-                        category: {
-                            name: {
-                                contains: query
-                            }
-                        }
-                    },
-                    {
-                        // Search by categories (many-to-many)
-                        categories: {
-                            some: {
-                                category: {
-                                    name: {
-                                        contains: query
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    {
-                        // Search by quiz format name
-                        quizFormat: {
-                            displayName: {
-                                contains: query
-                            }
-                        }
-                    }
+                    { title: { contains: query } },
+                    { tags: { contains: query } },
+                    { category: { name: { contains: query } } },
+                    { categories: { some: { category: { name: { contains: query } } } } },
+                    { quizFormat: { displayName: { contains: query } } },
                 ]
             },
-            include: {
-                category: true,
-                categories: {
-                    include: {
-                        category: true
-                    }
-                },
-                quizFormat: true
+            take: 50,
+            select: {
+                id: true,
+                title: true,
+                slug: true,
+                price: true,
+                mainImage: true,
+                tags: true,
+                productType: true,
+                category: { select: { id: true, name: true } },
+                categories: { include: { category: { select: { id: true, name: true } } } },
+                quizFormat: { select: { id: true, displayName: true, slug: true } },
             }
         });
 

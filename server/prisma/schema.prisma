@@ -668,6 +668,7 @@ model BlogPost {
 
   @@index([authorId], map: "BlogPost_authorId_fkey")
   @@index([categoryId], map: "BlogPost_categoryId_fkey")
+  @@index([published, createdAt])
 }
 
 model Comment {
@@ -677,7 +678,7 @@ model Comment {
   userId    String
   postId    String
   parentId  String?
-  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
   replies   Comment[] @relation("CommentReplies")
   post      BlogPost  @relation(fields: [postId], references: [id], onDelete: Cascade)
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)

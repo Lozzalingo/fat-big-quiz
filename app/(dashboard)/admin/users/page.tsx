@@ -16,7 +16,7 @@ const DashboardUsers = () => {
         return res.json();
       })
       .then((data) => {
-        setUsers(data);
+        setUsers(data.users || data);
       });
   }, []);
 

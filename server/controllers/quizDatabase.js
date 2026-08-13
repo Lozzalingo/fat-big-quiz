@@ -2,6 +2,24 @@ const prisma = require("../utils/prisma");
 const { classifyNewlyImported } = require("../services/questionClassifier");
 const { parsePagination } = require("../utils/pagination");
 
+// ─── In-memory cache for lookup tables (5-minute TTL) ─────────────────────
+const lookupCache = new Map();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+function getCached(key) {
+  const entry = lookupCache.get(key);
+  if (entry && Date.now() - entry.ts < CACHE_TTL) {
+    console.log(`[QuizDB] Cache hit: ${key}`);
+    return entry.data;
+  }
+  return null;
+}
+
+function setCache(key, data) {
+  lookupCache.set(key, { data, ts: Date.now() });
+  console.log(`[QuizDB] Cache set: ${key}`);
+}
+
 // ─── Helper: Parse scraper format ───────────────────────────────────────────
 // Splits "Question text [A) Option1 | B) Option2 | C) Option3 | D) Option4]"
 // into { questionText, options }
@@ -583,6 +601,9 @@ async function bulkUpdateStatus(req, res) {
 
 async function getCategories(req, res) {
   try {
+    const cached = getCached("categories");
+    if (cached) return res.json(cached);
+
     const categories = await prisma.quizCategory.findMany({
       orderBy: { displayOrder: "asc" },
       include: {
@@ -593,6 +614,7 @@ async function getCategories(req, res) {
         },
       },
     });
+    setCache("categories", categories);
     return res.json(categories);
   } catch (error) {
     console.error("[QuizDB] Error fetching categories:", error);
@@ -602,10 +624,14 @@ async function getCategories(req, res) {
 
 async function getCountries(req, res) {
   try {
+    const cached = getCached("countries");
+    if (cached) return res.json(cached);
+
     const countries = await prisma.quizCountry.findMany({
       orderBy: { displayOrder: "asc" },
       include: { _count: { select: { questions: true } } },
     });
+    setCache("countries", countries);
     return res.json(countries);
   } catch (error) {
     console.error("[QuizDB] Error fetching countries:", error);
@@ -615,10 +641,14 @@ async function getCountries(req, res) {
 
 async function getThemes(req, res) {
   try {
+    const cached = getCached("themes");
+    if (cached) return res.json(cached);
+
     const themes = await prisma.quizTheme.findMany({
       orderBy: { displayOrder: "asc" },
       include: { _count: { select: { questions: true } } },
     });
+    setCache("themes", themes);
     return res.json(themes);
   } catch (error) {
     console.error("[QuizDB] Error fetching themes:", error);
@@ -628,10 +658,14 @@ async function getThemes(req, res) {
 
 async function getSources(req, res) {
   try {
+    const cached = getCached("sources");
+    if (cached) return res.json(cached);
+
     const sources = await prisma.quizSource.findMany({
       orderBy: { displayOrder: "asc" },
       include: { _count: { select: { questions: true } } },
     });
+    setCache("sources", sources);
     return res.json(sources);
   } catch (error) {
     console.error("[QuizDB] Error fetching sources:", error);
@@ -887,27 +921,29 @@ async function luckyDip(req, res) {
       return res.json({ questions: [], total: 0 });
     }
 
-    // Select random IDs using skip with random offsets
-    const randomOffsets = new Set();
-    while (randomOffsets.size < Math.min(limit, total)) {
-      randomOffsets.add(Math.floor(Math.random() * total));
-    }
+    // Fetch IDs only, shuffle in JS, then batch-fetch full records
+    const allIds = await prisma.quizQuestion.findMany({
+      where,
+      select: { id: true },
+    });
 
-    const questions = [];
-    for (const offset of randomOffsets) {
-      const q = await prisma.quizQuestion.findFirst({
-        where,
-        skip: offset,
-        include: {
-          category: { select: { id: true, name: true, slug: true } },
-          subCategory: { select: { id: true, name: true, slug: true } },
-          country: { select: { id: true, name: true, code: true } },
-          theme: { select: { id: true, name: true, slug: true } },
-          source: { select: { id: true, name: true, slug: true } },
-        },
-      });
-      if (q) questions.push(q);
+    // Fisher-Yates shuffle and pick
+    for (let i = allIds.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [allIds[i], allIds[j]] = [allIds[j], allIds[i]];
     }
+    const pickedIds = allIds.slice(0, Math.min(limit, total)).map(q => q.id);
+
+    const questions = await prisma.quizQuestion.findMany({
+      where: { id: { in: pickedIds } },
+      include: {
+        category: { select: { id: true, name: true, slug: true } },
+        subCategory: { select: { id: true, name: true, slug: true } },
+        country: { select: { id: true, name: true, code: true } },
+        theme: { select: { id: true, name: true, slug: true } },
+        source: { select: { id: true, name: true, slug: true } },
+      },
+    });
 
     console.log(`[QuizDB] Lucky dip: ${questions.length} questions (requested ${limit}, pool ${total})`);
     return res.json({ questions, total });

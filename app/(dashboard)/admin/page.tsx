@@ -63,7 +63,8 @@ export default function AdminDashboard() {
         ]);
 
         const orders = await ordersRes.json();
-        const users = await usersRes.json();
+        const usersData = await usersRes.json();
+        const users = usersData.users || usersData;
         const products = await productsRes.json();
         const visitors = await visitorsRes.json();
         const merchant = merchantRes ? await merchantRes.json() : null;

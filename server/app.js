@@ -64,7 +64,10 @@ const {
   sendAdminListNotification
 } = require('./services/email');
 
+const compression = require("compression");
+
 const app = express();
+app.use(compression());
 const server = http.createServer(app);
 const allowedOrigins = [
   'https://fatbigquiz.com',
@@ -133,16 +136,41 @@ app.get("/api/recent-sales", async (req, res) => {
   }
 
   try {
-    // 1. Digital product purchases (printable quiz packs)
-    const purchases = await prisma.purchase.findMany({
-      where: {
-        status: "completed",
-        email: { not: { contains: "test" } },
-      },
-      include: { product: { select: { title: true, slug: true } } },
-      orderBy: { createdAt: "desc" },
-      take: 5,
-    });
+    // Fetch all three sources in parallel
+    const [purchases, subscribers, etsySales] = await Promise.all([
+      // 1. Digital product purchases (printable quiz packs)
+      prisma.purchase.findMany({
+        where: {
+          status: "completed",
+          email: { not: { contains: "test" } },
+        },
+        include: { product: { select: { title: true, slug: true } } },
+        orderBy: { createdAt: "desc" },
+        take: 5,
+      }),
+      // 2. Quiz Database subscriptions (active subscribers)
+      prisma.user.findMany({
+        where: {
+          subscriptionStatus: "active",
+          stripeSubscriptionId: { not: null },
+          email: { not: { contains: "test" } },
+        },
+        select: { email: true, createdAt: true },
+        orderBy: { createdAt: "desc" },
+        take: 5,
+      }),
+      // 3. Etsy sales (from unified sales tracker)
+      prisma.sale.findMany({
+        where: {
+          channel: "ETSY",
+          status: { in: ["PAID", "COMPLETED"] },
+          buyerEmail: { not: { contains: "test" } },
+        },
+        include: { items: { take: 1, select: { title: true } } },
+        orderBy: { createdAt: "desc" },
+        take: 5,
+      }),
+    ]);
 
     const purchaseSales = purchases.map((p) => ({
       title: p.product?.title || "Fat Big Quiz - Quiz Pack",
@@ -152,18 +180,6 @@ app.get("/api/recent-sales", async (req, res) => {
       _ts: p.createdAt.getTime(),
     }));
 
-    // 2. Quiz Database subscriptions (active subscribers)
-    const subscribers = await prisma.user.findMany({
-      where: {
-        subscriptionStatus: "active",
-        stripeSubscriptionId: { not: null },
-        email: { not: { contains: "test" } },
-      },
-      select: { email: true, createdAt: true },
-      orderBy: { createdAt: "desc" },
-      take: 5,
-    });
-
     const subscriptionSales = subscribers.map((s) => ({
       title: "Fat Big Quiz - Quiz Database Pro",
       url: "https://fatbigquiz.com/quiz-database",
@@ -171,18 +187,6 @@ app.get("/api/recent-sales", async (req, res) => {
       type: "subscription",
       _ts: s.createdAt.getTime(),
     }));
-
-    // 3. Etsy sales (from unified sales tracker)
-    const etsySales = await prisma.sale.findMany({
-      where: {
-        channel: "ETSY",
-        status: { in: ["PAID", "COMPLETED"] },
-        buyerEmail: { not: { contains: "test" } },
-      },
-      include: { items: { take: 1, select: { title: true } } },
-      orderBy: { createdAt: "desc" },
-      take: 5,
-    });
 
     const etsySalesMapped = etsySales.map((s) => ({
       title: s.items[0]?.title || "Fat Big Quiz - Etsy Order",
@@ -363,14 +367,24 @@ app.get("/api/sales-summary", async (req, res) => {
   }
 });
 
+// ─── Cache-Control for public read endpoints ────────────────────────────────────
+function cachePublic(maxAge = 300) {
+  return (req, res, next) => {
+    if (req.method === 'GET') {
+      res.set('Cache-Control', `public, max-age=${maxAge}, stale-while-revalidate=600`);
+    }
+    next();
+  };
+}
+
 // ─── Site-Specific Routes ───────────────────────────────────────────────────────
 // Public read routes (storefront needs these unauthenticated)
-app.use("/api/products", productsRouter);
+app.use("/api/products", cachePublic(300), productsRouter);
 app.use("/api/products", lz.adminMiddleware, productsRouter.adminRouter);
-app.use("/api/categories", categoryRouter);
-app.use("/api/search", searchRouter);
-app.use("/api/slugs", slugRouter);
-app.use('/api/blog', blogRouter);
+app.use("/api/categories", cachePublic(300), categoryRouter);
+app.use("/api/search", cachePublic(60), searchRouter);
+app.use("/api/slugs", cachePublic(300), slugRouter);
+app.use('/api/blog', cachePublic(300), blogRouter);
 app.use('/api/blog', lz.adminMiddleware, blogRouter.adminRouter);
 app.use('/api/tags', tagRouter);
 app.use('/api/comments', commentRouter);
@@ -400,7 +414,7 @@ app.use('/api/visitors', lz.adminMiddleware, visitorRouter);
 app.use('/api/quiz-database', lz.adminMiddleware, quizDatabaseRouter);
 // Public homepage cards endpoint (before admin middleware)
 const { getPublicHomepageCards } = require('./controllers/homepageCards');
-app.get('/api/homepage-cards/public', getPublicHomepageCards);
+app.get('/api/homepage-cards/public', cachePublic(300), getPublicHomepageCards);
 app.use('/api/homepage-cards', lz.adminMiddleware, homepageCardsRouter);
 app.use('/api/global-files', lz.adminMiddleware, globalDownloadFilesRouter);
 app.use('/api/campaigns', lz.adminMiddleware, campaignsRouter);
@@ -551,6 +565,18 @@ app.get('/api/download/:purchaseId/:token', async (req, res) => {
 // ─── Email Endpoints (internal use only - called by Stripe webhook) ─────────────
 // Rate limit email endpoints to prevent abuse (5 per minute per IP)
 const emailLimits = new Map();
+// Sweep expired rate limit entries every 5 minutes to prevent memory leak
+setInterval(() => {
+  const now = Date.now();
+  let swept = 0;
+  for (const [ip, entry] of emailLimits) {
+    if (now > entry.resetAt) {
+      emailLimits.delete(ip);
+      swept++;
+    }
+  }
+  if (swept > 0) console.log(`[Email] Rate limit cleanup: swept ${swept} expired entries`);
+}, 5 * 60 * 1000);
 function emailRateLimit(req, res, next) {
   const ip = req.ip || 'unknown';
   const now = Date.now();

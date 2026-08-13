@@ -24,22 +24,30 @@ async function getPostComments(req, res) {
             avatar: true
           }
         },
-        votes: true
+        _count: {
+          select: {
+            votes: { where: { type: "upvote" } },
+          },
+        },
       }
     });
 
-    // Process comments to include vote counts
+    // Prisma filtered counts don't support multiple filters on same relation,
+    // so we get upvotes via _count and compute downvotes separately
+    const commentIds = comments.map(c => c.id);
+    const downvoteCounts = await prisma.vote.groupBy({
+      by: ['commentId'],
+      where: { commentId: { in: commentIds }, type: "downvote" },
+      _count: true,
+    });
+    const downMap = new Map(downvoteCounts.map(d => [d.commentId, d._count]));
+
     const processedComments = comments.map(comment => {
-      const upCount = comment.votes.filter(vote => vote.type === "upvote").length;
-      const downCount = comment.votes.filter(vote => vote.type === "downvote").length;
-      
-      // Remove votes array from response to avoid sending too much data
-      const { votes, ...commentWithoutVotes } = comment;
-      
+      const { _count, ...rest } = comment;
       return {
-        ...commentWithoutVotes,
-        upCount,
-        downCount
+        ...rest,
+        upCount: _count.votes,
+        downCount: downMap.get(comment.id) || 0,
       };
     });
 
@@ -120,19 +128,17 @@ async function updateComment(req, res) {
             avatar: true
           }
         },
-        votes: true
       }
     });
 
-    // Process comment to include vote counts
-    const upCount = updatedComment.votes.filter(vote => vote.type === "upvote").length;
-    const downCount = updatedComment.votes.filter(vote => vote.type === "downvote").length;
-    
-    // Remove votes array from response
-    const { votes, ...commentWithoutVotes } = updatedComment;
-    
+    // Get vote counts efficiently
+    const [upCount, downCount] = await Promise.all([
+      prisma.vote.count({ where: { commentId: id, type: "upvote" } }),
+      prisma.vote.count({ where: { commentId: id, type: "downvote" } }),
+    ]);
+
     const processedComment = {
-      ...commentWithoutVotes,
+      ...updatedComment,
       upCount,
       downCount
     };
@@ -156,10 +162,7 @@ async function deleteComment(req, res) {
       return res.status(400).json({ error: "Comment ID is required" });
     }
 
-    // First, recursively delete all child comments
-    await deleteChildComments(id);
-
-    // Then delete the comment itself
+    // Cascade delete handles child comments automatically via schema
     await prisma.comment.delete({
       where: { id }
     });
@@ -171,27 +174,7 @@ async function deleteComment(req, res) {
   }
 }
 
-/**
- * Helper function to recursively delete child comments
- */
-async function deleteChildComments(parentId) {
-  // Find all direct child comments
-  const childComments = await prisma.comment.findMany({
-    where: { parentId }
-  });
-
-  // For each child, recursively delete its children
-  for (const child of childComments) {
-    await deleteChildComments(child.id);
-  }
-
-  // Delete all direct child comments at once if any exist
-  if (childComments.length > 0) {
-    await prisma.comment.deleteMany({
-      where: { parentId }
-    });
-  }
-}
+// deleteChildComments removed - cascade delete handles this via schema onDelete: Cascade
 
 /**
  * Get a single comment by ID
@@ -205,39 +188,29 @@ async function getComment(req, res) {
       return res.status(400).json({ error: "Comment ID is required" });
     }
 
-    const comment = await prisma.comment.findUnique({
-      where: { id },
-      include: {
-        user: {
-          select: {
-            userName: true,
-            firstName: true,
-            lastName: true,
-            avatar: true
-          }
-        },
-        votes: true
-      }
-    });
+    const [comment, upCount, downCount] = await Promise.all([
+      prisma.comment.findUnique({
+        where: { id },
+        include: {
+          user: {
+            select: {
+              userName: true,
+              firstName: true,
+              lastName: true,
+              avatar: true
+            }
+          },
+        }
+      }),
+      prisma.vote.count({ where: { commentId: id, type: "upvote" } }),
+      prisma.vote.count({ where: { commentId: id, type: "downvote" } }),
+    ]);
 
     if (!comment) {
       return res.status(404).json({ error: "Comment not found" });
     }
 
-    // Process comment to include vote counts
-    const upCount = comment.votes.filter(vote => vote.type === "upvote").length;
-    const downCount = comment.votes.filter(vote => vote.type === "downvote").length;
-    
-    // Remove votes array from response
-    const { votes, ...commentWithoutVotes } = comment;
-    
-    const processedComment = {
-      ...commentWithoutVotes,
-      upCount,
-      downCount
-    };
-
-    res.status(200).json(processedComment);
+    res.status(200).json({ ...comment, upCount, downCount });
   } catch (error) {
     console.error("[Comments] Error getting comment:", error);
     res.status(500).json({ error: "Server error", details: error.message });

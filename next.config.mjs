@@ -63,15 +63,12 @@ const nextConfig = {
     '@lozzalingo/subscribers',
   ],
   eslint: {
-    // Lint is enforced in CI before build. Skip during Next.js build to avoid
-    // double-checking and blocking on warnings from shared packages.
-    ignoreDuringBuilds: true,
+    // Lint is also enforced in CI before build. Errors block, warnings pass.
+    ignoreDuringBuilds: false,
   },
   typescript: {
-    // Type checking is enforced in CI (filtered to FBQ source only).
-    // Shared packages have upstream errors that would block next build.
-    // Remove this once packages/events-ui errors are fixed upstream.
-    ignoreBuildErrors: true,
+    // Type errors block the build. Upstream events-ui errors fixed 28 Jul 2026.
+    ignoreBuildErrors: false,
   },
   images: {
     remotePatterns: [

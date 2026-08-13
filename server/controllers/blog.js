@@ -68,12 +68,10 @@ async function getAllBlogPosts(request, response) {
       queryOptions.where.published = published;
     }
     
-    const posts = await prisma.blogPost.findMany(queryOptions);
-    
-    // Get total count for pagination
-    const totalCount = await prisma.blogPost.count({
-      where: queryOptions.where,
-    });
+    const [posts, totalCount] = await Promise.all([
+      prisma.blogPost.findMany(queryOptions),
+      prisma.blogPost.count({ where: queryOptions.where }),
+    ]);
     
     return response.json({
       posts,
@@ -186,25 +184,22 @@ async function createBlogPost(request, response) {
       },
     });
     
-    // If tags are provided, connect them
+    // If tags are provided, batch upsert and connect them
     if (tags && tags.length > 0) {
-      // For each tag, connect or create it
-      for (const tagName of tags) {
-        await prisma.tag.upsert({
-          where: { name: tagName },
-          update: {
-            posts: {
-              connect: { id: blogPost.id },
-            },
-          },
-          create: {
-            name: tagName,
-            posts: {
-              connect: { id: blogPost.id },
-            },
-          },
+      const existing = await prisma.tag.findMany({ where: { name: { in: tags } } });
+      const existingNames = new Set(existing.map(t => t.name));
+      const newTags = tags.filter(t => !existingNames.has(t));
+      if (newTags.length > 0) {
+        await prisma.tag.createMany({
+          data: newTags.map(name => ({ name })),
+          skipDuplicates: true,
         });
       }
+      const allTags = await prisma.tag.findMany({ where: { name: { in: tags } } });
+      await prisma.blogPost.update({
+        where: { id: blogPost.id },
+        data: { tags: { connect: allTags.map(t => ({ id: t.id })) } },
+      });
     }
     
     // Return the created post with its relationships
@@ -275,23 +270,21 @@ async function updateBlogPost(request, response) {
         },
       });
       
-      // Then, connect or create the new tags
-      for (const tagName of tags) {
-        await prisma.tag.upsert({
-          where: { name: tagName },
-          update: {
-            posts: {
-              connect: { id },
-            },
-          },
-          create: {
-            name: tagName,
-            posts: {
-              connect: { id },
-            },
-          },
+      // Batch upsert and connect the new tags
+      const existing = await prisma.tag.findMany({ where: { name: { in: tags } } });
+      const existingNames = new Set(existing.map(t => t.name));
+      const newTags = tags.filter(t => !existingNames.has(t));
+      if (newTags.length > 0) {
+        await prisma.tag.createMany({
+          data: newTags.map(name => ({ name })),
+          skipDuplicates: true,
         });
       }
+      const allTags = await prisma.tag.findMany({ where: { name: { in: tags } } });
+      await prisma.blogPost.update({
+        where: { id },
+        data: { tags: { connect: allTags.map(t => ({ id: t.id })) } },
+      });
     }
     
     // Return the updated post with its relationships
