@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { sanitiseHtml } from "@/utils/sanitise";
 import {
   FaArrowLeft,
   FaDesktop,
@@ -156,7 +157,7 @@ export default async function ProductSlugPage({ params }: { params: { slug: stri
             </div>
             <div
               className="prose prose-lg text-gray-600"
-              dangerouslySetInnerHTML={{ __html: parent.description }}
+              dangerouslySetInnerHTML={{ __html: sanitiseHtml(parent.description) }}
             />
           </div>
         </div>

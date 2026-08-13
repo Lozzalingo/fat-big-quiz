@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { sanitiseHtml } from "@/utils/sanitise";
 import { Calendar, User, Tag, Clock, Eye, MessageCircle, Share2 } from "lucide-react";
 import BlogPostClient from "@/components/Blog/BlogPostClient";
 import SocialShare from "@/components/Blog/SocialShare";
@@ -216,7 +217,7 @@ export default async function BlogPostPage({ params }: { params: { blogSlug: str
               </div>
             </div>
           )}
-          <div className="p-8 prose prose-lg max-w-none prose-headings:text-text-primary prose-p:text-text-secondary prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-strong:text-text-primary" dangerouslySetInnerHTML={{ __html: post.content }} />
+          <div className="p-8 prose prose-lg max-w-none prose-headings:text-text-primary prose-p:text-text-secondary prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-strong:text-text-primary" dangerouslySetInnerHTML={{ __html: sanitiseHtml(post.content) }} />
         </div>
 
         {/* Social Sharing */}

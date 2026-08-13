@@ -17,16 +17,52 @@ const prisma = new PrismaClient();
 // Cart item shape sent from the frontend
 interface CartItem {
   id: string;
-  title: string;
-  price: number;
-  image?: string;
   amount: number;
   slug?: string;
-  productType?: string;
+}
+
+// DB product shape from Prisma select
+interface DbProduct {
+  id: string;
+  title: string;
+  price: number;
+  mainImage: string | null;
+  productType: string | null;
+  slug: string;
+}
+
+// In-memory rate limiter (10 requests per minute per IP)
+const rateLimits = new Map<string, { count: number; resetAt: number }>();
+setInterval(() => {
+  const now = Date.now();
+  rateLimits.forEach((entry, ip) => {
+    if (now > entry.resetAt) rateLimits.delete(ip);
+  });
+}, 60 * 1000);
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const entry = rateLimits.get(ip);
+  if (!entry || now > entry.resetAt) {
+    rateLimits.set(ip, { count: 1, resetAt: now + 60000 });
+    return true;
+  }
+  entry.count++;
+  return entry.count <= 10;
 }
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    if (!checkRateLimit(ip)) {
+      console.log("[Stripe] Checkout rate limit exceeded for IP:", ip);
+      return NextResponse.json(
+        { error: "Too many requests. Please try again shortly." },
+        { status: 429 }
+      );
+    }
+
     const body = await request.json();
 
     // Support both single-product and multi-product (cart) checkout
@@ -37,12 +73,8 @@ export async function POST(request: NextRequest) {
     if (items.length === 0 && body.productId) {
       items.push({
         id: body.productId,
-        title: body.productName,
-        price: body.price,
-        image: body.imageUrl,
         amount: 1,
         slug: body.slug,
-        productType: body.productType,
       });
     }
 
@@ -50,6 +82,25 @@ export async function POST(request: NextRequest) {
       console.log("[Stripe] Checkout rejected - no items");
       return NextResponse.json(
         { error: "No items provided" },
+        { status: 400 }
+      );
+    }
+
+    // Look up all products from the database (never trust client-supplied prices)
+    const productIds = items.map((item) => item.id);
+    const dbProducts: DbProduct[] = await (prisma as any).product.findMany({
+      where: { id: { in: productIds } },
+      select: { id: true, title: true, price: true, mainImage: true, productType: true, slug: true },
+    });
+
+    const productMap = new Map<string, DbProduct>(dbProducts.map((p) => [p.id, p]));
+
+    // Validate all products exist
+    const missingIds = productIds.filter((id) => !productMap.has(id));
+    if (missingIds.length > 0) {
+      console.log("[Stripe] Checkout rejected - invalid product IDs:", missingIds);
+      return NextResponse.json(
+        { error: "One or more products not found" },
         { status: 400 }
       );
     }
@@ -70,24 +121,27 @@ export async function POST(request: NextRequest) {
     }
 
     // Determine if any item is a digital download (for success URL)
-    const hasDigitalDownload = items.some(
-      (item) => item.productType === "DIGITAL_DOWNLOAD"
-    );
+    const hasDigitalDownload = items.some((item) => {
+      const product = productMap.get(item.id)!;
+      return product.productType === "DIGITAL_DOWNLOAD";
+    });
 
-    // Build Stripe line items
+    // Build Stripe line items using DB prices only
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] =
       items.map((item) => {
-        const productData: any = {
-          name: item.title,
+        const product = productMap.get(item.id)!;
+
+        const productData: Stripe.Checkout.SessionCreateParams.LineItem.PriceData.ProductData = {
+          name: product.title,
           metadata: {
-            productId: item.id,
-            productType: item.productType || "DIGITAL_DOWNLOAD",
+            productId: product.id,
+            productType: product.productType || "DIGITAL_DOWNLOAD",
           },
         };
 
         // Add image if available (Stripe requires HTTPS URLs)
-        const imageUrl = item.image
-          ? getProductImageUrl(item.image)
+        const imageUrl = product.mainImage
+          ? getProductImageUrl(product.mainImage)
           : undefined;
         if (imageUrl && imageUrl.startsWith("https://")) {
           productData.images = [imageUrl];
@@ -97,7 +151,7 @@ export async function POST(request: NextRequest) {
           price_data: {
             currency: "gbp",
             product_data: productData,
-            unit_amount: Math.round(item.price * 100),
+            unit_amount: Math.round(product.price * 100),
           },
           quantity: item.amount,
         };
@@ -106,18 +160,20 @@ export async function POST(request: NextRequest) {
     // For single product, use product-specific URLs. For cart, use generic ones.
     const isSingleProduct = items.length === 1;
     const firstItem = items[0];
+    const firstProduct = productMap.get(firstItem.id)!;
 
     const successUrl = hasDigitalDownload
       ? `${process.env.NEXT_PUBLIC_BASE_URL}/download/{CHECKOUT_SESSION_ID}`
       : `${process.env.NEXT_PUBLIC_BASE_URL}/order-success?session_id={CHECKOUT_SESSION_ID}`;
 
-    const cancelUrl = isSingleProduct && firstItem.slug
-      ? `${process.env.NEXT_PUBLIC_BASE_URL}/product/${firstItem.slug}?canceled=true`
+    const cancelUrl = isSingleProduct && firstProduct.slug
+      ? `${process.env.NEXT_PUBLIC_BASE_URL}/product/${firstProduct.slug}?canceled=true`
       : `${process.env.NEXT_PUBLIC_BASE_URL}/cart`;
 
     // Store product IDs as JSON in metadata for the webhook
-    const productIds = items.map((item) => item.id);
-    const productSlugs = items.map((item) => item.slug || "").filter(Boolean);
+    const productSlugs = items
+      .map((item) => productMap.get(item.id)?.slug || "")
+      .filter(Boolean);
 
     const session = await getStripe().checkout.sessions.create({
       payment_method_types: ["card"],
@@ -129,12 +185,12 @@ export async function POST(request: NextRequest) {
       metadata: {
         productIds: JSON.stringify(productIds),
         productSlugs: JSON.stringify(productSlugs),
-        productType: firstItem.productType || "DIGITAL_DOWNLOAD",
+        productType: firstProduct.productType || "DIGITAL_DOWNLOAD",
         userId: userId || "",
         // Legacy single-product fields for backward compatibility
         ...(isSingleProduct && {
           productId: firstItem.id,
-          slug: firstItem.slug || "",
+          slug: firstProduct.slug || "",
         }),
       },
     });

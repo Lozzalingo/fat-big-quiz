@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Metadata } from "next";
 import { FaArrowRight, FaDesktop, FaMapMarkerAlt, FaRandom } from "react-icons/fa";
+import { sanitiseHtml } from "@/utils/sanitise";
 
 const KALLUNA_API = process.env.NEXT_PUBLIC_KALLUNA_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3007";
 const CDN = process.env.NEXT_PUBLIC_DO_SPACES_CDN_ENDPOINT || "";
@@ -136,7 +137,7 @@ export default async function ProductsPage() {
                     <p
                       className="text-gray-600 text-sm mb-4 line-clamp-3"
                       dangerouslySetInnerHTML={{
-                        __html: parent.description
+                        __html: sanitiseHtml(parent.description)
                           .replace(/<[^>]+>/g, " ")
                           .trim()
                           .slice(0, 200) + "...",
