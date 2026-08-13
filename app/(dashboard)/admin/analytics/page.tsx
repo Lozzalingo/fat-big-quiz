@@ -1067,7 +1067,7 @@ export default function AnalyticsDashboard() {
                   {activities.map((activity) => (
                     <tr key={activity.id} className="hover:bg-gray-50">
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(activity.timestamp).toLocaleTimeString()}
+                        {new Date(activity.timestamp).toLocaleTimeString("en-GB")}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-900 max-w-xs truncate">{activity.path}</td>
                       <td className="px-4 py-3">

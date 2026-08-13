@@ -105,14 +105,14 @@ async function createSubscriber(request, response) {
     const { email, firstName, lastName, source, sourcePath } = request.body;
 
     if (!email) {
-      console.log("[Subscriber] Create rejected — no email provided");
+      console.log("[Subscriber] Create rejected - no email provided");
       return response.status(400).json({ error: 'Email is required' });
     }
 
     const normalisedEmail = email.toLowerCase().trim();
 
     if (!isValidEmail(normalisedEmail)) {
-      console.log("[Subscriber] Create rejected — invalid email:", normalisedEmail);
+      console.log("[Subscriber] Create rejected - invalid email:", normalisedEmail);
       return response.status(400).json({ error: 'Invalid email address' });
     }
 
@@ -190,7 +190,7 @@ async function createSubscriber(request, response) {
       return response.status(201).json({ message: 'Please check your email to confirm your subscription', subscriber });
     }
 
-    // Direct opt-in — send welcome email
+    // Direct opt-in - send welcome email
     sendWelcomeEmail(normalisedEmail)
       .then((sent) => console.log("[Subscriber] Welcome email sent:", normalisedEmail, "success:", sent))
       .catch((err) => console.error("[Subscriber] Welcome email error:", err.message));

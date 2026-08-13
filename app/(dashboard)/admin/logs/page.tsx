@@ -91,7 +91,7 @@ const LogsPage = () => {
                   <div className="flex items-center gap-2 mb-1">
                     <span className={`px-2 py-0.5 text-xs rounded-full ${getLevelColor(log.level)}`}>{log.level}</span>
                     <span className="text-xs text-gray-400">{log.source}</span>
-                    <span className="text-xs text-gray-400 ml-auto">{new Date(log.timestamp).toLocaleString()}</span>
+                    <span className="text-xs text-gray-400 ml-auto">{new Date(log.timestamp).toLocaleString("en-GB")}</span>
                   </div>
                   <p className="text-sm">{log.message}</p>
                   {log.details && <pre className="text-xs text-gray-500 mt-1 bg-gray-50 p-2 rounded overflow-x-auto">{log.details}</pre>}

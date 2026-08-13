@@ -35,7 +35,7 @@ const prisma = require("../utils/prisma");
       } = request.body;
 
       if (!email || !password) {
-        console.log("[User] Create rejected — missing email or password");
+        console.log("[User] Create rejected - missing email or password");
         return response.status(400).json({ error: "Email and password are required." });
       }
 
@@ -102,7 +102,7 @@ const prisma = require("../utils/prisma");
       if (password) updateData.password = await bcrypt.hash(password, 10);
 
       if (Object.keys(updateData).length === 0) {
-        console.log("[User] Update rejected — no fields provided");
+        console.log("[User] Update rejected - no fields provided");
         return response.status(400).json({ error: "No fields provided to update." });
       }
 

@@ -15,8 +15,8 @@ const SortBy = () => {
         name="sort"
       >
         <option value="defaultSort">Default</option>
-        <option value="titleAsc">A — Z</option>
-        <option value="titleDesc">Z — A</option>
+        <option value="titleAsc">A - Z</option>
+        <option value="titleDesc">Z - A</option>
         <option value="lowPrice">Price: Low</option>
         <option value="highPrice">Price: High</option>
       </select>

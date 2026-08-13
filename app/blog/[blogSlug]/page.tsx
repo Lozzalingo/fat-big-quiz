@@ -1,4 +1,4 @@
-// No 'use client' here — this is a Server Component
+// No 'use client' here - this is a Server Component
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";

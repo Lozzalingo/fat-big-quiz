@@ -105,7 +105,7 @@ export default function HostPage() {
   const createGame = useCallback(() => {
     if (!socketRef.current) return;
 
-    // Demo questions — in production these come from the product's quiz data
+    // Demo questions - in production these come from the product's quiz data
     const demoQuestions = [
       { id: "q1", text: "What year was the first iPhone released?", options: ["2005", "2006", "2007", "2008"], correctIndex: 2, timeLimit: 20, points: 1000, category: "Tech" },
       { id: "q2", text: "Which planet is known as the Red Planet?", options: ["Venus", "Mars", "Jupiter", "Saturn"], correctIndex: 1, timeLimit: 20, points: 1000, category: "Science" },

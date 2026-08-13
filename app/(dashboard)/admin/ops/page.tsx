@@ -112,7 +112,7 @@ const OpsPage = () => {
                     {errors.map((err: any) => (
                       <div key={err.id} className="border-l-4 border-red-500 pl-3 py-1">
                         <p className="text-sm font-medium">{err.message}</p>
-                        <p className="text-xs text-gray-400">{err.source} — {new Date(err.timestamp).toLocaleString()}</p>
+                        <p className="text-xs text-gray-400">{err.source} - {new Date(err.timestamp).toLocaleString("en-GB")}</p>
                       </div>
                     ))}
                   </div>

@@ -1,5 +1,5 @@
 /**
- * Google News Sitemap — /news-sitemap.xml
+ * Google News Sitemap - /news-sitemap.xml
  * Lists articles published in the last 48 hours (Google News requirement)
  */
 

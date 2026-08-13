@@ -201,7 +201,7 @@ export default function ProductPageClient({
         ) : (
           <>
             <Icon className="text-xs" />
-            {ctaText} — £{product.price}
+            {ctaText} - £{product.price}
           </>
         )}
       </button>

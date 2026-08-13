@@ -15,11 +15,11 @@ async function createPurchase(request, response) {
     console.log("[Purchase] Creating purchase:", { productId, email, stripeSessionId });
 
     if (!productId || !email) {
-      console.log("[Purchase] Rejected — missing required fields");
+      console.log("[Purchase] Rejected - missing required fields");
       return response.status(400).json({ error: "Missing required fields" });
     }
 
-    // Idempotency check — prevent duplicate purchases for same Stripe session
+    // Idempotency check - prevent duplicate purchases for same Stripe session
     if (stripeSessionId) {
       const existing = await prisma.purchase.findFirst({
         where: { stripeSessionId },

@@ -125,7 +125,7 @@ const ConfigPage = () => {
                     <div key={item.key} className="flex justify-between items-center py-2 border-b gap-2">
                       <div className="flex-1 min-w-0">
                         <span className="font-medium text-sm">{item.key}</span>
-                        {item.description && <span className="text-xs text-gray-400 ml-2">— {item.description}</span>}
+                        {item.description && <span className="text-xs text-gray-400 ml-2">- {item.description}</span>}
                       </div>
                       {editingKey === item.key ? (
                         <div className="flex gap-1">
@@ -137,7 +137,7 @@ const ConfigPage = () => {
                       ) : (
                         <div className="flex items-center gap-2">
                           <span className={`text-sm truncate max-w-[200px] ${item.isSecret ? "text-gray-400 font-mono" : ""}`}>
-                            {item.value || "—"}
+                            {item.value || "-"}
                           </span>
                           <button onClick={() => { setEditingKey(item.key); setEditValue(item.value || ""); }}
                             data-action="config_edit" className="text-xs text-purple-500 hover:text-purple-700">Edit</button>
