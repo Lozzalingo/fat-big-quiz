@@ -7,6 +7,7 @@ import { Calendar, User, Tag, Clock, Eye, MessageCircle, Share2 } from "lucide-r
 import BlogPostClient from "@/components/Blog/BlogPostClient";
 import SocialShare from "@/components/Blog/SocialShare";
 import { getBlogImageUrl, getUserAvatarUrl } from "@/utils/cdn";
+import { formatDateUK } from "@/utils/dateFormatting";
 import Script from "next/script";
 
 function generateArticleSchema(post: BlogPost) {
@@ -126,15 +127,6 @@ export default async function BlogPostPage({ params }: { params: { blogSlug: str
   const post = await postResponse.json();
   if (!post) return notFound();
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
   const readTime = post.readTime || Math.ceil(post.content.split(/\s+/).length / 200);
   const imageSrc = getBlogImageUrl(post.coverImage);
 
@@ -175,7 +167,7 @@ export default async function BlogPostPage({ params }: { params: { blogSlug: str
               )}
               <div className="flex items-center">
                 <Calendar size={16} className="mr-2" />
-                <span>{formatDate(post.createdAt)}</span>
+                <span>{formatDateUK(post.createdAt)}</span>
               </div>
               <div className="flex items-center">
                 <Clock size={16} className="mr-2" />

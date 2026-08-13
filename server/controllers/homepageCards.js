@@ -13,7 +13,7 @@ async function getPublicHomepageCards(request, response) {
 
     return response.json(cards);
   } catch (error) {
-    console.error("Error fetching homepage cards:", error);
+    console.error("[HomepageCards] Error fetching homepage cards:", error);
     return response.status(500).json({ error: "Error fetching homepage cards" });
   }
 }
@@ -29,7 +29,7 @@ async function getAllHomepageCards(request, response) {
 
     return response.json(cards);
   } catch (error) {
-    console.error("Error fetching homepage cards:", error);
+    console.error("[HomepageCards] Error fetching homepage cards:", error);
     return response.status(500).json({ error: "Error fetching homepage cards" });
   }
 }
@@ -51,7 +51,7 @@ async function getHomepageCardById(request, response) {
 
     return response.json(card);
   } catch (error) {
-    console.error("Error fetching homepage card:", error);
+    console.error("[HomepageCards] Error fetching homepage card:", error);
     return response.status(500).json({ error: "Error fetching homepage card" });
   }
 }
@@ -91,7 +91,7 @@ async function createHomepageCard(request, response) {
 
     return response.status(201).json(card);
   } catch (error) {
-    console.error("Error creating homepage card:", error);
+    console.error("[HomepageCards] Error creating homepage card:", error);
     return response.status(500).json({ error: "Error creating homepage card" });
   }
 }
@@ -129,7 +129,7 @@ async function updateHomepageCard(request, response) {
 
     return response.json(card);
   } catch (error) {
-    console.error("Error updating homepage card:", error);
+    console.error("[HomepageCards] Error updating homepage card:", error);
     return response.status(500).json({ error: "Error updating homepage card" });
   }
 }
@@ -154,9 +154,9 @@ async function deleteHomepageCard(request, response) {
       try {
         const imageKey = getKey(existing.image, "homepage-cards");
         await deleteFromSpaces(imageKey);
-        console.log(`Deleted homepage card image: ${imageKey}`);
+        console.log(`[HomepageCards] Deleted homepage card image: ${imageKey}`);
       } catch (err) {
-        console.error("Error deleting image from storage:", err);
+        console.error("[HomepageCards] Error deleting image from storage:", err);
       }
     }
 
@@ -166,7 +166,7 @@ async function deleteHomepageCard(request, response) {
 
     return response.status(204).send();
   } catch (error) {
-    console.error("Error deleting homepage card:", error);
+    console.error("[HomepageCards] Error deleting homepage card:", error);
     return response.status(500).json({ error: "Error deleting homepage card" });
   }
 }
@@ -195,9 +195,9 @@ async function uploadHomepageCardImage(request, response) {
       try {
         const oldImageKey = getKey(existing.image, "homepage-cards");
         await deleteFromSpaces(oldImageKey);
-        console.log(`Deleted old homepage card image: ${oldImageKey}`);
+        console.log(`[HomepageCards] Deleted old homepage card image: ${oldImageKey}`);
       } catch (err) {
-        console.error("Error deleting old image:", err);
+        console.error("[HomepageCards] Error deleting old image:", err);
       }
     }
 
@@ -226,7 +226,7 @@ async function uploadHomepageCardImage(request, response) {
       card,
     });
   } catch (error) {
-    console.error("Error uploading homepage card image:", error);
+    console.error("[HomepageCards] Error uploading homepage card image:", error);
     return response.status(500).json({ error: "Error uploading homepage card image" });
   }
 }
@@ -251,9 +251,9 @@ async function removeHomepageCardImage(request, response) {
       try {
         const imageKey = getKey(existing.image, "homepage-cards");
         await deleteFromSpaces(imageKey);
-        console.log(`Deleted homepage card image: ${imageKey}`);
+        console.log(`[HomepageCards] Deleted homepage card image: ${imageKey}`);
       } catch (err) {
-        console.error("Error deleting from storage:", err);
+        console.error("[HomepageCards] Error deleting from storage:", err);
       }
     }
 
@@ -267,7 +267,7 @@ async function removeHomepageCardImage(request, response) {
 
     return response.json(card);
   } catch (error) {
-    console.error("Error removing homepage card image:", error);
+    console.error("[HomepageCards] Error removing homepage card image:", error);
     return response.status(500).json({ error: "Error removing homepage card image" });
   }
 }
@@ -299,7 +299,7 @@ async function reorderHomepageCards(request, response) {
 
     return response.json(cards);
   } catch (error) {
-    console.error("Error reordering homepage cards:", error);
+    console.error("[HomepageCards] Error reordering homepage cards:", error);
     return response.status(500).json({ error: "Error reordering homepage cards" });
   }
 }

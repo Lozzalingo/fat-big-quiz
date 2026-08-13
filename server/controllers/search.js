@@ -71,7 +71,7 @@ async function searchProducts(request, response) {
 
         return response.json(products);
     } catch (error) {
-        console.error("Error searching products:", error);
+        console.error("[Search] Error searching products:", error);
         return response.status(500).json({ error: "Error searching products" });
     }
 }

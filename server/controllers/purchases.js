@@ -89,7 +89,7 @@ async function getPurchaseBySessionId(request, response) {
 
     return response.status(200).json(purchase);
   } catch (error) {
-    console.error("Error fetching purchase:", error);
+    console.error("[Purchase] Error fetching purchase:", error);
     return response.status(500).json({ error: "Error fetching purchase" });
   }
 }
@@ -120,7 +120,7 @@ async function getPurchaseById(request, response) {
 
     return response.status(200).json(purchase);
   } catch (error) {
-    console.error("Error fetching purchase:", error);
+    console.error("[Purchase] Error fetching purchase:", error);
     return response.status(500).json({ error: "Error fetching purchase" });
   }
 }
@@ -148,7 +148,7 @@ async function getPurchasesByEmail(request, response) {
 
     return response.status(200).json(purchases);
   } catch (error) {
-    console.error("Error fetching purchases:", error);
+    console.error("[Purchase] Error fetching purchases:", error);
     return response.status(500).json({ error: "Error fetching purchases" });
   }
 }
@@ -255,7 +255,7 @@ async function incrementDownload(request, response) {
         : null,
     });
   } catch (error) {
-    console.error("Error incrementing download:", error);
+    console.error("[Purchase] Error incrementing download:", error);
     return response.status(500).json({ error: "Error processing download" });
   }
 }

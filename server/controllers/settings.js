@@ -32,7 +32,7 @@ exports.getSettings = async (req, res) => {
 
     return res.status(200).json(userSettings);
   } catch (error) {
-    console.error("Error fetching settings:", error);
+    console.error("[Settings] Error fetching settings:", error);
     return res.status(500).json({ error: "Failed to fetch settings" });
   }
 };
@@ -84,7 +84,7 @@ exports.updateSettings = async (req, res) => {
 
     return res.status(200).json(updatedSettings);
   } catch (error) {
-    console.error("Error updating settings:", error);
+    console.error("[Settings] Error updating settings:", error);
     return res.status(500).json({ error: "Failed to update settings" });
   }
 };

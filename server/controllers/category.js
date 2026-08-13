@@ -23,7 +23,7 @@ async function createCategory(request, response) {
 
     return response.status(201).json(category);
   } catch (error) {
-    console.error("Error creating category:", error);
+    console.error("[Category] Error creating category:", error);
     return response.status(500).json({ error: "Error creating category" });
   }
 }
@@ -61,7 +61,7 @@ async function updateCategory(request, response) {
 
     return response.status(200).json(updatedCategory);
   } catch (error) {
-    console.error("Error updating category:", error);
+    console.error("[Category] Error updating category:", error);
     return response.status(500).json({ error: "Error updating category" });
   }
 }
@@ -76,7 +76,7 @@ async function deleteCategory(request, response) {
 
     return response.status(204).send();
   } catch (error) {
-    console.error("Error deleting category:", error);
+    console.error("[Category] Error deleting category:", error);
     return response.status(500).json({ error: "Error deleting category" });
   }
 }
@@ -95,7 +95,7 @@ async function getCategory(request, response) {
 
     return response.status(200).json(category);
   } catch (error) {
-    console.error("Error fetching category:", error);
+    console.error("[Category] Error fetching category:", error);
     return response.status(500).json({ error: "Error fetching category" });
   }
 }
@@ -118,7 +118,7 @@ async function getAllCategories(request, response) {
     
     return response.status(200).json(categories);
   } catch (error) {
-    console.error("Error fetching categories:", error);
+    console.error("[Category] Error fetching categories:", error);
     return response.status(500).json({ error: "Error fetching categories" });
   }
 }

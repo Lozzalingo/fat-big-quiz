@@ -17,13 +17,13 @@ async function uploadMainImage(req, res) {
     const fullSaveDirectory = path.join(__dirname, saveDirectory);
 
     // Log for debugging
-    console.log('__dirname:', __dirname);
-    console.log('Save directory:', fullSaveDirectory);
+    console.log('[MainImages] __dirname:', __dirname);
+    console.log('[MainImages] Save directory:', fullSaveDirectory);
 
     // Ensure the public and uploads directories exist
     if (!fs.existsSync(fullSaveDirectory)) {
       fs.mkdirSync(fullSaveDirectory, { recursive: true });
-      console.log(`Created directory: ${fullSaveDirectory}`);
+      console.log(`[MainImages] Created directory: ${fullSaveDirectory}`);
     }
 
     // Generate a timestamp to make filename unique
@@ -38,20 +38,20 @@ async function uploadMainImage(req, res) {
       try {
         if (fs.existsSync(oldImagePath)) {
           fs.unlinkSync(oldImagePath);
-          console.log(`Deleted old image: ${oldImagePath}`);
+          console.log(`[MainImages] Deleted old image: ${oldImagePath}`);
         }
       } catch (err) {
-        console.error(`Error deleting old image: ${err}`);
+        console.error(`[MainImages] Error deleting old image: ${err}`);
       }
     }
 
     // Save the new file
     const savePath = path.join(__dirname, saveDirectory, newFilename);
-    console.log('Saving file to:', savePath);
+    console.log('[MainImages] Saving file to:', savePath);
 
     uploadedFile.mv(savePath, (err) => {
       if (err) {
-        console.error(`Error saving file: ${err}`);
+        console.error(`[MainImages] Error saving file: ${err}`);
         return res.status(500).json({ error: "Failed to save file", details: err.message });
       }
 
@@ -61,7 +61,7 @@ async function uploadMainImage(req, res) {
       });
     });
   } catch (error) {
-    console.error(`Upload error: ${error}`);
+    console.error(`[MainImages] Upload error: ${error}`);
     res.status(500).json({ error: "Server error", details: error.message });
   }
 }

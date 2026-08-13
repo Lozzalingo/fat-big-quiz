@@ -14,7 +14,7 @@ async function getAllTags(request, response) {
 
     return response.json(tags);
   } catch (error) {
-    console.error("Error fetching tags:", error);
+    console.error("[Tags] Error fetching tags:", error);
     return response.status(500).json({ error: "Error fetching tags" });
   }
 }
@@ -55,7 +55,7 @@ async function getTagByName(request, response) {
 
     return response.json(tag);
   } catch (error) {
-    console.error("Error fetching tag:", error);
+    console.error("[Tags] Error fetching tag:", error);
     return response.status(500).json({ error: "Error fetching tag" });
   }
 }
@@ -80,7 +80,7 @@ async function createTag(request, response) {
 
     return response.status(201).json(tag);
   } catch (error) {
-    console.error("Error creating tag:", error);
+    console.error("[Tags] Error creating tag:", error);
     return response.status(500).json({ error: "Error creating tag" });
   }
 }
@@ -118,7 +118,7 @@ async function updateTag(request, response) {
 
     return response.json(updatedTag);
   } catch (error) {
-    console.error("Error updating tag:", error);
+    console.error("[Tags] Error updating tag:", error);
     return response.status(500).json({ error: "Error updating tag" });
   }
 }
@@ -143,7 +143,7 @@ async function deleteTag(request, response) {
 
     return response.status(204).send();
   } catch (error) {
-    console.error("Error deleting tag:", error);
+    console.error("[Tags] Error deleting tag:", error);
     return response.status(500).json({ error: "Error deleting tag" });
   }
 }

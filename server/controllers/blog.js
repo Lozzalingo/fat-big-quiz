@@ -84,7 +84,7 @@ async function getAllBlogPosts(request, response) {
       },
     });
   } catch (error) {
-    console.error("Error fetching blog posts:", error);
+    console.error("[Blog] Error fetching blog posts:", error);
     return response.status(500).json({ error: "Error fetching blog posts" });
   }
 }
@@ -140,7 +140,7 @@ async function getBlogPostBySlug(request, response) {
     
     return response.json(post);
   } catch (error) {
-    console.error("Error fetching blog post:", error);
+    console.error("[Blog] Error fetching blog post:", error);
     return response.status(500).json({ error: "Error fetching blog post" });
   }
 }
@@ -196,7 +196,7 @@ async function getBlogPostById(request, response) {
   
       response.json({ post });
     } catch (error) {
-      console.error("Error fetching blog post:", error);
+      console.error("[Blog] Error fetching blog post:", error);
       response.status(500).json({ error: "Error fetching blog post" });
     }
   }
@@ -279,7 +279,7 @@ async function createBlogPost(request, response) {
     
     return response.status(201).json(createdPost);
   } catch (error) {
-    console.error("Error creating blog post:", error);
+    console.error("[Blog] Error creating blog post:", error);
     return response.status(500).json({ error: "Error creating blog post" });
   }
 }
@@ -383,7 +383,7 @@ async function updateBlogPost(request, response) {
     
     return response.json(result);
   } catch (error) {
-    console.error("Error updating blog post:", error);
+    console.error("[Blog] Error updating blog post:", error);
     return response.status(500).json({ error: "Error updating blog post" });
   }
 }
@@ -407,9 +407,9 @@ async function deleteBlogPost(request, response) {
       try {
         const imageKey = getKey(existingPost.coverImage, 'blog');
         await deleteFromSpaces(imageKey);
-        console.log(`Deleted blog cover image from Spaces: ${imageKey}`);
+        console.log(`[Blog] Deleted blog cover image from Spaces: ${imageKey}`);
       } catch (err) {
-        console.error(`Error deleting blog cover image: ${err.message}`);
+        console.error(`[Blog] Error deleting blog cover image: ${err.message}`);
       }
     }
 
@@ -420,7 +420,7 @@ async function deleteBlogPost(request, response) {
 
     return response.status(204).send();
   } catch (error) {
-    console.error("Error deleting blog post:", error);
+    console.error("[Blog] Error deleting blog post:", error);
     return response.status(500).json({ error: "Error deleting blog post" });
   }
 }
@@ -478,7 +478,7 @@ async function searchBlogPosts(request, response) {
     
     return response.json(posts);
   } catch (error) {
-    console.error("Error searching blog posts:", error);
+    console.error("[Blog] Error searching blog posts:", error);
     return response.status(500).json({ error: "Error searching blog posts" });
   }
 }

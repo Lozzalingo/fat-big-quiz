@@ -54,10 +54,10 @@ async function uploadImage(req, res) {
       try {
         const oldKey = getKey(oldImage, sanitizedFolderName);
         await deleteFromSpaces(oldKey);
-        console.log(`Deleted old image from Spaces: ${oldKey}`);
+        console.log(`[BackendImages] Deleted old image from Spaces: ${oldKey}`);
       } catch (err) {
         // Log but don't fail - old image might not exist
-        console.error(`Error deleting old image from Spaces: ${err.message}`);
+        console.error(`[BackendImages] Error deleting old image from Spaces: ${err.message}`);
       }
     }
 
@@ -69,7 +69,7 @@ async function uploadImage(req, res) {
       contentType
     );
 
-    console.log(`Uploaded to Spaces: ${result.cdnUrl}`);
+    console.log(`[BackendImages] Uploaded to Spaces: ${result.cdnUrl}`);
 
     res.status(200).json({
       message: "File uploaded successfully",
@@ -79,7 +79,7 @@ async function uploadImage(req, res) {
       cdnUrl: result.cdnUrl,
     });
   } catch (error) {
-    console.error(`Upload error: ${error}`);
+    console.error(`[BackendImages] Upload error: ${error}`);
     res.status(500).json({ error: "Server error", details: error.message });
   }
 }
@@ -106,7 +106,7 @@ async function deleteImage(req, res) {
       filename: sanitizedFilename
     });
   } catch (error) {
-    console.error(`Delete error: ${error}`);
+    console.error(`[BackendImages] Delete error: ${error}`);
     res.status(500).json({ error: "Server error", details: error.message });
   }
 }

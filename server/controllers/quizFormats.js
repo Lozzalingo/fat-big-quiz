@@ -17,7 +17,7 @@ async function getAllQuizFormats(request, response) {
 
     return response.json(quizFormats);
   } catch (error) {
-    console.error("Error fetching quiz formats:", error);
+    console.error("[QuizFormats] Error fetching quiz formats:", error);
     return response.status(500).json({ error: "Error fetching quiz formats" });
   }
 }
@@ -44,7 +44,7 @@ async function getQuizFormatById(request, response) {
 
     return response.json(quizFormat);
   } catch (error) {
-    console.error("Error fetching quiz format:", error);
+    console.error("[QuizFormats] Error fetching quiz format:", error);
     return response.status(500).json({ error: "Error fetching quiz format" });
   }
 }
@@ -81,7 +81,7 @@ async function createQuizFormat(request, response) {
 
     return response.status(201).json(quizFormat);
   } catch (error) {
-    console.error("Error creating quiz format:", error);
+    console.error("[QuizFormats] Error creating quiz format:", error);
     return response.status(500).json({ error: "Error creating quiz format" });
   }
 }
@@ -125,7 +125,7 @@ async function updateQuizFormat(request, response) {
 
     return response.json(quizFormat);
   } catch (error) {
-    console.error("Error updating quiz format:", error);
+    console.error("[QuizFormats] Error updating quiz format:", error);
     return response.status(500).json({ error: "Error updating quiz format" });
   }
 }
@@ -165,11 +165,11 @@ async function deleteQuizFormat(request, response) {
           if (image && !image.startsWith("http")) {
             const imageKey = getKey(image, "quiz-formats/explainers");
             await deleteFromSpaces(imageKey);
-            console.log(`Deleted explainer image: ${imageKey}`);
+            console.log(`[QuizFormats] Deleted explainer image: ${imageKey}`);
           }
         }
       } catch (err) {
-        console.error("Error deleting explainer images:", err);
+        console.error("[QuizFormats] Error deleting explainer images:", err);
       }
     }
 
@@ -179,7 +179,7 @@ async function deleteQuizFormat(request, response) {
 
     return response.status(204).send();
   } catch (error) {
-    console.error("Error deleting quiz format:", error);
+    console.error("[QuizFormats] Error deleting quiz format:", error);
     return response.status(500).json({ error: "Error deleting quiz format" });
   }
 }
@@ -237,7 +237,7 @@ async function uploadExplainerImage(request, response) {
       images,
     });
   } catch (error) {
-    console.error("Error uploading explainer image:", error);
+    console.error("[QuizFormats] Error uploading explainer image:", error);
     return response.status(500).json({ error: "Error uploading explainer image" });
   }
 }
@@ -276,9 +276,9 @@ async function removeExplainerImage(request, response) {
       try {
         const imageKey = getKey(imageToDelete, "quiz-formats/explainers");
         await deleteFromSpaces(imageKey);
-        console.log(`Deleted explainer image: ${imageKey}`);
+        console.log(`[QuizFormats] Deleted explainer image: ${imageKey}`);
       } catch (err) {
-        console.error("Error deleting from storage:", err);
+        console.error("[QuizFormats] Error deleting from storage:", err);
       }
     }
 
@@ -294,7 +294,7 @@ async function removeExplainerImage(request, response) {
 
     return response.json({ images });
   } catch (error) {
-    console.error("Error removing explainer image:", error);
+    console.error("[QuizFormats] Error removing explainer image:", error);
     return response.status(500).json({ error: "Error removing explainer image" });
   }
 }
@@ -328,7 +328,7 @@ async function reorderExplainerImages(request, response) {
 
     return response.json({ images });
   } catch (error) {
-    console.error("Error reordering explainer images:", error);
+    console.error("[QuizFormats] Error reordering explainer images:", error);
     return response.status(500).json({ error: "Error reordering explainer images" });
   }
 }

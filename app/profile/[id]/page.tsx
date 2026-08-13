@@ -2,6 +2,8 @@
 import React, { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { getUserAvatarUrl } from "@/utils/cdn";
+import { formatDateUK } from "@/utils/dateFormatting";
+import { getApiBaseUrl } from "@/utils/api";
 
 const defaultAvatar = "/images/default-avatar.png"; // Path to default avatar image
 
@@ -48,7 +50,7 @@ const PublicUserProfile = ({ params: { id } }: PublicUserProfileProps) => {
   const fetchUserData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/${id}`);
+      const res = await fetch(`${getApiBaseUrl()}/api/users/${id}`);
       if (!res.ok) throw new Error("Failed to fetch user");
 
       const data = await res.json();
@@ -78,7 +80,7 @@ const PublicUserProfile = ({ params: { id } }: PublicUserProfileProps) => {
   const fetchUserVotesReceived = async () => {
     try {
       // Fetch all comments by this user with their vote information
-      const commentsRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/${id}/comments`);
+      const commentsRes = await fetch(`${getApiBaseUrl()}/api/users/${id}/comments`);
       if (!commentsRes.ok) throw new Error("Failed to fetch user comments");
 
       const comments = await commentsRes.json();
@@ -112,7 +114,7 @@ const PublicUserProfile = ({ params: { id } }: PublicUserProfileProps) => {
   async function fetchUserVotesGiven() {
     try {
       // Fetch votes cast by this user on other users' comments
-      const votesGivenRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/${id}/votes`);
+      const votesGivenRes = await fetch(`${getApiBaseUrl()}/api/users/${id}/votes`);
       if (!votesGivenRes.ok) throw new Error("Failed to fetch votes given");
   
       const votes = await votesGivenRes.json();
@@ -148,16 +150,6 @@ const PublicUserProfile = ({ params: { id } }: PublicUserProfileProps) => {
   const getAvatarUrl = () => {
     if (!userData.avatar) return defaultAvatar;
     return getUserAvatarUrl(userData.avatar);
-  };
-
-  const formatDateUK = (dateString: string | null): string => {
-    if (!dateString) return "Unknown";
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('en-GB', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    }).format(date);
   };
 
   return (
@@ -259,7 +251,7 @@ const PublicUserProfile = ({ params: { id } }: PublicUserProfileProps) => {
                   <dl className="grid grid-cols-1 gap-x-4 gap-y-6">
                     <div className="sm:col-span-1">
                       <dt className="text-sm font-medium text-gray-500">Member Since</dt>
-                      <dd className="mt-1 text-sm text-gray-900">{formatDateUK(userData.createdAt)}</dd>
+                      <dd className="mt-1 text-sm text-gray-900">{userData.createdAt ? formatDateUK(userData.createdAt) : "Unknown"}</dd>
                     </div>
                   </dl>
                 </div>

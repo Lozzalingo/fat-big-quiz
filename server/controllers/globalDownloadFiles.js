@@ -9,7 +9,7 @@ async function getAllGlobalFiles(request, response) {
     });
     return response.status(200).json(files);
   } catch (error) {
-    console.error("Error fetching global files:", error);
+    console.error("[GlobalFiles] Error fetching global files:", error);
     return response.status(500).json({ error: "Error fetching global files" });
   }
 }
@@ -23,7 +23,7 @@ async function getActiveGlobalFiles(request, response) {
     });
     return response.status(200).json(files);
   } catch (error) {
-    console.error("Error fetching active global files:", error);
+    console.error("[GlobalFiles] Error fetching active global files:", error);
     return response.status(500).json({ error: "Error fetching global files" });
   }
 }
@@ -42,7 +42,7 @@ async function getGlobalFileById(request, response) {
 
     return response.status(200).json(file);
   } catch (error) {
-    console.error("Error fetching global file:", error);
+    console.error("[GlobalFiles] Error fetching global file:", error);
     return response.status(500).json({ error: "Error fetching global file" });
   }
 }
@@ -74,7 +74,7 @@ async function createGlobalFile(request, response) {
 
     return response.status(201).json(file);
   } catch (error) {
-    console.error("Error creating global file:", error);
+    console.error("[GlobalFiles] Error creating global file:", error);
     return response.status(500).json({ error: "Error creating global file" });
   }
 }
@@ -111,7 +111,7 @@ async function updateGlobalFile(request, response) {
 
     return response.status(200).json(file);
   } catch (error) {
-    console.error("Error updating global file:", error);
+    console.error("[GlobalFiles] Error updating global file:", error);
     return response.status(500).json({ error: "Error updating global file" });
   }
 }
@@ -135,7 +135,7 @@ async function deleteGlobalFile(request, response) {
         const fileKey = getKey(existingFile.fileName, "global-bonus");
         await deleteFromSpaces(fileKey);
       } catch (err) {
-        console.error("Error deleting file from CDN:", err);
+        console.error("[GlobalFiles] Error deleting file from CDN:", err);
         // Continue with database deletion even if CDN delete fails
       }
     }
@@ -146,7 +146,7 @@ async function deleteGlobalFile(request, response) {
 
     return response.status(204).send();
   } catch (error) {
-    console.error("Error deleting global file:", error);
+    console.error("[GlobalFiles] Error deleting global file:", error);
     return response.status(500).json({ error: "Error deleting global file" });
   }
 }
@@ -190,7 +190,7 @@ async function uploadGlobalFile(request, response) {
         const oldFileKey = getKey(existingFile.fileName, "global-bonus");
         await deleteFromSpaces(oldFileKey);
       } catch (err) {
-        console.error("Error deleting old file:", err);
+        console.error("[GlobalFiles] Error deleting old file:", err);
       }
     }
 
@@ -214,7 +214,7 @@ async function uploadGlobalFile(request, response) {
 
     return response.status(200).json(file);
   } catch (error) {
-    console.error("Error uploading global file:", error);
+    console.error("[GlobalFiles] Error uploading global file:", error);
     return response.status(500).json({ error: "Error uploading file" });
   }
 }
@@ -244,7 +244,7 @@ async function reorderGlobalFiles(request, response) {
 
     return response.status(200).json(files);
   } catch (error) {
-    console.error("Error reordering global files:", error);
+    console.error("[GlobalFiles] Error reordering global files:", error);
     return response.status(500).json({ error: "Error reordering files" });
   }
 }

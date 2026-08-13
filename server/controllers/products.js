@@ -355,7 +355,7 @@ async function getAllProducts(request, response) {
 }
 
 async function createProduct(request, response) {
-  console.log("createProduct called with body:", JSON.stringify(request.body, null, 2));
+  console.log("[Products] createProduct called with body:", JSON.stringify(request.body, null, 2));
   try {
     const {
       slug,
@@ -414,7 +414,7 @@ async function createProduct(request, response) {
 
     return response.status(201).json(product);
   } catch (error) {
-    console.error("Error creating product:", error);
+    console.error("[Products] Error creating product:", error);
     return response.status(500).json({ error: "Error creating product" });
   }
 }
@@ -515,7 +515,7 @@ async function updateProduct(request, response) {
 
     return response.status(200).json(productWithRelations);
   } catch (error) {
-    console.error("Error updating product:", error);
+    console.error("[Products] Error updating product:", error);
     return response.status(500).json({ error: "Error updating product" });
   }
 }
@@ -558,9 +558,9 @@ async function deleteProduct(request, response) {
         try {
           const imageKey = getKey(product.mainImage, 'products/images');
           await deleteFromSpaces(imageKey);
-          console.log(`Deleted product image from Spaces: ${imageKey}`);
+          console.log(`[Products] Deleted product image from Spaces: ${imageKey}`);
         } catch (err) {
-          console.error(`Error deleting product image: ${err.message}`);
+          console.error(`[Products] Error deleting product image: ${err.message}`);
         }
       }
 
@@ -583,11 +583,11 @@ async function deleteProduct(request, response) {
             if (!file.startsWith('http')) {
               const fileKey = getKey(file, 'downloads');
               await deleteFromSpaces(fileKey);
-              console.log(`Deleted download file from Spaces: ${fileKey}`);
+              console.log(`[Products] Deleted download file from Spaces: ${fileKey}`);
             }
           }
         } catch (err) {
-          console.error(`Error deleting download files: ${err.message}`);
+          console.error(`[Products] Error deleting download files: ${err.message}`);
         }
       }
     }
@@ -614,7 +614,7 @@ async function deleteProduct(request, response) {
 
     return response.status(204).send();
   } catch (error) {
-    console.log(error);
+    console.error("[Products] Error deleting product:", error);
     return response.status(500).json({ error: "Error deleting product" });
   }
 }
@@ -647,7 +647,7 @@ async function searchProducts(request, response) {
 
     return response.json(products);
   } catch (error) {
-    console.error("Error searching products:", error);
+    console.error("[Products] Error searching products:", error);
     return response.status(500).json({ error: "Error searching products" });
   }
 }
@@ -729,7 +729,7 @@ async function duplicateProduct(request, response) {
 
     return response.status(201).json(duplicate);
   } catch (error) {
-    console.error("Error duplicating product:", error);
+    console.error("[Products] Error duplicating product:", error);
     return response.status(500).json({ error: "Error duplicating product" });
   }
 }
@@ -767,7 +767,7 @@ async function reorderProducts(request, response) {
 
     return response.status(200).json(products);
   } catch (error) {
-    console.error("Error reordering products:", error);
+    console.error("[Products] Error reordering products:", error);
     return response.status(500).json({ error: "Error reordering products" });
   }
 }

@@ -21,7 +21,7 @@ const getAllDiscountCodes = async (req, res) => {
     });
     res.status(200).json(discountCodes);
   } catch (error) {
-    console.error('Error fetching discount codes:', error);
+    console.error('[DiscountCodes] Error fetching discount codes:', error);
     res.status(500).json({ error: 'Failed to fetch discount codes' });
   }
 };
@@ -52,7 +52,7 @@ const getDiscountCodeById = async (req, res) => {
     }
     res.status(200).json(discountCode);
   } catch (error) {
-    console.error('Error fetching discount code:', error);
+    console.error('[DiscountCodes] Error fetching discount code:', error);
     res.status(500).json({ error: 'Failed to fetch discount code' });
   }
 };
@@ -108,7 +108,7 @@ const createDiscountCode = async (req, res) => {
     });
     res.status(201).json(discountCode);
   } catch (error) {
-    console.error('Error creating discount code:', error);
+    console.error('[DiscountCodes] Error creating discount code:', error);
     res.status(500).json({ error: 'Failed to create discount code' });
   }
 };
@@ -175,7 +175,7 @@ const updateDiscountCode = async (req, res) => {
     });
     res.status(200).json(discountCode);
   } catch (error) {
-    console.error('Error updating discount code:', error);
+    console.error('[DiscountCodes] Error updating discount code:', error);
     res.status(500).json({ error: 'Failed to update discount code' });
   }
 };
@@ -192,7 +192,7 @@ const deleteDiscountCode = async (req, res) => {
     await prisma.discountCode.delete({ where: { id } });
     res.status(204).send();
   } catch (error) {
-    console.error('Error deleting discount code:', error);
+    console.error('[DiscountCodes] Error deleting discount code:', error);
     res.status(500).json({ error: 'Failed to delete discount code' });
   }
 };

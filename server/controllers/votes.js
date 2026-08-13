@@ -108,7 +108,7 @@ async function voteComment(req, res) {
       downCount: downvotes
     });
   } catch (error) {
-    console.error(`Vote error: ${error}`);
+    console.error("[Votes] Vote error:", error);
     res.status(500).json({ error: "Server error", details: error.message });
   }
 }
@@ -155,7 +155,7 @@ async function getVotes(req, res) {
       downCount: downvotes
     });
   } catch (error) {
-    console.error(`Get votes error: ${error}`);
+    console.error("[Votes] Get votes error:", error);
     res.status(500).json({ error: "Server error", details: error.message });
   }
 }
@@ -189,7 +189,7 @@ async function getUserVote(req, res) {
 
     res.status(200).json({ vote: vote.type });
   } catch (error) {
-    console.error(`Get user vote error: ${error}`);
+    console.error("[Votes] Get user vote error:", error);
     res.status(500).json({ error: "Server error", details: error.message });
   }
 }

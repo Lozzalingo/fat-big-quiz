@@ -3,6 +3,7 @@ import Image from "next/image";
 import React from "react";
 import { FaArrowRight, FaCalendar, FaUser } from "react-icons/fa";
 import { getBlogImageUrl } from "@/utils/cdn";
+import { formatDateUK } from "@/utils/dateFormatting";
 
 // Define the BlogPost type based on your schema
 type BlogPost = {
@@ -35,15 +36,6 @@ type BlogPostItemProps = {
 };
 
 const BlogPostItem: React.FC<BlogPostItemProps> = ({ post, color = "black", compact = false }) => {
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
   const displayExcerpt = post.excerpt || post.content.substring(0, 120) + "...";
 
   // Use CDN URL for the image
@@ -69,7 +61,7 @@ const BlogPostItem: React.FC<BlogPostItemProps> = ({ post, color = "black", comp
         </div>
         <div className="p-4 flex-1 flex flex-col">
           <span className="text-xs text-text-secondary mb-1">
-            {formatDate(post.createdAt)}
+            {formatDateUK(post.createdAt)}
           </span>
           <h3 className="font-bold text-text-primary mb-2 line-clamp-2 group-hover:text-primary transition-colors">
             {post.title}
@@ -109,7 +101,7 @@ const BlogPostItem: React.FC<BlogPostItemProps> = ({ post, color = "black", comp
         <div className="flex items-center gap-4 mb-3 text-xs text-text-secondary">
           <span className="flex items-center gap-1">
             <FaCalendar className="text-primary" />
-            {formatDate(post.createdAt)}
+            {formatDateUK(post.createdAt)}
           </span>
           {post.author?.name && (
             <span className="flex items-center gap-1">

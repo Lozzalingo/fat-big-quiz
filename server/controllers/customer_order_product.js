@@ -12,7 +12,7 @@ async function createOrderProduct(request, response) {
         });
         return response.status(201).json(corder);
     } catch (error) {
-        console.error("Error creating prodcut order:", error);
+        console.error("[OrderProduct] Error creating product order:", error);
         return response.status(500).json({ error: "Error creating product order" });
     }
 }
@@ -48,7 +48,7 @@ async function updateProductOrder(request, response) {
 
         return response.json(updatedOrder);
     } catch (error) {
-        console.log(error);
+        console.error("[OrderProduct] Error updating order:", error);
         return response.status(500).json({ error: "Error updating order" });
     }
 }
@@ -63,6 +63,7 @@ async function deleteProductOrder(request, response) {
         });
         return response.status(204).send();
     } catch (error) {
+        console.error("[OrderProduct] Error deleting product orders:", error);
         return response.status(500).json({ error: "Error deleting product orders" });
     }
 }
@@ -150,7 +151,7 @@ async function getAllProductOrders(request, response) {
 
         return response.json(groupedOrders);
     } catch (error) {
-        console.error('Error fetching all product orders:', error);
+        console.error('[OrderProduct] Error fetching all product orders:', error);
         return response.status(500).json({ error: "Error fetching all product orders" });
     }
 }

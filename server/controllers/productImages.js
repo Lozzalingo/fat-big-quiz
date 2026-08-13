@@ -22,7 +22,7 @@ async function createImage(request, response) {
     });
     return response.status(201).json(createImage);
   } catch (error) {
-    console.error("Error creating image:", error);
+    console.error("[ProductImages] Error creating image:", error);
     return response.status(500).json({ error: "Error creating image" });
   }
 }
@@ -59,7 +59,7 @@ async function updateImage(request, response) {
 
     return response.json(updatedImage);
   } catch (error) {
-    console.error("Error updating image:", error);
+    console.error("[ProductImages] Error updating image:", error);
     return response.status(500).json({ error: "Error updating image" });
   }
 }
@@ -74,7 +74,7 @@ async function deleteImage(request, response) {
     });
     return response.status(204).send();
   } catch (error) {
-    console.error("Error deleting image:", error);
+    console.error("[ProductImages] Error deleting image:", error);
     return response.status(500).json({ error: "Error deleting image" });
   }
 }

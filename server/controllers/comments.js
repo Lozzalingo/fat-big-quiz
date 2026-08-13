@@ -45,7 +45,7 @@ async function getPostComments(req, res) {
 
     res.status(200).json(processedComments);
   } catch (error) {
-    console.error(`Error getting comments: ${error}`);
+    console.error("[Comments] Error getting comments:", error);
     res.status(500).json({ error: "Server error", details: error.message });
   }
 }
@@ -90,7 +90,7 @@ async function createComment(req, res) {
 
     res.status(201).json(commentWithCounts);
   } catch (error) {
-    console.error(`Error creating comment: ${error}`);
+    console.error("[Comments] Error creating comment:", error);
     res.status(500).json({ error: "Server error", details: error.message });
   }
 }
@@ -139,7 +139,7 @@ async function updateComment(req, res) {
 
     res.status(200).json(processedComment);
   } catch (error) {
-    console.error(`Error updating comment: ${error}`);
+    console.error("[Comments] Error updating comment:", error);
     res.status(500).json({ error: "Server error", details: error.message });
   }
 }
@@ -166,7 +166,7 @@ async function deleteComment(req, res) {
 
     res.status(200).json({ message: "Comment and its replies deleted successfully" });
   } catch (error) {
-    console.error(`Error deleting comment: ${error}`);
+    console.error("[Comments] Error deleting comment:", error);
     res.status(500).json({ error: "Server error", details: error.message });
   }
 }
@@ -239,7 +239,7 @@ async function getComment(req, res) {
 
     res.status(200).json(processedComment);
   } catch (error) {
-    console.error(`Error getting comment: ${error}`);
+    console.error("[Comments] Error getting comment:", error);
     res.status(500).json({ error: "Server error", details: error.message });
   }
 }
