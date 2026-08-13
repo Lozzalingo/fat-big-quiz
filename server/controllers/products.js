@@ -1,5 +1,4 @@
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const prisma = require("../utils/prisma");
 const { deleteFromSpaces, getKey } = require("../utils/spaces");
 const merchantApi = require("../services/merchantApi");
 const { formatProductForMerchant } = require("../utils/merchantFeed");
@@ -353,23 +352,6 @@ async function getAllProducts(request, response) {
     return response.json({ products, totalPages, totalCount });
   }
   
-}
-
-async function getAllProductsOld(request, response) {
-  try {
-    const products = await prisma.product.findMany({
-      include: {
-        category: {
-          select: {
-            name: true,
-          },
-        },
-      },
-    });
-    response.status(200).json(products);
-  } catch (error) {
-    console.log(error);
-  }
 }
 
 async function createProduct(request, response) {

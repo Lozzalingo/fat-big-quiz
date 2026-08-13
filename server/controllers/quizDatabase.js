@@ -1,6 +1,5 @@
-const { PrismaClient } = require("@prisma/client");
+const prisma = require("../utils/prisma");
 const { classifyNewlyImported } = require("../services/questionClassifier");
-const prisma = new PrismaClient();
 
 // ─── Helper: Parse scraper format ───────────────────────────────────────────
 // Splits "Question text [A) Option1 | B) Option2 | C) Option3 | D) Option4]"

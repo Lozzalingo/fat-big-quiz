@@ -2,8 +2,7 @@
  * Email Campaigns Controller
  * Compose, preview, and send bulk emails to subscribers
  */
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require("../utils/prisma");
 const { sendEmail } = require('../services/email');
 const { buildEmailTemplate } = require('@lozzalingo/email/server/templates');
 

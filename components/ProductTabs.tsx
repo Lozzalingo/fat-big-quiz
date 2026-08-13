@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import RatingPercentElement from "./RatingPercentElement";
 import SingleReview from "./SingleReview";
 import { formatCategoryName } from "@/utils/categoryFormatting";
 import { Product } from "@/types/products";

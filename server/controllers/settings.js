@@ -1,6 +1,5 @@
 // settings.js controller
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require("../utils/prisma");
 
 // Get settings for a user
 exports.getSettings = async (req, res) => {

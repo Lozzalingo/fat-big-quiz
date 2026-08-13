@@ -1,6 +1,5 @@
 // controllers/backendImages.js
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const prisma = require("../utils/prisma");
 const path = require('path');
 const { uploadToSpaces, deleteFromSpaces, getKey, getCdnUrl } = require('../utils/spaces');
 

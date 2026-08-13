@@ -1,6 +1,5 @@
-const { PrismaClient } = require("@prisma/client");
+const prisma = require("../utils/prisma");
 const crypto = require("crypto");
-const prisma = new PrismaClient();
 
 // Generate a secure download token
 function generateDownloadToken() {

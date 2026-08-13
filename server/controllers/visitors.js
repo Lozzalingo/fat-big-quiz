@@ -1,10 +1,8 @@
 /**
  * Visitor Analytics Controller - Uses shared @lozzalingo/analytics package
  */
-const { PrismaClient } = require("@prisma/client");
+const prisma = require("../utils/prisma");
 const { createVisitorController } = require("@lozzalingo/analytics/server");
-
-const prisma = new PrismaClient();
 
 const controller = createVisitorController(prisma, {
   siteDomain: 'fatbigquiz.com',

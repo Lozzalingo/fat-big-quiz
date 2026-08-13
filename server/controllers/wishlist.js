@@ -1,5 +1,4 @@
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const prisma = require("../utils/prisma");
 const bcrypt = require("bcryptjs");
 
 async function getAllWishlist(request, response) {
@@ -86,25 +85,6 @@ async function getSingleProductFromWishlist(request, response){
     return response.status(500).json({ error: "Error getting wish item" });
   }
 }
-
-async function deleteAllWishItemByUserId(request, response) {
-  try {
-    const { userId } = request.params;
-    
-    await prisma.wishlist.deleteMany({
-      where: {
-        userId: userId,
-      },
-    });
-    
-    return response.status(204).send();
-
-  } catch (error) {
-    console.log(error);
-    return response.status(500).json({ error: "Error deleting wish item" });
-  }
-}
-
 
 module.exports = {
   getAllWishlistByUserId,

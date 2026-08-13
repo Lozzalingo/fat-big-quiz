@@ -1,7 +1,5 @@
-const { PrismaClient } = require("@prisma/client");
+const prisma = require("../utils/prisma");
 const { uploadToSpaces, deleteFromSpaces, getKey } = require("../utils/spaces");
-
-const prisma = new PrismaClient();
 
 // Get all global download files (admin)
 async function getAllGlobalFiles(request, response) {
