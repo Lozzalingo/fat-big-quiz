@@ -3,15 +3,20 @@
 // Name of the component: SingleProductRating.tsx
 // Developer: Aleksandar Kuzmanovic
 // Version: 1.0
-// Component call: <SingleProductRating rating={rating} />
-// Input parameters: { rating: number }
+// Component call: <SingleProductRating rating={rating} reviewCount={reviewCount} />
+// Input parameters: { rating: number, reviewCount?: number }
 // Output: full colored star icons and outlined star icons depending on the ratingArray element("empty star" or "full star")
 // *********************
 
 import React from "react";
 import { AiFillStar, AiOutlineStar } from "react-icons/ai";
 
-const SingleProductRating = ({ rating }: { rating: number }) => {
+interface SingleProductRatingProps {
+  rating: number;
+  reviewCount?: number;
+}
+
+const SingleProductRating = ({ rating, reviewCount = 0 }: SingleProductRatingProps) => {
   const ratingArray: Array<string> = [
     "empty star",
     "empty star",
@@ -38,7 +43,7 @@ const SingleProductRating = ({ rating }: { rating: number }) => {
             </>
           );
         })}
-      <span className="text-xl ml-1">(3 reviews)</span>
+      <span className="text-xl ml-1">({reviewCount} {reviewCount === 1 ? "review" : "reviews"})</span>
     </div>
   );
 };
