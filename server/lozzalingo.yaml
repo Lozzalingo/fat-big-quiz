@@ -35,6 +35,9 @@ features:
   # CRM
   crm: true
 
+  # Advertising
+  ads: true
+
   # Not used by Fat Big Quiz
   analytics: false
   external_api: false
@@ -83,6 +86,13 @@ crm:
 outreach:
   adminEmail: "${ADMIN_EMAIL}"
   brandName: "Fat Big Quiz"
+
+ads:
+  shopName: "Fat Big Quiz"
+  productUrlPattern: "/shop"
+
+routes:
+  ads: "/api/merch"
 
 # CORS
 cors:
