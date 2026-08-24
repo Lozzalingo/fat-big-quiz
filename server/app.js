@@ -56,6 +56,7 @@ const indexingRouter = require('./routes/indexing');
 const campaignsRouter = require('./routes/campaigns');
 const salesRouter = require('./routes/sales');
 const {
+  sendEmail,
   sendPurchaseConfirmationEmail,
   sendOrderConfirmationEmail,
   sendWelcomeEmail,
@@ -63,6 +64,7 @@ const {
   sendAdminSaleNotification,
   sendAdminListNotification
 } = require('./services/email');
+const { startHealthCheckScheduler } = require('./services/healthCheck');
 
 const compression = require("compression");
 
@@ -642,9 +644,9 @@ app.post('/api/send-order-email', emailRateLimit, async (req, res) => {
 
 app.post('/api/send-admin-notification', emailRateLimit, async (req, res) => {
   try {
-    const { customerEmail, productName, price, productType, sessionId } = req.body;
+    const { customerEmail, productName, price, productType, sessionId, productImages } = req.body;
     console.log('[Email] Sending admin sale notification for:', productName);
-    const success = await sendAdminSaleNotification({ customerEmail, productName, price, productType, sessionId });
+    const success = await sendAdminSaleNotification({ customerEmail, productName, price, productType, sessionId, productImages });
     if (success) return res.json({ success: true });
     console.log('[Email] Admin notification failed, but continuing');
     return res.json({ success: false, message: 'Failed to send admin notification' });
@@ -677,8 +679,14 @@ app.post('/api/test-email', lz.adminMiddleware, async (req, res) => {
         success = await sendPasswordResetEmail(email, { resetUrl: `${baseUrl}/reset-password?token=test_token_123`, expiresIn: '1 hour' });
         break;
       case 'admin-notification':
-        success = await sendAdminSaleNotification({ customerEmail: 'test@example.com', productName: 'Test Quiz Pack', price: '4.99', productType: 'DIGITAL_DOWNLOAD', sessionId: 'test_session_123' });
+        success = await sendAdminSaleNotification({ customerEmail: 'test@example.com', productName: 'Christmas Music Quiz Name The Theme Tune', price: '4.99', productType: 'DIGITAL_DOWNLOAD', sessionId: 'test_session_123', productImages: ['christmas-music-quiz-name-the-theme-tune-powerpoint-cover_1777394006240.jpg'] });
         break;
+      case 'health-check': {
+        const { runHealthCheck } = require('./services/healthCheck');
+        await runHealthCheck(sendEmail);
+        success = true;
+        break;
+      }
       case 'admin-list-signup':
         success = await sendAdminListNotification({ email: 'test@example.com', firstName: 'Jane', lastName: 'Smith', source: 'sign-up' });
         break;
@@ -784,6 +792,8 @@ const PORT = process.env.PORT || 3001;
 if (require.main === module) {
   server.listen(PORT, () => {
     console.log(`[FBQ] Server running on port ${PORT}`);
+    // Start health check scheduler (checks critical pages every 30 mins)
+    startHealthCheckScheduler(sendEmail);
   });
 }
 

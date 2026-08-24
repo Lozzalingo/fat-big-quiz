@@ -191,7 +191,40 @@ jobs:
               BLOG_COUNT=$(echo "$BLOG" | python3 -c "import sys,json; print(len(json.load(sys.stdin).get('posts',[])))" 2>/dev/null || echo "0")
               echo "Blog posts: $BLOG_COUNT"
 
+              # Smoke test: shop page renders (catches Prisma/SSR crashes)
+              SHOP=$(curl -sf -o /dev/null -w '%{http_code}' http://localhost:3000/shop 2>/dev/null || echo "FAIL")
+              echo "Shop page: $SHOP"
+
+              # Smoke test: product detail page renders (catches slug/include errors)
+              PRODUCT_PAGE=$(curl -sf -o /dev/null -w '%{http_code}' http://localhost:3000/quiz-pack/christmas-quiz 2>/dev/null || echo "FAIL")
+              echo "Product detail page: $PRODUCT_PAGE"
+
+              # Smoke test: products API returns data
+              PRODUCTS=$(curl -sf http://localhost:3001/api/products 2>/dev/null)
+              PRODUCT_COUNT=$(echo "$PRODUCTS" | python3 -c "import sys,json; d=json.load(sys.stdin); print(len(d.get('products',d) if isinstance(d,dict) else d))" 2>/dev/null || echo "0")
+              echo "Shop products: $PRODUCT_COUNT"
+
+              # Smoke test: checkout API is reachable (Next.js route, not Express)
+              CHECKOUT=$(curl -sf -o /dev/null -w '%{http_code}' -X POST -H 'Content-Type: application/json' -d '{}' http://localhost:3000/api/checkout 2>/dev/null || echo "FAIL")
+              echo "Checkout API: $CHECKOUT (400 expected - no items)"
+
               SMOKE_PASS=true
+
+              # Critical frontend pages must return 200
+              if [ "$SHOP" != "200" ]; then
+                echo "CRITICAL: /shop returned $SHOP (expected 200)"
+                SMOKE_PASS=false
+              fi
+              if [ "$PRODUCT_PAGE" != "200" ]; then
+                echo "CRITICAL: /quiz-pack/christmas-quiz returned $PRODUCT_PAGE (expected 200)"
+                SMOKE_PASS=false
+              fi
+              # Checkout should return 400 (bad request, no items) not 404
+              if [ "$CHECKOUT" = "404" ] || [ "$CHECKOUT" = "FAIL" ]; then
+                echo "CRITICAL: /api/checkout returned $CHECKOUT (route not reachable)"
+                SMOKE_PASS=false
+              fi
+
               if [ "$CARD_COUNT" -lt 5 ]; then
                 echo "WARNING: Expected at least 5 homepage cards, got $CARD_COUNT"
                 SMOKE_PASS=false
