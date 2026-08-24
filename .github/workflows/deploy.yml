@@ -196,7 +196,7 @@ jobs:
               echo "Shop page: $SHOP"
 
               # Smoke test: product detail page renders (catches slug/include errors)
-              PRODUCT_PAGE=$(curl -sf -o /dev/null -w '%{http_code}' http://localhost:3000/quiz-pack/christmas-quiz 2>/dev/null || echo "FAIL")
+              PRODUCT_PAGE=$(curl -sf -o /dev/null -w '%{http_code}' http://localhost:3000/product/christmas-music-quiz-name-the-theme-tune-powerpoint 2>/dev/null || echo "FAIL")
               echo "Product detail page: $PRODUCT_PAGE"
 
               # Smoke test: products API returns data
@@ -216,7 +216,7 @@ jobs:
                 SMOKE_PASS=false
               fi
               if [ "$PRODUCT_PAGE" != "200" ]; then
-                echo "CRITICAL: /quiz-pack/christmas-quiz returned $PRODUCT_PAGE (expected 200)"
+                echo "CRITICAL: /product/christmas-music-quiz returned $PRODUCT_PAGE (expected 200)"
                 SMOKE_PASS=false
               fi
               # Checkout should return 400 (bad request, no items) not 404

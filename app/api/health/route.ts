@@ -73,7 +73,7 @@ export async function GET(request: Request) {
       checkEndpoint("Shop Page", `${SITE_BASE}/shop`),
       checkEndpoint("Blog Page", `${SITE_BASE}/blog`),
       // Test a known product slug - this caught the last outage
-      checkEndpoint("Product Detail (Christmas Quiz)", `${SITE_BASE}/quiz-pack/christmas-quiz`),
+      checkEndpoint("Product Detail (Christmas Quiz)", `${SITE_BASE}/product/christmas-music-quiz-name-the-theme-tune-powerpoint`),
     );
   }
 

@@ -14,7 +14,7 @@ const API_BASE = process.env.API_BASE_URL || "http://localhost:3001";
 const CRITICAL_CHECKS = [
   { name: "Homepage", url: `${SITE_BASE}/` },
   { name: "Shop", url: `${SITE_BASE}/shop` },
-  { name: "Product Detail", url: `${SITE_BASE}/quiz-pack/christmas-quiz` },
+  { name: "Product Detail", url: `${SITE_BASE}/product/christmas-music-quiz-name-the-theme-tune-powerpoint` },
   { name: "Blog", url: `${SITE_BASE}/blog` },
   { name: "Products API", url: `${API_BASE}/api/products` },
   { name: "Blog API", url: `${API_BASE}/api/blog` },
