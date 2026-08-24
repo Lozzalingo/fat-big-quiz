@@ -54,46 +54,67 @@ export async function POST(request: NextRequest) {
         break;
       }
 
-      // One-time purchase flow (existing logic)
-      const { productId, productType, slug, userId } = session.metadata || {};
+      // One-time purchase flow
+      // Supports both single-product (legacy productId) and multi-item cart (productIds JSON array)
+      const metadata = session.metadata || {};
       const customerEmail = session.customer_email || session.customer_details?.email;
 
-      let productName = "Quiz Pack";
-      try {
-        const lineItems = await getStripe().checkout.sessions.listLineItems(session.id, { limit: 1 });
-        if (lineItems.data?.[0]?.description) {
-          productName = lineItems.data[0].description;
+      // Resolve all product IDs from metadata
+      let allProductIds: string[] = [];
+      if (metadata.productIds) {
+        try {
+          allProductIds = JSON.parse(metadata.productIds);
+        } catch {
+          console.error("[Stripe] Failed to parse productIds metadata");
         }
-        console.log("[Stripe] Product name resolved:", productName);
+      }
+      // Legacy single-product fallback
+      if (allProductIds.length === 0 && metadata.productId) {
+        allProductIds = [metadata.productId];
+      }
+
+      const productType = metadata.productType;
+      const userId = metadata.userId;
+
+      // Get all line item names for the email
+      let productNames: string[] = [];
+      try {
+        const lineItems = await getStripe().checkout.sessions.listLineItems(session.id, { limit: 20 });
+        productNames = lineItems.data.map((item) => item.description || "Quiz Pack");
+        console.log("[Stripe] Product names resolved:", productNames);
       } catch (err: any) {
         console.error("[Stripe] Failed to fetch line items:", err.message);
       }
+      const productName = productNames.length > 0 ? productNames.join(", ") : "Quiz Pack";
       const amountTotal = session.amount_total ? (session.amount_total / 100).toFixed(2) : "0.00";
 
-      console.log("[Stripe] Checkout completed:", { productId, productType, email: customerEmail, amount: amountTotal });
+      console.log("[Stripe] Checkout completed:", { productIds: allProductIds, productType, email: customerEmail, amount: amountTotal });
 
-      if (productId && customerEmail) {
+      if (allProductIds.length > 0 && customerEmail) {
         try {
-          const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/purchases`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                productId,
-                email: customerEmail,
-                userId: userId || null,
-                stripeSessionId: session.id,
-                stripePaymentId: session.payment_intent,
-                status: "completed",
-              }),
-            }
-          );
+          // Create a purchase record for each product
+          for (const pid of allProductIds) {
+            const response = await fetch(
+              `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/purchases`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  productId: pid,
+                  email: customerEmail,
+                  userId: userId || null,
+                  stripeSessionId: session.id,
+                  stripePaymentId: session.payment_intent,
+                  status: "completed",
+                }),
+              }
+            );
 
-          if (!response.ok) {
-            console.error("[Stripe] Failed to create purchase record:", response.status);
-          } else {
-            console.log("[Stripe] Purchase record created for:", customerEmail);
+            if (!response.ok) {
+              console.error("[Stripe] Failed to create purchase record for product:", pid, response.status);
+            } else {
+              console.log("[Stripe] Purchase record created for:", customerEmail, "product:", pid);
+            }
           }
 
           // Send confirmation email
@@ -127,6 +148,20 @@ export async function POST(request: NextRequest) {
             );
           }
 
+          // Collect product images for admin email
+          let productImages: string[] = [];
+          try {
+            const dbProducts = await (prisma as any).product.findMany({
+              where: { id: { in: allProductIds } },
+              select: { mainImage: true },
+            });
+            productImages = dbProducts
+              .map((p: any) => p.mainImage)
+              .filter(Boolean) as string[];
+          } catch (imgErr: any) {
+            console.error("[Stripe] Failed to fetch product images for admin email:", imgErr.message);
+          }
+
           // Send admin notification
           await fetch(
             `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/send-admin-notification`,
@@ -139,12 +174,17 @@ export async function POST(request: NextRequest) {
                 price: amountTotal,
                 productType,
                 sessionId: session.id,
+                productImages,
               }),
             }
           );
         } catch (error) {
           console.error("[Stripe] Error processing purchase:", error);
         }
+      } else if (!customerEmail) {
+        console.error("[Stripe] No customer email found for session:", session.id);
+      } else {
+        console.error("[Stripe] No product IDs found in metadata for session:", session.id);
       }
 
       console.log(`[Stripe] Payment completed for session: ${session.id}`);

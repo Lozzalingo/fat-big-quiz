@@ -102,17 +102,42 @@ async function sendOrderConfirmationEmail(email, { productName, price, orderType
 /**
  * Send admin sale notification (project-specific)
  */
-async function sendAdminSaleNotification({ customerEmail, productName, price, productType, sessionId }) {
+async function sendAdminSaleNotification({ customerEmail, productName, price, productType, sessionId, productImages }) {
   console.log('[Email] Sending admin sale notification');
   const adminEmail = process.env.ADMIN_EMAIL || 'laurence.stephan@bucketrace.com';
   const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3002';
+  const cdnBase = process.env.DO_SPACES_CDN_ENDPOINT || 'https://aitshirts-laurence-dot-computer.sfo3.cdn.digitaloceanspaces.com';
+  const cdnFolder = process.env.DO_SPACES_FOLDER || 'fat-big-quiz';
   const priceDisplay = `£${parseFloat(price).toFixed(2)}`;
   const timestamp = new Date().toLocaleString('en-GB', { timeZone: 'Europe/London', dateStyle: 'medium', timeStyle: 'short' });
   const typeLabel = productType === 'DIGITAL_DOWNLOAD' ? 'Digital Download' : productType === 'EVENT' ? 'Event Booking' : 'Order';
 
-  const html = buildEmailTemplate({
-    title: 'New Sale!',
-    body: `
+  // Build product image URL (use first image if available)
+  let imageUrl = '';
+  if (productImages && productImages.length > 0) {
+    const img = productImages[0];
+    imageUrl = img.startsWith('http') ? img : `${cdnBase}/${cdnFolder}/products/images/${img}`;
+  }
+
+  // Etsy-style layout: thumbnail left, details right
+  const productBlock = imageUrl
+    ? `
+      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 16px 0;">
+        <tr>
+          <td valign="top" width="90" style="padding-right: 16px;">
+            <img src="${imageUrl}" alt="${productName}" width="90" height="90" style="display: block; border-radius: 8px; border: 1px solid #e5e7eb; background: #fff; object-fit: cover;" />
+          </td>
+          <td valign="top" style="font-family: arial, helvetica, sans-serif; color: #444; font-size: 14px; line-height: 22px;">
+            <div style="font-weight: bold; font-size: 16px; margin-bottom: 4px;">${productName}</div>
+            <div><strong>Amount:</strong> ${priceDisplay}</div>
+            <div><strong>Type:</strong> ${typeLabel}</div>
+            <div><strong>Customer:</strong> ${customerEmail}</div>
+            <div style="color: #9a9a9a; font-size: 12px; margin-top: 4px;">${timestamp}</div>
+          </td>
+        </tr>
+      </table>
+    `
+    : `
       <div style="background: #f9fafb; border-radius: 6px; border-left: 4px solid #10b981; margin: 16px 0; padding: 16px 20px; line-height: 2.2;">
         <strong>Product:</strong> ${productName}<br>
         <strong>Amount:</strong> ${priceDisplay}<br>
@@ -120,7 +145,13 @@ async function sendAdminSaleNotification({ customerEmail, productName, price, pr
         <strong>Customer:</strong> ${customerEmail}<br>
         <strong>Time:</strong> ${timestamp}
       </div>
-      <p style="text-align: center;">
+    `;
+
+  const html = buildEmailTemplate({
+    title: 'New Sale!',
+    body: `
+      ${productBlock}
+      <p style="text-align: center; margin-top: 20px;">
         <a href="${baseUrl}/admin/orders" style="display: inline-block; background: #000; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-size: 13px;">View Orders</a>
       </p>
     `,
