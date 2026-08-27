@@ -68,6 +68,7 @@ services:
       - WEBHOOK_API_KEY=${WEBHOOK_API_KEY}
       - GOOGLE_MERCHANT_ID=5708205694
       - GOOGLE_APPLICATION_CREDENTIALS=/app/config/google-merchant-credentials.json
+      - DOWNLOAD_SECRET=${DOWNLOAD_SECRET}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3001/api/health"]
       interval: 30s

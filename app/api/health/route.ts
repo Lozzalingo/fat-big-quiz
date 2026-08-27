@@ -74,6 +74,8 @@ export async function GET(request: Request) {
       checkEndpoint("Blog Page", `${SITE_BASE}/blog`),
       // Test a known product slug - this caught the last outage
       checkEndpoint("Product Detail (Christmas Quiz)", `${SITE_BASE}/product/christmas-music-quiz-name-the-theme-tune-powerpoint`),
+      // Auth system health
+      checkEndpoint("Auth System", `${SITE_BASE}/api/auth/health`),
     );
   }
 
