@@ -63,7 +63,7 @@ const EnhancedHeader = () => {
   };
 
   const getImageSrc = (avatar: string | null) => {
-    return avatar ? getUserAvatarUrl(avatar) : "/default-avatar.png";
+    return avatar ? getUserAvatarUrl(avatar) : "/user_placeholder.jpg";
   };
 
   const navLinks = [

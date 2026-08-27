@@ -5,7 +5,7 @@ import { getUserAvatarUrl } from "@/utils/cdn";
 import { formatDateUK } from "@/utils/dateFormatting";
 import { getApiBaseUrl } from "@/utils/api";
 
-const defaultAvatar = "/images/default-avatar.png"; // Path to default avatar image
+const defaultAvatar = "/user_placeholder.jpg"; // Fallback avatar image
 
 interface PublicUserProfileProps {
   params: { id: number };

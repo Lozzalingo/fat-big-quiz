@@ -27,6 +27,7 @@ const searchRouter = require("./routes/search");
 const mainImageRouter = require("./routes/mainImages");
 const backendImageRouter = require("./routes/backendImages");
 const userRouter = require("./routes/users");
+const { publicRouter: userPublicRouter } = require("./routes/users");
 const orderRouter = require("./routes/customer_orders");
 const slugRouter = require("./routes/slugs");
 const orderProductRouter = require('./routes/customer_order_product');
@@ -414,6 +415,9 @@ app.use('/api/sales', lz.adminMiddleware, salesRouter.adminRouter);
 // Authenticated user routes (require login but not admin)
 app.use("/api/wishlist", wishlistRouter);
 app.use('/api/purchases', purchasesRouter);
+
+// Public user routes (accessible to any visitor, no admin auth)
+app.use("/api/users", userPublicRouter);
 
 // Admin-only routes (require admin auth)
 app.use("/api/users", lz.adminMiddleware, userRouter);

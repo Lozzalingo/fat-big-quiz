@@ -36,7 +36,7 @@ export const authOptions: NextAuthOptions = {
           return null;
         } catch (err: any) {
           console.error("[Auth] Error during login:", err.message || err);
-          throw new Error(err);
+          return null;
         }
       },
     })
