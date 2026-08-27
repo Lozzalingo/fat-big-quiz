@@ -275,6 +275,10 @@ model Visitor {
   purchaseComplete Boolean   @default(false)
   orderValue       Float?
 
+  // Attribution
+  userId           String?
+  user             User?     @relation(fields: [userId], references: [id])
+
   // Legacy field
   actions          Json?     // Store actions as JSON array
 
@@ -284,6 +288,7 @@ model Visitor {
   @@index([country])
   @@index([eventType])
   @@index([isBot])
+  @@index([userId])
 }
 
 model User {
@@ -309,6 +314,7 @@ model User {
   settings              Settings[]     @relation("UserSettings")
   votes                 Vote[]         @relation("UserVotes")
   Wishlist              Wishlist[]
+  visitors              Visitor[]
 }
 
 model Settings {
