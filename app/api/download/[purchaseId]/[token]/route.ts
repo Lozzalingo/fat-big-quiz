@@ -68,6 +68,7 @@ export async function GET(
     }
 
     const downloadFile = downloadFiles[fileIndex];
+    const isGlobal = searchParams.get("global") === "1";
 
     // If it's already a full URL (CDN or other), redirect directly
     if (downloadFile.startsWith("http")) {
@@ -75,8 +76,12 @@ export async function GET(
     }
 
     // Construct the CDN URL for the file
-    // Files are stored as: fat-big-quiz/downloads/filename.ext
-    const cdnUrl = `${DO_SPACES_CDN_ENDPOINT}/${DO_SPACES_FOLDER}/downloads/${downloadFile}`;
+    // Product files: fat-big-quiz/downloads/filename.ext
+    // Global bonus files: fat-big-quiz/global-bonus/filename.ext
+    const subFolder = isGlobal ? "global-bonus" : "downloads";
+    const cdnUrl = `${DO_SPACES_CDN_ENDPOINT}/${DO_SPACES_FOLDER}/${subFolder}/${downloadFile}`;
+
+    console.log(`[Download] Serving ${isGlobal ? "global bonus" : "product"} file: ${downloadFile} from ${subFolder}/`);
 
     // Redirect to CDN for fast download
     return NextResponse.redirect(cdnUrl);

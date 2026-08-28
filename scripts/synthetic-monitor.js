@@ -184,32 +184,38 @@ const tests = [
 
       log("INFO", `Step 2 OK: Got ${downloadData.files.length} file(s) - ${downloadData.files.map((f) => f.fileName).join(", ")}`);
 
-      // ── Step 3: Fetch the first file (follow redirect to CDN) ──
-      const firstFile = downloadData.files[0];
-      const fileUrl = `${SITE_URL}${firstFile.downloadUrl}`;
-      log("INFO", `Step 3: Fetching file from ${firstFile.downloadUrl.slice(0, 60)}...`);
+      // ── Step 3: Fetch every file (product files + global bonus files) ──
+      const failures = [];
+      for (let i = 0; i < downloadData.files.length; i++) {
+        const file = downloadData.files[i];
+        const fileUrl = `${SITE_URL}${file.downloadUrl}`;
+        const label = file.isGlobal ? `global: ${file.fileName}` : file.fileName;
+        log("INFO", `Step 3 [${i + 1}/${downloadData.files.length}]: Fetching "${label}"...`);
 
-      const fileRes = await httpGet(fileUrl);
+        const fileRes = await httpGet(fileUrl);
 
-      // The download route redirects to CDN. fetch() follows redirects by default,
-      // so we should get a 200 with the actual file content.
-      if (fileRes.status === 302 || fileRes.status === 301) {
-        // Redirect not followed (shouldn't happen with fetch), but the route works
-        log("INFO", "Step 3 OK: Got redirect to CDN (route works)");
-      } else if (fileRes.status === 200) {
-        // Check we got a real file, not an error page
-        const contentLength = fileRes.body.length;
-        if (contentLength < 100) {
-          // Suspiciously small - probably an error response not a file
-          throw new Error(`Step 3 FAIL: Response body only ${contentLength} bytes - likely an error, not a file. Body: ${fileRes.body.slice(0, 200)}`);
+        if (fileRes.status === 403) {
+          failures.push(`"${label}" - CDN 403 Forbidden (check ACL or subfolder path)`);
+          log("FAIL", `Step 3 [${i + 1}]: "${label}" returned 403`);
+        } else if (fileRes.status === 404) {
+          failures.push(`"${label}" - 404 Not Found (file missing from CDN)`);
+          log("FAIL", `Step 3 [${i + 1}]: "${label}" returned 404`);
+        } else if (fileRes.status === 200) {
+          const contentLength = fileRes.body.length;
+          if (contentLength < 100) {
+            failures.push(`"${label}" - only ${contentLength} bytes (likely an error page, not a file)`);
+            log("FAIL", `Step 3 [${i + 1}]: "${label}" suspiciously small (${contentLength} bytes)`);
+          } else {
+            log("INFO", `Step 3 [${i + 1}]: "${label}" OK - ${contentLength} bytes, ${fileRes.responseTimeMs}ms`);
+          }
+        } else if (fileRes.status !== 301 && fileRes.status !== 302) {
+          failures.push(`"${label}" - unexpected status ${fileRes.status}`);
+          log("FAIL", `Step 3 [${i + 1}]: "${label}" returned ${fileRes.status}`);
         }
-        log("INFO", `Step 3 OK: File received, ${contentLength} bytes, ${fileRes.responseTimeMs}ms`);
-      } else if (fileRes.status === 404) {
-        throw new Error(`Step 3 FAIL: File not found on CDN (404). The downloadFile path in the product may be wrong or the file was not uploaded.`);
-      } else if (fileRes.status === 403) {
-        throw new Error("Step 3 FAIL: CDN returned 403 Forbidden. Check DO Spaces bucket permissions.");
-      } else {
-        throw new Error(`Step 3 FAIL: Unexpected status ${fileRes.status}`);
+      }
+
+      if (failures.length > 0) {
+        throw new Error(`Step 3 FAIL: ${failures.length}/${downloadData.files.length} files broken:\n  ${failures.join("\n  ")}`);
       }
 
       // ── Step 4: Summary ──
@@ -456,7 +462,7 @@ async function runAllTests() {
 // ─── Email alerts ──────────────────────────────────────────────────────────────
 
 async function sendAlertEmail(results, failed, timestamp) {
-  const adminEmail = process.env.ADMIN_EMAIL || "laurence.stephan@bucketrace.com";
+  const adminEmail = process.env.ADMIN_EMAIL || "laurencedotcomputer@gmail.com";
   const resendKey = process.env.RESEND_API_KEY;
 
   if (!resendKey) {
