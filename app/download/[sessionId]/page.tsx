@@ -141,14 +141,17 @@ export default function DownloadPage() {
   };
 
   const handleDownloadFile = (fileUrl: string, fileName: string) => {
-    // Open in hidden iframe to trigger download without navigating away
-    const link = document.createElement("a");
-    link.href = `${process.env.NEXT_PUBLIC_BASE_URL}${fileUrl}`;
-    link.download = fileName;
-    link.style.display = "none";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Create a hidden iframe to trigger the download without navigating away.
+    // The download route proxies the file with Content-Disposition: attachment,
+    // so the browser will download it. Using an iframe avoids opening a new tab.
+    const iframe = document.createElement("iframe");
+    iframe.style.display = "none";
+    iframe.src = fileUrl;
+    document.body.appendChild(iframe);
+    // Clean up the iframe after a delay
+    setTimeout(() => {
+      document.body.removeChild(iframe);
+    }, 30000);
   };
 
   const handleDownloadAll = () => {
