@@ -32,6 +32,7 @@ const ADMIN_KEY = process.env.ADMIN_API_KEY || "";
 const CDN_BASE = process.env.DO_SPACES_CDN_ENDPOINT || "https://aitshirts-laurence-dot-computer.sfo3.cdn.digitaloceanspaces.com";
 const CDN_FOLDER = process.env.DO_SPACES_FOLDER || "fat-big-quiz";
 
+const TEST_SESSION = process.env.TEST_DOWNLOAD_SESSION || "";
 const ALERT_MODE = process.argv.includes("--alert");
 const REPORT_MODE = process.argv.includes("--report");
 const VERBOSE = process.argv.includes("--verbose") || process.argv.includes("-v");
@@ -123,8 +124,6 @@ const tests = [
     priority: "P0",
     run: async () => {
       // Uses the test purchase (laurencedotcomputer@gmail.com, no expiry, no download limit)
-      const TEST_SESSION = process.env.TEST_DOWNLOAD_SESSION || "";
-
       // ── Step 1: Lookup purchase by session ID ──
       if (!TEST_SESSION) {
         log("SKIP", "No TEST_DOWNLOAD_SESSION env var set - falling back to endpoint-only check");
@@ -236,6 +235,84 @@ const tests = [
       assertStatus(res, 200);
       const product = JSON.parse(res.body);
       if (!product.title) throw new Error("Slug lookup returned product without title");
+    },
+  },
+
+  {
+    name: "All product download files exist on CDN",
+    priority: "P0",
+    run: async () => {
+      // Fetch ALL products by paginating through every page
+      let productList = [];
+      let page = 1;
+      let totalPages = 1;
+
+      while (page <= totalPages) {
+        const productsRes = await httpGet(`${API_URL}/api/products?page=${page}`);
+        assertStatus(productsRes, 200);
+        const data = JSON.parse(productsRes.body);
+        const items = data.products || data;
+        productList = productList.concat(items);
+        totalPages = data.totalPages || 1;
+        page++;
+      }
+
+      log("INFO", `Fetched ${productList.length} products across ${totalPages} page(s)`);
+
+      const missing = [];
+      let checked = 0;
+
+      for (const product of productList) {
+        if (!product.downloadFile) continue;
+
+        let files;
+        try { files = JSON.parse(product.downloadFile); } catch { files = [product.downloadFile]; }
+        if (!Array.isArray(files)) files = [files];
+
+        for (const file of files) {
+          if (file.startsWith("http")) continue; // Full URLs skip CDN check
+          const cdnUrl = `${CDN_BASE}/${CDN_FOLDER}/downloads/${file}`;
+          const res = await httpGet(cdnUrl);
+          checked++;
+          if (res.status === 403 || res.status === 404) {
+            missing.push(`${product.title}: ${file} (${res.status})`);
+          }
+        }
+      }
+
+      // Also check global bonus files (from the download flow test if available)
+      // The full download flow test already covers these via the purchase response,
+      // but we also do a direct CDN check here by pulling global file info from
+      // a known product's download response
+      if (TEST_SESSION) {
+        try {
+          const lookupRes = await httpGet(`${API_URL}/api/purchases/session/${TEST_SESSION}`);
+          if (lookupRes.status === 200) {
+            const purchase = JSON.parse(lookupRes.body);
+            const dlRes = await httpPost(`${API_URL}/api/purchases/${purchase.id}/download`, {});
+            if (dlRes.status === 200) {
+              const dlData = JSON.parse(dlRes.body);
+              const globalFiles = dlData.files.filter((f) => f.isGlobal);
+              for (const g of globalFiles) {
+                const cdnUrl = `${CDN_BASE}/${CDN_FOLDER}/global-bonus/${g.originalFileName}`;
+                const res = await httpGet(cdnUrl);
+                checked++;
+                if (res.status === 403 || res.status === 404) {
+                  missing.push(`Global: ${g.fileName} - ${g.originalFileName} (${res.status})`);
+                }
+              }
+            }
+          }
+        } catch (e) {
+          log("INFO", "Could not check global files - skipping");
+        }
+      }
+
+      log("INFO", `Checked ${checked} files across ${productList.length} products`);
+
+      if (missing.length > 0) {
+        throw new Error(`${missing.length} file(s) missing from CDN:\n  ${missing.slice(0, 10).join("\n  ")}${missing.length > 10 ? `\n  ... and ${missing.length - 10} more` : ""}`);
+      }
     },
   },
 
