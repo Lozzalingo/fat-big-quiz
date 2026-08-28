@@ -20,7 +20,7 @@ const CDN_ENDPOINT = process.env.DO_SPACES_CDN_ENDPOINT;
  * Upload a file to DigitalOcean Spaces
  * @param {Buffer} fileBuffer - The file data as a buffer
  * @param {string} fileName - Original filename
- * @param {string} subFolder - Subfolder within the project (e.g., 'products/images', 'downloads', 'blog', 'blog/content', 'users/avatars')
+ * @param {string} subFolder - Subfolder within the project (e.g., 'products/images', 'downloads', 'global-bonus', 'blog', 'blog/content', 'users/avatars')
  * @param {string} contentType - MIME type of the file
  * @returns {Promise<{key: string, url: string, cdnUrl: string}>}
  */

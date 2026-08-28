@@ -134,7 +134,7 @@ async function uploadFileToSpaces(localPath, fileName) {
   const { uploadToSpaces } = require('../server/utils/spaces');
   const buffer = fs.readFileSync(localPath);
   const contentType = getMimeType(fileName);
-  const result = await uploadToSpaces(buffer, fileName, 'products/downloads', contentType);
+  const result = await uploadToSpaces(buffer, fileName, 'downloads', contentType);
   console.log(`[Fix] Uploaded: ${fileName} -> ${result.fileName}`);
   return result;
 }

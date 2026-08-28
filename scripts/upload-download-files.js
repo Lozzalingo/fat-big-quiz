@@ -178,7 +178,7 @@ async function main() {
         const contentType = MIME_TYPES[ext] || 'application/octet-stream';
 
         console.log('[Upload]   Uploading:', file.filename, `(${(buffer.length / 1024 / 1024).toFixed(1)} MB)`);
-        const result = await uploadToSpaces(buffer, file.filename, 'products/downloads', contentType);
+        const result = await uploadToSpaces(buffer, file.filename, 'downloads', contentType);
         uploadedFileNames.push(result.fileName);
         uploaded++;
         console.log('[Upload]   Uploaded:', result.fileName);

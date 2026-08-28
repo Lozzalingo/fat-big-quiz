@@ -60,7 +60,7 @@ async function main() {
         continue;
       }
       const buffer = fs.readFileSync(localPath);
-      const result = await uploadToSpaces(buffer, file, 'products/downloads', 'application/pdf');
+      const result = await uploadToSpaces(buffer, file, 'downloads', 'application/pdf');
       console.log(`[Fix403]   Uploaded: ${file} -> ${result.fileName}`);
       uploadedNames.push(result.fileName);
     }

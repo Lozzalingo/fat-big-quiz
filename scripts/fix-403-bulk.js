@@ -133,7 +133,7 @@ async function main() {
         '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
         '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       };
-      const result = await uploadToSpaces(buffer, file, 'products/downloads', mimeMap[ext] || 'application/pdf');
+      const result = await uploadToSpaces(buffer, file, 'downloads', mimeMap[ext] || 'application/pdf');
       console.log(`[Fix403]   Uploaded: ${file} -> ${result.fileName}`);
       uploadedNames.push(result.fileName);
     }

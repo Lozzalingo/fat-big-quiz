@@ -5,7 +5,7 @@
  * For each listing in etsy_file_metadata.json:
  *   1. Match to a local product by slug
  *   2. Find the file in ~/Downloads/
- *   3. Upload to DO Spaces (products/downloads)
+ *   3. Upload to DO Spaces (downloads)
  *   4. Update the product's downloadFile field (JSON array of filenames)
  *
  * Usage:
@@ -189,7 +189,7 @@ async function main() {
         const contentType = MIME_TYPES[ext] || 'application/octet-stream';
 
         console.log('[Upload]   Uploading:', file.filename, '(' + file.filesize + ')');
-        const result = await uploadToSpaces(fileBuffer, file.filename, 'products/downloads', contentType);
+        const result = await uploadToSpaces(fileBuffer, file.filename, 'downloads', contentType);
         console.log('[Upload]   Done:', result.fileName);
 
         uploadedFileNames.push(result.fileName);

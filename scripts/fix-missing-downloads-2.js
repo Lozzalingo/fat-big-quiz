@@ -119,7 +119,7 @@ function getMimeType(filename) {
 async function uploadFileToSpaces(localPath, fileName) {
   const { uploadToSpaces } = require('../server/utils/spaces');
   const buffer = fs.readFileSync(localPath);
-  const result = await uploadToSpaces(buffer, fileName, 'products/downloads', getMimeType(fileName));
+  const result = await uploadToSpaces(buffer, fileName, 'downloads', getMimeType(fileName));
   console.log(`[Fix2] Uploaded: ${fileName} -> ${result.fileName}`);
   return result;
 }

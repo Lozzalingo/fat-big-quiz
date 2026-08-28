@@ -384,7 +384,7 @@ async function phase2UploadFiles() {
         const contentType = MIME_TYPES[ext] || 'application/octet-stream';
 
         console.log('[Deploy]   Uploading:', file.filename, '(' + file.filesize + ')');
-        const result = await uploadToSpaces(fileBuffer, file.filename, 'products/downloads', contentType);
+        const result = await uploadToSpaces(fileBuffer, file.filename, 'downloads', contentType);
         console.log('[Deploy]   Done:', result.fileName);
 
         uploadedFileNames.push(result.fileName);

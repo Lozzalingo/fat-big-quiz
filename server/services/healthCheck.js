@@ -85,7 +85,7 @@ async function runHealthCheck(sendAdminAlert) {
   const now = Date.now();
   if (sendAdminAlert && now - lastAlertSent > ALERT_COOLDOWN_MS) {
     try {
-      const adminEmail = process.env.ADMIN_EMAIL || "laurence.stephan@bucketrace.com";
+      const adminEmail = process.env.ADMIN_EMAIL || "laurencedotcomputer@gmail.com";
       const timestamp = new Date().toLocaleString("en-GB", {
         timeZone: "Europe/London",
         dateStyle: "medium",

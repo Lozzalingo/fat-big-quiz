@@ -104,7 +104,7 @@ async function sendOrderConfirmationEmail(email, { productName, price, orderType
  */
 async function sendAdminSaleNotification({ customerEmail, productName, price, productType, sessionId, productImages }) {
   console.log('[Email] Sending admin sale notification');
-  const adminEmail = process.env.ADMIN_EMAIL || 'laurence.stephan@bucketrace.com';
+  const adminEmail = process.env.ADMIN_EMAIL || 'laurencedotcomputer@gmail.com';
   const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3002';
   const cdnBase = process.env.DO_SPACES_CDN_ENDPOINT || 'https://aitshirts-laurence-dot-computer.sfo3.cdn.digitaloceanspaces.com';
   const cdnFolder = process.env.DO_SPACES_FOLDER || 'fat-big-quiz';
