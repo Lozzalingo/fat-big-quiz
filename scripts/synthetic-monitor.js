@@ -36,6 +36,13 @@ const ALERT_MODE = process.argv.includes("--alert");
 const REPORT_MODE = process.argv.includes("--report");
 const VERBOSE = process.argv.includes("--verbose") || process.argv.includes("-v");
 
+// Structured logging helper for verbose diagnostics in test output
+function log(level, msg) {
+  if (VERBOSE || level === "FAIL") {
+    console.log(`    [${level}] ${msg}`);
+  }
+}
+
 // ─── Test definitions ──────────────────────────────────────────────────────────
 
 const tests = [
@@ -112,23 +119,101 @@ const tests = [
     },
   },
   {
-    name: "Download endpoint works",
+    name: "Full download flow (4-step)",
     priority: "P0",
     run: async () => {
-      // Find a completed purchase to test download
-      const purchasesRes = await httpGet(`${API_URL}/api/purchases/email/test@test.com`);
-      if (purchasesRes.status !== 200) {
-        // If no test purchases, check the download route exists by hitting it with a fake ID
+      // Uses the test purchase (laurencedotcomputer@gmail.com, no expiry, no download limit)
+      const TEST_SESSION = process.env.TEST_DOWNLOAD_SESSION || "";
+
+      // ── Step 1: Lookup purchase by session ID ──
+      if (!TEST_SESSION) {
+        log("SKIP", "No TEST_DOWNLOAD_SESSION env var set - falling back to endpoint-only check");
         const fakeRes = await httpPost(`${API_URL}/api/purchases/fake-id-12345/download`, {});
-        // 404 = purchase not found (route works), 500 = server error (broken)
         if (fakeRes.status === 500) {
           const body = JSON.parse(fakeRes.body);
           if (body.error && body.error.includes("misconfigured")) {
-            throw new Error("Download endpoint returning 'Server misconfigured' - likely missing DOWNLOAD_SECRET env var");
+            throw new Error("Step 2 FAIL: Download endpoint returning 'Server misconfigured' - likely missing DOWNLOAD_SECRET env var");
           }
         }
-        return; // 404 is fine, route is reachable
+        return;
       }
+
+      log("INFO", `Step 1: Looking up purchase by session: ${TEST_SESSION.slice(0, 20)}...`);
+      const lookupRes = await httpGet(`${API_URL}/api/purchases/session/${TEST_SESSION}`);
+      if (lookupRes.status !== 200) {
+        throw new Error(`Step 1 FAIL: Purchase lookup returned ${lookupRes.status} (expected 200). Session may not exist or DB is down.`);
+      }
+      const purchase = JSON.parse(lookupRes.body);
+      if (!purchase.id) throw new Error("Step 1 FAIL: Purchase lookup returned no ID");
+      if (!purchase.product) throw new Error("Step 1 FAIL: Purchase has no product relation - product may have been deleted");
+      if (!purchase.product.downloadFile) throw new Error("Step 1 FAIL: Product has no downloadFile set");
+
+      // Check expiry
+      if (purchase.expiresAt && new Date(purchase.expiresAt) < new Date()) {
+        throw new Error(`Step 1 FAIL: Test purchase has expired (${purchase.expiresAt}). Renew the test purchase expiresAt.`);
+      }
+
+      log("INFO", `Step 1 OK: Purchase ${purchase.id.slice(0, 8)}... for "${purchase.product.title}" (downloads: ${purchase.downloadCount})`);
+
+      // ── Step 2: Request signed download URLs ──
+      log("INFO", `Step 2: Requesting download URLs via POST /api/purchases/${purchase.id.slice(0, 8)}../download`);
+      const downloadRes = await httpPost(`${API_URL}/api/purchases/${purchase.id}/download`, {});
+      if (downloadRes.status === 500) {
+        const body = JSON.parse(downloadRes.body);
+        const errMsg = body.error || "Unknown";
+        if (errMsg.includes("misconfigured")) {
+          throw new Error("Step 2 FAIL: DOWNLOAD_SECRET env var missing on server");
+        }
+        throw new Error(`Step 2 FAIL: Download endpoint returned 500 - ${errMsg}`);
+      }
+      if (downloadRes.status === 403) {
+        throw new Error("Step 2 FAIL: Download limit exceeded on test purchase. Reset downloadCount to 0.");
+      }
+      if (downloadRes.status === 404) {
+        const body = JSON.parse(downloadRes.body);
+        throw new Error(`Step 2 FAIL: 404 - ${body.error || "Not found"}. Product may have been deleted.`);
+      }
+      if (downloadRes.status !== 200) {
+        throw new Error(`Step 2 FAIL: Unexpected status ${downloadRes.status}`);
+      }
+
+      const downloadData = JSON.parse(downloadRes.body);
+      if (!downloadData.files || downloadData.files.length === 0) {
+        throw new Error("Step 2 FAIL: No files returned in download response");
+      }
+
+      log("INFO", `Step 2 OK: Got ${downloadData.files.length} file(s) - ${downloadData.files.map((f) => f.fileName).join(", ")}`);
+
+      // ── Step 3: Fetch the first file (follow redirect to CDN) ──
+      const firstFile = downloadData.files[0];
+      const fileUrl = `${SITE_URL}${firstFile.downloadUrl}`;
+      log("INFO", `Step 3: Fetching file from ${firstFile.downloadUrl.slice(0, 60)}...`);
+
+      const fileRes = await httpGet(fileUrl);
+
+      // The download route redirects to CDN. fetch() follows redirects by default,
+      // so we should get a 200 with the actual file content.
+      if (fileRes.status === 302 || fileRes.status === 301) {
+        // Redirect not followed (shouldn't happen with fetch), but the route works
+        log("INFO", "Step 3 OK: Got redirect to CDN (route works)");
+      } else if (fileRes.status === 200) {
+        // Check we got a real file, not an error page
+        const contentLength = fileRes.body.length;
+        if (contentLength < 100) {
+          // Suspiciously small - probably an error response not a file
+          throw new Error(`Step 3 FAIL: Response body only ${contentLength} bytes - likely an error, not a file. Body: ${fileRes.body.slice(0, 200)}`);
+        }
+        log("INFO", `Step 3 OK: File received, ${contentLength} bytes, ${fileRes.responseTimeMs}ms`);
+      } else if (fileRes.status === 404) {
+        throw new Error(`Step 3 FAIL: File not found on CDN (404). The downloadFile path in the product may be wrong or the file was not uploaded.`);
+      } else if (fileRes.status === 403) {
+        throw new Error("Step 3 FAIL: CDN returned 403 Forbidden. Check DO Spaces bucket permissions.");
+      } else {
+        throw new Error(`Step 3 FAIL: Unexpected status ${fileRes.status}`);
+      }
+
+      // ── Step 4: Summary ──
+      log("INFO", "Step 4 OK: Full download flow verified - purchase lookup, signed URLs, file delivery all working");
     },
   },
   {
