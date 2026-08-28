@@ -201,11 +201,15 @@ const tests = [
           log("FAIL", `Step 3 [${i + 1}]: "${label}" returned 404`);
         } else if (fileRes.status === 200) {
           const contentLength = fileRes.body.length;
+          const contentDisposition = fileRes.headers["content-disposition"] || "";
           if (contentLength < 100) {
             failures.push(`"${label}" - only ${contentLength} bytes (likely an error page, not a file)`);
             log("FAIL", `Step 3 [${i + 1}]: "${label}" suspiciously small (${contentLength} bytes)`);
+          } else if (!contentDisposition.includes("attachment")) {
+            failures.push(`"${label}" - missing Content-Disposition: attachment header (file won't download, will display in browser)`);
+            log("FAIL", `Step 3 [${i + 1}]: "${label}" returned ${contentLength} bytes but no attachment header: "${contentDisposition}"`);
           } else {
-            log("INFO", `Step 3 [${i + 1}]: "${label}" OK - ${contentLength} bytes, ${fileRes.responseTimeMs}ms`);
+            log("INFO", `Step 3 [${i + 1}]: "${label}" OK - ${contentLength} bytes, attachment header present, ${fileRes.responseTimeMs}ms`);
           }
         } else if (fileRes.status !== 301 && fileRes.status !== 302) {
           failures.push(`"${label}" - unexpected status ${fileRes.status}`);
@@ -427,7 +431,8 @@ async function httpGet(url, extraHeaders = {}) {
     });
     clearTimeout(timeout);
     const body = await res.text();
-    return { status: res.status, body, responseTimeMs: Date.now() - start };
+    const headers = Object.fromEntries(res.headers.entries());
+    return { status: res.status, body, headers, responseTimeMs: Date.now() - start };
   } catch (err) {
     clearTimeout(timeout);
     throw new Error(`${url} - ${err.message}`);

@@ -443,6 +443,9 @@ app.use('/api/quiz-database', lz.adminMiddleware, quizDatabaseRouter);
 const { getPublicHomepageCards } = require('./controllers/homepageCards');
 app.get('/api/homepage-cards/public', cachePublic(300), getPublicHomepageCards);
 app.use('/api/homepage-cards', lz.adminMiddleware, homepageCardsRouter);
+// Public endpoint for active global files (used by zip download route)
+const { getActiveGlobalFiles } = require('./controllers/globalDownloadFiles');
+app.get('/api/global-files/active', getActiveGlobalFiles);
 app.use('/api/global-files', lz.adminMiddleware, globalDownloadFilesRouter);
 app.use('/api/campaigns', lz.adminMiddleware, campaignsRouter);
 if (merchantRouter) {

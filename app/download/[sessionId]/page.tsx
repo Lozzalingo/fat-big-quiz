@@ -154,14 +154,24 @@ export default function DownloadPage() {
     }, 30000);
   };
 
+  const [zipping, setZipping] = useState(false);
+
   const handleDownloadAll = () => {
-    if (!downloadInfo?.files) return;
-    // Stagger downloads 800ms apart so the browser handles them all
-    downloadInfo.files.forEach((file, index) => {
-      setTimeout(() => {
-        handleDownloadFile(file.downloadUrl, file.fileName);
-      }, index * 800);
-    });
+    if (!downloadInfo?.downloadUrl) return;
+    // downloadUrl is /api/download/{purchaseId}/{token}
+    // Zip endpoint is /api/download/zip/{purchaseId}/{token}
+    const zipUrl = downloadInfo.downloadUrl.replace("/api/download/", "/api/download/zip/");
+    setZipping(true);
+    // Use iframe to trigger the zip download without navigating away
+    const iframe = document.createElement("iframe");
+    iframe.style.display = "none";
+    iframe.src = zipUrl;
+    document.body.appendChild(iframe);
+    // Reset zipping state and clean up after a delay
+    setTimeout(() => {
+      setZipping(false);
+      document.body.removeChild(iframe);
+    }, 60000);
   };
 
   if (loading) {
@@ -381,11 +391,21 @@ export default function DownloadPage() {
                       {downloadInfo.files.length > 1 && (
                         <button
                           onClick={handleDownloadAll}
+                          disabled={zipping}
                           data-track-button="Download:Download All"
-                          className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-4 px-6 rounded-lg shadow-lg transform transition hover:scale-[1.02] flex items-center justify-center gap-3 mb-4"
+                          className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-4 px-6 rounded-lg shadow-lg transform transition hover:scale-[1.02] flex items-center justify-center gap-3 mb-4 disabled:opacity-60 disabled:cursor-wait"
                         >
-                          <FaDownload className="text-xl" />
-                          Download All ({downloadInfo.files.length} files)
+                          {zipping ? (
+                            <>
+                              <FaSpinner className="text-xl animate-spin" />
+                              Preparing zip file...
+                            </>
+                          ) : (
+                            <>
+                              <FaDownload className="text-xl" />
+                              Download All as Zip ({downloadInfo.files.length} files)
+                            </>
+                          )}
                         </button>
                       )}
 
@@ -423,7 +443,7 @@ export default function DownloadPage() {
               </h3>
               <ul className="text-sm text-text-secondary space-y-1">
                 <li>
-                  • Click each file to download, or use "Download All"
+                  • Click each file to download individually, or use "Download All as Zip" to get everything in one file
                 </li>
                 <li>
                   • Check your Downloads folder for the files
