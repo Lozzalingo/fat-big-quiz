@@ -140,23 +140,24 @@ export default function DownloadPage() {
     }
   };
 
-  const handleDownloadFile = (fileUrl: string) => {
-    window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}${fileUrl}`;
+  const handleDownloadFile = (fileUrl: string, fileName: string) => {
+    // Open in hidden iframe to trigger download without navigating away
+    const link = document.createElement("a");
+    link.href = `${process.env.NEXT_PUBLIC_BASE_URL}${fileUrl}`;
+    link.download = fileName;
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const handleDownloadAll = () => {
     if (!downloadInfo?.files) return;
-    // Stagger downloads 500ms apart so the browser handles them all
+    // Stagger downloads 800ms apart so the browser handles them all
     downloadInfo.files.forEach((file, index) => {
       setTimeout(() => {
-        const link = document.createElement("a");
-        link.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}${file.downloadUrl}`;
-        link.download = file.fileName;
-        link.style.display = "none";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }, index * 500);
+        handleDownloadFile(file.downloadUrl, file.fileName);
+      }, index * 800);
     });
   };
 
@@ -389,7 +390,7 @@ export default function DownloadPage() {
                       {downloadInfo.files.map((file, index) => (
                         <button
                           key={index}
-                          onClick={() => handleDownloadFile(file.downloadUrl)}
+                          onClick={() => handleDownloadFile(file.downloadUrl, file.fileName)}
                           data-track-button="Download:Download File"
                           className="w-full bg-white border-2 border-primary text-primary hover:bg-primary hover:text-white font-semibold py-3 px-4 rounded-lg transition flex items-center gap-3"
                         >

@@ -90,14 +90,32 @@ export async function GET(
       console.log(`[Download] Serving product file: ${fileName}`);
     }
 
-    // If it's already a full URL, redirect directly
-    if (fileName.startsWith("http")) {
-      return NextResponse.redirect(fileName);
+    // Construct the CDN URL
+    const cdnUrl = fileName.startsWith("http")
+      ? fileName
+      : `${DO_SPACES_CDN_ENDPOINT}/${DO_SPACES_FOLDER}/${subFolder}/${fileName}`;
+
+    // Proxy the file with Content-Disposition: attachment to force download
+    const fileResponse = await fetch(cdnUrl);
+    if (!fileResponse.ok) {
+      console.error(`[Download] CDN fetch failed: ${fileResponse.status} for ${cdnUrl}`);
+      return NextResponse.json(
+        { error: "File not found on CDN" },
+        { status: 404 }
+      );
     }
 
-    // Construct the CDN URL
-    const cdnUrl = `${DO_SPACES_CDN_ENDPOINT}/${DO_SPACES_FOLDER}/${subFolder}/${fileName}`;
-    return NextResponse.redirect(cdnUrl);
+    const fileBuffer = await fileResponse.arrayBuffer();
+    const contentType = fileResponse.headers.get("content-type") || "application/octet-stream";
+    const safeFileName = fileName.split("/").pop() || fileName;
+
+    return new NextResponse(fileBuffer, {
+      headers: {
+        "Content-Type": contentType,
+        "Content-Disposition": `attachment; filename="${safeFileName}"`,
+        "Content-Length": String(fileBuffer.byteLength),
+      },
+    });
   } catch (error) {
     console.error("[Download] Error:", error);
     return NextResponse.json(
