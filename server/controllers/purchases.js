@@ -179,6 +179,8 @@ async function incrementDownload(request, response) {
       include: {
         product: {
           select: {
+            id: true,
+            title: true,
             downloadFile: true,
             downloadLimit: true,
           },
@@ -187,14 +189,23 @@ async function incrementDownload(request, response) {
     });
 
     if (!purchase) {
+      console.error('[Purchase] Download failed - purchase not found:', purchaseId);
       return response.status(404).json({ error: "Purchase not found" });
     }
+
+    if (!purchase.product) {
+      console.error('[Purchase] Download failed - product missing for purchase:', purchaseId, 'productId:', purchase.productId);
+      return response.status(404).json({ error: "Product no longer available" });
+    }
+
+    console.log('[Purchase] Download requested for purchase:', purchaseId, 'product:', purchase.product.title);
 
     // Check download limit
     if (
       purchase.product.downloadLimit &&
       purchase.downloadCount >= purchase.product.downloadLimit
     ) {
+      console.log('[Purchase] Download limit exceeded for purchase:', purchaseId, 'count:', purchase.downloadCount, 'limit:', purchase.product.downloadLimit);
       return response.status(403).json({ error: "Download limit exceeded" });
     }
 
@@ -231,10 +242,16 @@ async function incrementDownload(request, response) {
     }));
 
     // Fetch active global bonus files
-    const globalFiles = await prisma.globalDownloadFile.findMany({
-      where: { isActive: true },
-      orderBy: { displayOrder: "asc" },
-    });
+    let globalFiles = [];
+    try {
+      globalFiles = await prisma.globalDownloadFile.findMany({
+        where: { isActive: true },
+        orderBy: { displayOrder: "asc" },
+      });
+    } catch (globalErr) {
+      console.error('[Purchase] GlobalDownloadFile query failed (non-fatal):', globalErr.message);
+      // Non-fatal - continue without global files
+    }
 
     // Add global files to download list (with special marker)
     globalFiles.forEach((globalFile, index) => {
@@ -255,7 +272,9 @@ async function incrementDownload(request, response) {
         : null,
     });
   } catch (error) {
-    console.error("[Purchase] Error incrementing download:", error);
+    console.error("[Purchase] Error incrementing download for:", request.params.purchaseId);
+    console.error("[Purchase] Error details:", error.message);
+    console.error("[Purchase] Stack:", error.stack);
     return response.status(500).json({ error: "Error processing download" });
   }
 }
