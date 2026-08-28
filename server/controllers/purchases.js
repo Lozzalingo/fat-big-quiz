@@ -256,7 +256,7 @@ async function incrementDownload(request, response) {
     // Add global files to download list (with special marker)
     globalFiles.forEach((globalFile, index) => {
       downloadFiles.push({
-        downloadUrl: `/api/download/${purchaseId}/${token}?file=${productFiles.length + index}&global=1`,
+        downloadUrl: `/api/download/${purchaseId}/${token}?file=${productFiles.length + index}&global=1&name=${encodeURIComponent(globalFile.fileName)}`,
         fileName: globalFile.title || cleanFileName(globalFile.fileName),
         originalFileName: globalFile.fileName,
         isGlobal: true,

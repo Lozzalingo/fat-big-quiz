@@ -12,6 +12,8 @@ export async function GET(
     const { purchaseId, token } = await params;
     const { searchParams } = new URL(request.url);
     const fileIndex = parseInt(searchParams.get("file") || "0", 10);
+    const isGlobal = searchParams.get("global") === "1";
+    const globalFileName = searchParams.get("name"); // filename passed for global bonus files
 
     // Verify the purchase exists and get file info
     const response = await fetch(
@@ -19,6 +21,7 @@ export async function GET(
     );
 
     if (!response.ok) {
+      console.error(`[Download] Purchase not found: ${purchaseId}`);
       return NextResponse.json(
         { error: "Purchase not found" },
         { status: 404 }
@@ -29,7 +32,7 @@ export async function GET(
 
     // Check download limit
     if (
-      purchase.product.downloadLimit &&
+      purchase.product?.downloadLimit &&
       purchase.downloadCount > purchase.product.downloadLimit
     ) {
       return NextResponse.json(
@@ -38,55 +41,65 @@ export async function GET(
       );
     }
 
-    // Get the download file path - handle both single file and JSON array
-    const downloadFileData = purchase.product.downloadFile;
-    if (!downloadFileData) {
-      return NextResponse.json(
-        { error: "No download file available" },
-        { status: 404 }
-      );
-    }
+    let fileName: string;
+    let subFolder: string;
 
-    // Parse download files - could be JSON array or single filename
-    let downloadFiles: string[];
-    try {
-      downloadFiles = JSON.parse(downloadFileData);
-      if (!Array.isArray(downloadFiles)) {
+    if (isGlobal) {
+      // Global bonus file - filename is passed in the URL query param
+      if (!globalFileName) {
+        console.error("[Download] Global file requested but no name param provided");
+        return NextResponse.json(
+          { error: "Missing global file name" },
+          { status: 400 }
+        );
+      }
+      fileName = globalFileName;
+      subFolder = "global-bonus";
+      console.log(`[Download] Serving global bonus file: ${fileName}`);
+    } else {
+      // Product download file
+      const downloadFileData = purchase.product?.downloadFile;
+      if (!downloadFileData) {
+        return NextResponse.json(
+          { error: "No download file available" },
+          { status: 404 }
+        );
+      }
+
+      // Parse download files - could be JSON array or single filename
+      let downloadFiles: string[];
+      try {
+        downloadFiles = JSON.parse(downloadFileData);
+        if (!Array.isArray(downloadFiles)) {
+          downloadFiles = [downloadFileData];
+        }
+      } catch {
         downloadFiles = [downloadFileData];
       }
-    } catch {
-      // Not JSON, treat as single filename
-      downloadFiles = [downloadFileData];
+
+      if (fileIndex < 0 || fileIndex >= downloadFiles.length) {
+        console.error(`[Download] File index ${fileIndex} out of range (${downloadFiles.length} files)`);
+        return NextResponse.json(
+          { error: "Invalid file index" },
+          { status: 400 }
+        );
+      }
+
+      fileName = downloadFiles[fileIndex];
+      subFolder = "downloads";
+      console.log(`[Download] Serving product file: ${fileName}`);
     }
 
-    // Get the requested file
-    if (fileIndex < 0 || fileIndex >= downloadFiles.length) {
-      return NextResponse.json(
-        { error: "Invalid file index" },
-        { status: 400 }
-      );
+    // If it's already a full URL, redirect directly
+    if (fileName.startsWith("http")) {
+      return NextResponse.redirect(fileName);
     }
 
-    const downloadFile = downloadFiles[fileIndex];
-    const isGlobal = searchParams.get("global") === "1";
-
-    // If it's already a full URL (CDN or other), redirect directly
-    if (downloadFile.startsWith("http")) {
-      return NextResponse.redirect(downloadFile);
-    }
-
-    // Construct the CDN URL for the file
-    // Product files: fat-big-quiz/downloads/filename.ext
-    // Global bonus files: fat-big-quiz/global-bonus/filename.ext
-    const subFolder = isGlobal ? "global-bonus" : "downloads";
-    const cdnUrl = `${DO_SPACES_CDN_ENDPOINT}/${DO_SPACES_FOLDER}/${subFolder}/${downloadFile}`;
-
-    console.log(`[Download] Serving ${isGlobal ? "global bonus" : "product"} file: ${downloadFile} from ${subFolder}/`);
-
-    // Redirect to CDN for fast download
+    // Construct the CDN URL
+    const cdnUrl = `${DO_SPACES_CDN_ENDPOINT}/${DO_SPACES_FOLDER}/${subFolder}/${fileName}`;
     return NextResponse.redirect(cdnUrl);
   } catch (error) {
-    console.error("Download error:", error);
+    console.error("[Download] Error:", error);
     return NextResponse.json(
       { error: "Error processing download" },
       { status: 500 }

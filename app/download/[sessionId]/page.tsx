@@ -144,6 +144,22 @@ export default function DownloadPage() {
     window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}${fileUrl}`;
   };
 
+  const handleDownloadAll = () => {
+    if (!downloadInfo?.files) return;
+    // Stagger downloads 500ms apart so the browser handles them all
+    downloadInfo.files.forEach((file, index) => {
+      setTimeout(() => {
+        const link = document.createElement("a");
+        link.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}${file.downloadUrl}`;
+        link.download = file.fileName;
+        link.style.display = "none";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }, index * 500);
+    });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -322,45 +338,69 @@ export default function DownloadPage() {
 
             {/* Download Button(s) */}
             {canDownload ? (
-              downloadInfo && downloadInfo.files && downloadInfo.files.length > 0 ? (
-                // Show list of download buttons for each file
-                <div className="space-y-3">
-                  <p className="text-sm text-text-secondary mb-2">
-                    Your purchase includes {downloadInfo.files.length} file{downloadInfo.files.length > 1 ? 's' : ''}:
-                  </p>
-                  {downloadInfo.files.map((file, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleDownloadFile(file.downloadUrl)}
-                      data-track-button="Download:Download File"
-                      className="w-full bg-white border-2 border-primary text-primary hover:bg-primary hover:text-white font-semibold py-3 px-4 rounded-lg transition flex items-center gap-3"
-                    >
-                      <FaDownload />
-                      <span className="truncate">{file.fileName}</span>
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                // Initial state - show button to prepare/reveal downloads
-                <button
-                  onClick={handlePrepareDownloads}
-                  disabled={downloading}
-                  data-track-button="Download:Show Files"
-                  className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-4 px-6 rounded-lg shadow-lg transform transition hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+              <>
+                {/* Initial state - show button to prepare/reveal downloads */}
+                {!downloadInfo && (
+                  <button
+                    onClick={handlePrepareDownloads}
+                    disabled={downloading}
+                    data-track-button="Download:Show Files"
+                    className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-4 px-6 rounded-lg shadow-lg transform transition hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                  >
+                    {downloading ? (
+                      <>
+                        <FaSpinner className="animate-spin" />
+                        Preparing Downloads...
+                      </>
+                    ) : (
+                      <>
+                        <FaDownload className="text-xl" />
+                        Show Download Files
+                      </>
+                    )}
+                  </button>
+                )}
+
+                {/* Revealed file list with smooth animation */}
+                <div
+                  className={`transition-all duration-500 ease-out overflow-hidden ${
+                    downloadInfo ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
+                  }`}
                 >
-                  {downloading ? (
-                    <>
-                      <FaSpinner className="animate-spin" />
-                      Preparing Downloads...
-                    </>
-                  ) : (
-                    <>
-                      <FaDownload className="text-xl" />
-                      Show Download Files
-                    </>
+                  {downloadInfo && downloadInfo.files && downloadInfo.files.length > 0 && (
+                    <div className="space-y-3">
+                      <p className="text-sm text-text-secondary mb-2">
+                        Your purchase includes {downloadInfo.files.length} file{downloadInfo.files.length > 1 ? 's' : ''}:
+                      </p>
+
+                      {/* Download All button */}
+                      {downloadInfo.files.length > 1 && (
+                        <button
+                          onClick={handleDownloadAll}
+                          data-track-button="Download:Download All"
+                          className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-4 px-6 rounded-lg shadow-lg transform transition hover:scale-[1.02] flex items-center justify-center gap-3 mb-4"
+                        >
+                          <FaDownload className="text-xl" />
+                          Download All ({downloadInfo.files.length} files)
+                        </button>
+                      )}
+
+                      {/* Individual file buttons */}
+                      {downloadInfo.files.map((file, index) => (
+                        <button
+                          key={index}
+                          onClick={() => handleDownloadFile(file.downloadUrl)}
+                          data-track-button="Download:Download File"
+                          className="w-full bg-white border-2 border-primary text-primary hover:bg-primary hover:text-white font-semibold py-3 px-4 rounded-lg transition flex items-center gap-3"
+                        >
+                          <FaDownload />
+                          <span className="truncate">{file.fileName}</span>
+                        </button>
+                      ))}
+                    </div>
                   )}
-                </button>
-              )
+                </div>
+              </>
             ) : (
               <div className="bg-error/10 border border-error/20 rounded-lg p-4 text-center">
                 <p className="text-error font-medium">
@@ -379,10 +419,10 @@ export default function DownloadPage() {
               </h3>
               <ul className="text-sm text-text-secondary space-y-1">
                 <li>
-                  • Your download should start automatically
+                  • Click each file to download, or use "Download All"
                 </li>
                 <li>
-                  • Check your Downloads folder if it doesn't appear
+                  • Check your Downloads folder for the files
                 </li>
                 <li>
                   • A confirmation email has been sent to {purchase.email}
