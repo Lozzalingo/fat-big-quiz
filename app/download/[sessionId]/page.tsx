@@ -147,22 +147,43 @@ export default function DownloadPage() {
     window.location.href = fileUrl;
   };
 
-  const [zipState, setZipState] = useState<"idle" | "zipping" | "done">("idle");
+  const [zipState, setZipState] = useState<"idle" | "zipping" | "done" | "error">("idle");
 
-  const handleDownloadAll = () => {
+  const handleDownloadAll = async () => {
     if (!downloadInfo?.downloadUrl) return;
-    // downloadUrl is /api/download/{purchaseId}/{token}
-    // Zip endpoint is /api/download/zip/{purchaseId}/{token}
     const zipUrl = downloadInfo.downloadUrl.replace("/api/download/", "/api/download/zip/");
     setZipState("zipping");
-    // Use window.location.href - Content-Disposition: attachment means the browser
-    // downloads instead of navigating away. Works on mobile and desktop.
-    window.location.href = zipUrl;
-    // The browser starts the download almost immediately once the server responds.
-    // Show "done" after a short delay to give the server time to respond.
-    setTimeout(() => {
+
+    try {
+      // Fetch the zip as a blob so we know exactly when the download finishes
+      const res = await fetch(zipUrl);
+      if (!res.ok) {
+        throw new Error(`Server returned ${res.status}`);
+      }
+
+      const blob = await res.blob();
+
+      // Extract filename from Content-Disposition header, or use a default
+      const disposition = res.headers.get("content-disposition") || "";
+      const filenameMatch = disposition.match(/filename="?([^"]+)"?/);
+      const filename = filenameMatch ? filenameMatch[1] : "fatbigquiz-download.zip";
+
+      // Create a temporary object URL and trigger the save dialog
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
       setZipState("done");
-    }, 5000);
+    } catch (err) {
+      console.error("[Download] Zip download failed:", err);
+      setZipState("error");
+      setTimeout(() => setZipState("idle"), 5000);
+    }
   };
 
   if (loading) {
@@ -382,13 +403,15 @@ export default function DownloadPage() {
                       {downloadInfo.files.length > 1 && (
                         <button
                           onClick={handleDownloadAll}
-                          disabled={zipState !== "idle"}
+                          disabled={zipState === "zipping" || zipState === "done"}
                           data-track-button="Download:Download All"
                           className={`w-full font-bold py-4 px-6 rounded-lg shadow-lg transform transition hover:scale-[1.02] flex items-center justify-center gap-3 mb-4 ${
                             zipState === "done"
                               ? "bg-green-600 text-white cursor-default"
                               : zipState === "zipping"
                               ? "bg-primary text-white opacity-60 cursor-wait"
+                              : zipState === "error"
+                              ? "bg-red-600 hover:bg-red-700 text-white"
                               : "bg-primary hover:bg-primary-dark text-white"
                           }`}
                         >
@@ -401,6 +424,11 @@ export default function DownloadPage() {
                             <>
                               <FaCheckCircle className="text-xl" />
                               Download complete - check your downloads folder
+                            </>
+                          ) : zipState === "error" ? (
+                            <>
+                              <FaExclamationTriangle className="text-xl" />
+                              Download failed - tap to retry
                             </>
                           ) : (
                             <>
