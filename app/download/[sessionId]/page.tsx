@@ -147,21 +147,22 @@ export default function DownloadPage() {
     window.location.href = fileUrl;
   };
 
-  const [zipping, setZipping] = useState(false);
+  const [zipState, setZipState] = useState<"idle" | "zipping" | "done">("idle");
 
   const handleDownloadAll = () => {
     if (!downloadInfo?.downloadUrl) return;
     // downloadUrl is /api/download/{purchaseId}/{token}
     // Zip endpoint is /api/download/zip/{purchaseId}/{token}
     const zipUrl = downloadInfo.downloadUrl.replace("/api/download/", "/api/download/zip/");
-    setZipping(true);
+    setZipState("zipping");
     // Use window.location.href - Content-Disposition: attachment means the browser
     // downloads instead of navigating away. Works on mobile and desktop.
     window.location.href = zipUrl;
-    // Reset zipping state after a delay
+    // The browser starts the download almost immediately once the server responds.
+    // Show "done" after a short delay to give the server time to respond.
     setTimeout(() => {
-      setZipping(false);
-    }, 60000);
+      setZipState("done");
+    }, 5000);
   };
 
   if (loading) {
@@ -381,14 +382,25 @@ export default function DownloadPage() {
                       {downloadInfo.files.length > 1 && (
                         <button
                           onClick={handleDownloadAll}
-                          disabled={zipping}
+                          disabled={zipState !== "idle"}
                           data-track-button="Download:Download All"
-                          className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-4 px-6 rounded-lg shadow-lg transform transition hover:scale-[1.02] flex items-center justify-center gap-3 mb-4 disabled:opacity-60 disabled:cursor-wait"
+                          className={`w-full font-bold py-4 px-6 rounded-lg shadow-lg transform transition hover:scale-[1.02] flex items-center justify-center gap-3 mb-4 ${
+                            zipState === "done"
+                              ? "bg-green-600 text-white cursor-default"
+                              : zipState === "zipping"
+                              ? "bg-primary text-white opacity-60 cursor-wait"
+                              : "bg-primary hover:bg-primary-dark text-white"
+                          }`}
                         >
-                          {zipping ? (
+                          {zipState === "zipping" ? (
                             <>
                               <FaSpinner className="text-xl animate-spin" />
                               Preparing zip file...
+                            </>
+                          ) : zipState === "done" ? (
+                            <>
+                              <FaCheckCircle className="text-xl" />
+                              Download complete - check your downloads folder
                             </>
                           ) : (
                             <>
