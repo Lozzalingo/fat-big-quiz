@@ -141,17 +141,10 @@ export default function DownloadPage() {
   };
 
   const handleDownloadFile = (fileUrl: string, fileName: string) => {
-    // Create a hidden iframe to trigger the download without navigating away.
-    // The download route proxies the file with Content-Disposition: attachment,
-    // so the browser will download it. Using an iframe avoids opening a new tab.
-    const iframe = document.createElement("iframe");
-    iframe.style.display = "none";
-    iframe.src = fileUrl;
-    document.body.appendChild(iframe);
-    // Clean up the iframe after a delay
-    setTimeout(() => {
-      document.body.removeChild(iframe);
-    }, 30000);
+    // Use window.location.href to trigger the download.
+    // The download route returns Content-Disposition: attachment, so the browser
+    // downloads the file instead of navigating away. Works on mobile and desktop.
+    window.location.href = fileUrl;
   };
 
   const [zipping, setZipping] = useState(false);
@@ -162,15 +155,12 @@ export default function DownloadPage() {
     // Zip endpoint is /api/download/zip/{purchaseId}/{token}
     const zipUrl = downloadInfo.downloadUrl.replace("/api/download/", "/api/download/zip/");
     setZipping(true);
-    // Use iframe to trigger the zip download without navigating away
-    const iframe = document.createElement("iframe");
-    iframe.style.display = "none";
-    iframe.src = zipUrl;
-    document.body.appendChild(iframe);
-    // Reset zipping state and clean up after a delay
+    // Use window.location.href - Content-Disposition: attachment means the browser
+    // downloads instead of navigating away. Works on mobile and desktop.
+    window.location.href = zipUrl;
+    // Reset zipping state after a delay
     setTimeout(() => {
       setZipping(false);
-      document.body.removeChild(iframe);
     }, 60000);
   };
 
