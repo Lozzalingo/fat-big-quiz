@@ -307,7 +307,7 @@ async function getAllProducts(request, response) {
           { title: { contains: searchQuery } },
           { description: { contains: searchQuery } },
           { tags: { contains: searchQuery } },
-          { category: { name: { contains: searchQuery } } },
+          { category: { contains: searchQuery } },
           { categories: { some: { category: { name: { contains: searchQuery } } } } },
           { quizFormat: { displayName: { contains: searchQuery } } },
         ];
