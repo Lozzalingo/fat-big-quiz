@@ -13,6 +13,8 @@ import { ScrollProvider } from "@/utils/ScrollContext";
 import EnhancedHeader from "@/components/Header/HeaderTop";
 import VisitorTracker from "@/components/VisitorTracker";
 import SubscribePopup from "@lozzalingo/analytics/client/SubscribePopup";
+import SiteMonitor from "@lozzalingo/analytics/client/SiteMonitor";
+import AnalyticsTracker from "@lozzalingo/analytics/client/AnalyticsTracker";
 import ErrorLogger from "@lozzalingo/logging/client";
 
 
@@ -86,6 +88,8 @@ export default async function RootLayout({
         <SessionProvider session={session}>
           <ScrollProvider>
             <ErrorLogger project="fat-big-quiz" />
+            <SiteMonitor />
+            <AnalyticsTracker />
             <VisitorTracker />
             <SubscribePopup
               apiBaseUrl={process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001"}
