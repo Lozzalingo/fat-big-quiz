@@ -86,6 +86,7 @@ export default async function RootLayout({
         <Script src="https://analytics.laurence.computer/static/lza.js" data-site="fat-big-quiz" strategy="afterInteractive" />
         <Script src="https://monitor.laurence.computer/static/snippet/sm-error.js" data-site="fat-big-quiz" strategy="afterInteractive" />
         <Script src="https://monitor.laurence.computer/static/snippet/sm-session.js" data-site="fat-big-quiz" strategy="afterInteractive" />
+        <Script src="https://monitor.laurence.computer/static/snippet/sm-logs.js" data-site="fat-big-quiz" strategy="afterInteractive" />
         <SessionProvider session={session}>
           <ScrollProvider>
             <ErrorLogger project="fat-big-quiz" />
