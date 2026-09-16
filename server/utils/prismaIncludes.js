@@ -22,7 +22,7 @@ const BLOG_POST_LIST_INCLUDES = {
   author: {
     select: {
       firstName: true,
-      name: true,
+      lastName: true,
     },
   },
   category: {

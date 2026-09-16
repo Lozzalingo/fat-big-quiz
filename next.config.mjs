@@ -50,6 +50,11 @@ const nextConfig = {
         destination: '/privacy',
         permanent: true,
       },
+      {
+        source: '/product/easy-printable-confectionery-picture-quiz-pack-easy-difficulty-level',
+        destination: '/blog/40-funny-pub-quiz-questions',
+        permanent: true,
+      },
     ];
   },
   // Set to workspace root so standalone traces node_modules from the monorepo
