@@ -494,7 +494,7 @@ console.log("[FBQ] Settings routes mounted at /ev/api/app-settings");
 
 // ─── File Download Route ────────────────────────────────────────────────────────
 
-const { getFromSpaces, getKey, FOLDER } = require('./utils/spaces');
+const { getFromSpaces, FOLDER } = require('./utils/spaces');
 const crypto = require('crypto');
 
 app.get('/api/download/:purchaseId/:token', async (req, res) => {

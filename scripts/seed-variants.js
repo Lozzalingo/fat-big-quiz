@@ -398,7 +398,7 @@ async function main() {
   const parentMap = {};
   for (const p of parents) {
     parentMap[p.slug] = p;
-    console.log(`  Parent: ${p.title} (${p.slug}) — ${p.id}`);
+    console.log(`  Parent: ${p.title} (${p.slug})  -  ${p.id}`);
   }
 
   if (parents.length === 0) {
@@ -524,7 +524,7 @@ async function main() {
   console.log(`Variants created: ${created}`);
   console.log(`Already existed: ${skipped}`);
   console.log(`No config: ${skippedNotConfig}`);
-  if (DRY_RUN) console.log('\n(Dry run — no data written)\n');
+  if (DRY_RUN) console.log('\n(Dry run  -  no data written)\n');
 
   await prisma.$disconnect();
 }

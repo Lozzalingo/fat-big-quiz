@@ -333,7 +333,7 @@ async function main() {
       // 1. Fetch fresh rich content from Wix
       const wixPost = await fetchPostBySlug(slug);
       if (!wixPost) {
-        console.log(`[SKIP] "${slug}" — not found on Wix`);
+        console.log(`[SKIP] "${slug}"  -  not found on Wix`);
         failed++;
         continue;
       }
@@ -344,7 +344,7 @@ async function main() {
       // 3. Update in DB
       const dbPost = await prisma.blogPost.findFirst({ where: { slug } });
       if (!dbPost) {
-        console.log(`[SKIP] "${slug}" — not found in FBQ database`);
+        console.log(`[SKIP] "${slug}"  -  not found in FBQ database`);
         failed++;
         continue;
       }

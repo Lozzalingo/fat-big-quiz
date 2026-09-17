@@ -31,7 +31,7 @@ require(path.join(SERVER_DIR, "node_modules/dotenv")).config({
   path: path.join(SERVER_DIR, ".env"),
 });
 
-// Use the server's Prisma client (MySQL) — NOT the workspace-hoisted one (SQLite)
+// Use the server's Prisma client (MySQL)  -  NOT the workspace-hoisted one (SQLite)
 const { PrismaClient } = require(path.join(SERVER_DIR, "node_modules/@prisma/client"));
 const {
   S3Client,
@@ -49,7 +49,7 @@ const WIX_API_KEY =
 const WIX_SITE_ID = "dccd578c-7e56-4ae6-8056-8f526e672ff8";
 const WIX_API_BASE = "https://www.wixapis.com/blog/v3";
 
-// Wix quiz category IDs — used to identify which posts are quiz posts
+// Wix quiz category IDs  -  used to identify which posts are quiz posts
 const QUIZ_CATEGORY_IDS_LIST = {
   "bc7032ac-13fc-42dc-8012-bf7c7425ecc2": "Quiz of the Week",
   "973d4283-2fc7-4adf-934d-d52eb7b0f27a": "Quiz Questions and Answers",
@@ -83,7 +83,7 @@ const CATEGORY_MAP = {
   // Consolidated: Picture Quizzes + Printable Picture Quiz → Picture Quiz
   "b9eb4434-e475-4934-9fdf-69edae8744b2": "Picture Quiz",
   "ffb87e5e-5305-4a11-8f2a-ee197797ba2e": "Picture Quiz",
-  // These are tags only, NOT categories — no entry here:
+  // These are tags only, NOT categories  -  no entry here:
   // "Quiz of the Week" → tag only, post goes to its topic category
   // "Quiz Questions and Answers" → tag only, post goes to its topic category
 };
@@ -164,7 +164,7 @@ async function fetchAllWixPosts() {
 }
 
 // ============================================================
-// RICH CONTENT → HTML CONVERTER (async — uploads inline images)
+// RICH CONTENT → HTML CONVERTER (async  -  uploads inline images)
 // ============================================================
 
 // Cache: wixImageId → CDN URL (avoids re-uploading the same image across posts)

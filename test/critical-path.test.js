@@ -1,5 +1,5 @@
 /**
- * Critical Path Tests — Fat Big Quiz
+ * Critical Path Tests  -  Fat Big Quiz
  * Tests all API endpoints return correct status codes,
  * auth blocks unauthenticated requests, rate limiting works,
  * and core business logic is sound.
