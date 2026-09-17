@@ -1,22 +1,28 @@
-// Cloud storage utility - Fat Big Quiz
-// Uses centralised Storage service via StorageClient.
-// Replaces direct @aws-sdk/client-s3 / DigitalOcean Spaces calls.
-
-const { StorageClient } = require('../lib/storage-client');
+// DigitalOcean Spaces (S3-compatible) utility
+const { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
 const path = require('path');
 
-const storage = new StorageClient();
+// Initialize S3 client for DigitalOcean Spaces
+const s3Client = new S3Client({
+  endpoint: process.env.DO_SPACES_ENDPOINT,
+  region: process.env.DO_SPACES_REGION,
+  credentials: {
+    accessKeyId: process.env.DO_SPACES_KEY,
+    secretAccessKey: process.env.DO_SPACES_SECRET,
+  },
+});
 
+const BUCKET = process.env.DO_SPACES_BUCKET;
 const FOLDER = process.env.DO_SPACES_FOLDER || 'fat-big-quiz';
 const CDN_ENDPOINT = process.env.DO_SPACES_CDN_ENDPOINT;
 
 /**
- * Upload a file to the centralised Storage service.
+ * Upload a file to DigitalOcean Spaces
  * @param {Buffer} fileBuffer - The file data as a buffer
  * @param {string} fileName - Original filename
- * @param {string} subFolder - Subfolder within the project (e.g., 'products/images', 'downloads')
- * @param {string} contentType - MIME type of the file (passed for compatibility, service detects automatically)
- * @returns {Promise<{key: string, fileName: string, url: string, cdnUrl: string}>}
+ * @param {string} subFolder - Subfolder within the project (e.g., 'products/images', 'downloads', 'global-bonus', 'blog', 'blog/content', 'users/avatars')
+ * @param {string} contentType - MIME type of the file
+ * @returns {Promise<{key: string, url: string, cdnUrl: string}>}
  */
 async function uploadToSpaces(fileBuffer, fileName, subFolder, contentType) {
   // Generate unique filename with timestamp
@@ -26,62 +32,60 @@ async function uploadToSpaces(fileBuffer, fileName, subFolder, contentType) {
   const sanitizedBaseName = baseName.replace(/[^a-zA-Z0-9-_]/g, '_');
   const uniqueFileName = `${sanitizedBaseName}_${timestamp}${ext}`;
 
-  console.log(`[Storage] Uploading ${uniqueFileName} to ${subFolder}`);
+  // Construct the full key path
+  const key = `${FOLDER}/${subFolder}/${uniqueFileName}`;
 
-  const result = await storage.upload(fileBuffer, uniqueFileName, {
-    siteId: 'fat-big-quiz',
-    subfolder: subFolder,
-    processImage: false, // Site handles its own processing
+  const command = new PutObjectCommand({
+    Bucket: BUCKET,
+    Key: key,
+    Body: fileBuffer,
+    ContentType: contentType,
+    ACL: 'public-read', // Make file publicly accessible
   });
 
-  if (!result) {
-    throw new Error('Upload to storage service failed');
-  }
+  await s3Client.send(command);
 
-  // Build compatible key path for backwards compat
-  const key = `${FOLDER}/${subFolder}/${uniqueFileName}`;
+  // Return both the key and public URLs
+  const url = `${process.env.DO_SPACES_ENDPOINT}/${BUCKET}/${key}`;
+  const cdnUrl = `${CDN_ENDPOINT}/${key}`;
 
   return {
     key,
     fileName: uniqueFileName,
-    url: result.cdnUrl,
-    cdnUrl: result.cdnUrl,
+    url,
+    cdnUrl,
   };
 }
 
 /**
- * Delete a file from the centralised Storage service.
+ * Delete a file from DigitalOcean Spaces
  * @param {string} key - The full key path of the file to delete
  */
 async function deleteFromSpaces(key) {
-  console.log(`[Storage] Deleting: ${key}`);
-  await storage.delete(key);
+  const command = new DeleteObjectCommand({
+    Bucket: BUCKET,
+    Key: key,
+  });
+
+  await s3Client.send(command);
 }
 
 /**
- * Get a file from the centralised Storage service as a signed URL.
+ * Get a file from DigitalOcean Spaces
  * @param {string} key - The full key path of the file
  * @returns {Promise<{Body: ReadableStream, ContentType: string}>}
  */
 async function getFromSpaces(key) {
-  console.log(`[Storage] Fetching: ${key}`);
-  // Get a short-lived signed URL and fetch the file
-  const signed = await storage.getSignedUrl(key, 300);
-  if (!signed || !signed.url) {
-    throw new Error(`Failed to get signed URL for: ${key}`);
-  }
-  const response = await fetch(signed.url);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch file: ${response.status}`);
-  }
-  return {
-    Body: response.body,
-    ContentType: response.headers.get('content-type') || 'application/octet-stream',
-  };
+  const command = new GetObjectCommand({
+    Bucket: BUCKET,
+    Key: key,
+  });
+
+  return await s3Client.send(command);
 }
 
 /**
- * Convert a stored filename/key to a CDN URL.
+ * Convert a stored filename/key to a CDN URL
  * @param {string} fileNameOrKey - Either just a filename or full key
  * @param {string} subFolder - The subfolder if only filename provided
  * @returns {string} The CDN URL
@@ -103,7 +107,7 @@ function getCdnUrl(fileNameOrKey, subFolder = '') {
 }
 
 /**
- * Get the full key path for a file.
+ * Get the full key path for a file
  * @param {string} fileName - The filename
  * @param {string} subFolder - The subfolder
  * @returns {string} The full key path
@@ -118,6 +122,7 @@ module.exports = {
   getFromSpaces,
   getCdnUrl,
   getKey,
-  storage,
+  s3Client,
+  BUCKET,
   FOLDER,
 };
