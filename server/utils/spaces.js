@@ -2,7 +2,7 @@
 // Uses centralised Storage service via StorageClient.
 // Replaces direct @aws-sdk/client-s3 / DigitalOcean Spaces calls.
 
-const { StorageClient } = require('@lozzalingo/storage/server/storage-client');
+const { StorageClient } = require('../lib/storage-client');
 const path = require('path');
 
 const storage = new StorageClient();
