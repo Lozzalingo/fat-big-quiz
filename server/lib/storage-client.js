@@ -287,3 +287,4 @@ class StorageClient {
 }
 
 module.exports = { StorageClient };
+// storage-client fix v2
