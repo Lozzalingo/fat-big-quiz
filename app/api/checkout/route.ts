@@ -1,16 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import Stripe from "stripe";
 import { PrismaClient } from "@prisma/client";
 import { getProductImageUrl } from "@/utils/cdn";
 
-// Lazy initialisation to avoid build-time errors
-let stripe: Stripe;
-function getStripe() {
-  if (!stripe) {
-    stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-  }
-  return stripe;
-}
+const PAYMENTS_URL = process.env.PAYMENTS_SERVICE_URL || 'https://payments.laurence.computer';
+const PAYMENTS_KEY = process.env.PAYMENTS_API_KEY || '';
 
 const prisma = new PrismaClient();
 
@@ -56,7 +49,7 @@ export async function POST(request: NextRequest) {
     // Rate limiting
     const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
     if (!checkRateLimit(ip)) {
-      console.log("[Stripe] Checkout rate limit exceeded for IP:", ip);
+      console.log("[Payments] Checkout rate limit exceeded for IP:", ip);
       return NextResponse.json(
         { error: "Too many requests. Please try again shortly." },
         { status: 429 }
@@ -79,7 +72,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (items.length === 0) {
-      console.log("[Stripe] Checkout rejected - no items");
+      console.log("[Payments] Checkout rejected - no items");
       return NextResponse.json(
         { error: "No items provided" },
         { status: 400 }
@@ -98,14 +91,14 @@ export async function POST(request: NextRequest) {
     // Validate all products exist
     const missingIds = productIds.filter((id) => !productMap.has(id));
     if (missingIds.length > 0) {
-      console.log("[Stripe] Checkout rejected - invalid product IDs:", missingIds);
+      console.log("[Payments] Checkout rejected - invalid product IDs:", missingIds);
       return NextResponse.json(
         { error: "One or more products not found" },
         { status: 400 }
       );
     }
 
-    console.log("[Stripe] Checkout request:", {
+    console.log("[Payments] Checkout request:", {
       itemCount: items.length,
       email: email ? "provided" : "guest",
     });
@@ -126,36 +119,35 @@ export async function POST(request: NextRequest) {
       return product.productType === "DIGITAL_DOWNLOAD";
     });
 
-    // Build Stripe line items using DB prices only
-    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] =
-      items.map((item) => {
-        const product = productMap.get(item.id)!;
+    // Build line items using DB prices only
+    const lineItems = items.map((item) => {
+      const product = productMap.get(item.id)!;
 
-        const productData: Stripe.Checkout.SessionCreateParams.LineItem.PriceData.ProductData = {
-          name: product.title,
-          metadata: {
-            productId: product.id,
-            productType: product.productType || "DIGITAL_DOWNLOAD",
-          },
-        };
+      const productData: Record<string, any> = {
+        name: product.title,
+        metadata: {
+          productId: product.id,
+          productType: product.productType || "DIGITAL_DOWNLOAD",
+        },
+      };
 
-        // Add image if available (Stripe requires HTTPS URLs)
-        const imageUrl = product.mainImage
-          ? getProductImageUrl(product.mainImage)
-          : undefined;
-        if (imageUrl && imageUrl.startsWith("https://")) {
-          productData.images = [imageUrl];
-        }
+      // Add image if available (requires HTTPS URLs)
+      const imageUrl = product.mainImage
+        ? getProductImageUrl(product.mainImage)
+        : undefined;
+      if (imageUrl && imageUrl.startsWith("https://")) {
+        productData.images = [imageUrl];
+      }
 
-        return {
-          price_data: {
-            currency: "gbp",
-            product_data: productData,
-            unit_amount: Math.round(product.price * 100),
-          },
-          quantity: item.amount,
-        };
-      });
+      return {
+        price_data: {
+          currency: "gbp",
+          product_data: productData,
+          unit_amount: Math.round(product.price * 100),
+        },
+        quantity: item.amount,
+      };
+    });
 
     // For single product, use product-specific URLs. For cart, use generic ones.
     const isSingleProduct = items.length === 1;
@@ -175,30 +167,45 @@ export async function POST(request: NextRequest) {
       .map((item) => productMap.get(item.id)?.slug || "")
       .filter(Boolean);
 
-    const session = await getStripe().checkout.sessions.create({
-      payment_method_types: ["card"],
-      line_items: lineItems,
-      mode: "payment",
-      success_url: successUrl,
-      cancel_url: cancelUrl,
-      customer_email: email || undefined,
-      metadata: {
-        productIds: JSON.stringify(productIds),
-        productSlugs: JSON.stringify(productSlugs),
-        productType: firstProduct.productType || "DIGITAL_DOWNLOAD",
-        userId: userId || "",
-        // Legacy single-product fields for backward compatibility
-        ...(isSingleProduct && {
-          productId: firstItem.id,
-          slug: firstProduct.slug || "",
-        }),
+    const response = await fetch(`${PAYMENTS_URL}/api/payments/checkout`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Pay-Key': PAYMENTS_KEY,
       },
+      body: JSON.stringify({
+        payment_method_types: ['card'],
+        line_items: lineItems,
+        mode: 'payment',
+        success_url: successUrl,
+        cancel_url: cancelUrl,
+        customer_email: email || undefined,
+        metadata: {
+          productIds: JSON.stringify(productIds),
+          productSlugs: JSON.stringify(productSlugs),
+          productType: firstProduct.productType || "DIGITAL_DOWNLOAD",
+          userId: userId || "",
+          // Legacy single-product fields for backward compatibility
+          ...(isSingleProduct && {
+            productId: firstItem.id,
+            slug: firstProduct.slug || "",
+          }),
+        },
+      }),
     });
 
-    console.log("[Stripe] Checkout session created:", session.id, `(${items.length} items)`);
-    return NextResponse.json({ sessionId: session.id, url: session.url });
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      console.error("[Payments] Checkout service error:", response.status, errData);
+      throw new Error(errData.error || `Payments service returned ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    console.log("[Payments] Checkout session created:", data.session_id || data.sessionId, `(${items.length} items)`);
+    return NextResponse.json({ sessionId: data.session_id || data.sessionId, url: data.checkout_url || data.url });
   } catch (error: any) {
-    console.error("[Stripe] Checkout error:", error.message);
+    console.error("[Payments] Checkout error:", error.message);
     return NextResponse.json(
       { error: error.message || "Error creating checkout session" },
       { status: 500 }

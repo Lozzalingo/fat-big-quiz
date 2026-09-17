@@ -1,52 +1,62 @@
 import { NextRequest, NextResponse } from "next/server";
-import Stripe from "stripe";
 import { PrismaClient } from "@prisma/client";
+import { createHmac } from "crypto";
 
-// Lazy initialization to avoid build-time errors
-let stripe: Stripe;
-function getStripe() {
-  if (!stripe) {
-    stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-  }
-  return stripe;
-}
-
-function getWebhookSecret() {
-  return process.env.STRIPE_WEBHOOK_SECRET!;
-}
+const WEBHOOK_SECRET = process.env.PAYMENTS_WEBHOOK_SECRET || '';
 
 const prisma = new PrismaClient();
 
+/**
+ * Verify the X-Pay-Signature HMAC header from the payments service.
+ * The signature is an HMAC-SHA256 hex digest of the raw request body,
+ * keyed with PAYMENTS_WEBHOOK_SECRET.
+ */
+function verifySignature(body: string, signature: string): boolean {
+  if (!WEBHOOK_SECRET) {
+    console.error("[Payments] No PAYMENTS_WEBHOOK_SECRET configured");
+    return false;
+  }
+  const expected = createHmac('sha256', WEBHOOK_SECRET).update(body).digest('hex');
+  return signature === expected;
+}
+
 export async function POST(request: NextRequest) {
   const body = await request.text();
-  const signature = request.headers.get("stripe-signature");
+  const signature = request.headers.get("x-pay-signature");
 
   if (!signature) {
-    console.log("[Stripe] Webhook rejected - missing signature header");
+    console.log("[Payments] Webhook rejected - missing X-Pay-Signature header");
     return NextResponse.json(
-      { error: "Missing stripe-signature header" },
+      { error: "Missing X-Pay-Signature header" },
       { status: 400 }
     );
   }
 
-  let event: Stripe.Event;
-
-  try {
-    event = getStripe().webhooks.constructEvent(body, signature, getWebhookSecret());
-    console.log("[Stripe] Webhook event received:", event.type, event.id);
-  } catch (err: any) {
-    console.error("[Stripe] Webhook signature verification failed:", err.message);
+  if (!verifySignature(body, signature)) {
+    console.error("[Payments] Webhook signature verification failed");
     return NextResponse.json(
-      { error: `Webhook Error: ${err.message}` },
+      { error: "Invalid webhook signature" },
+      { status: 400 }
+    );
+  }
+
+  let event: any;
+  try {
+    event = JSON.parse(body);
+    console.log("[Payments] Webhook event received:", event.type, event.id);
+  } catch (err: any) {
+    console.error("[Payments] Failed to parse webhook body:", err.message);
+    return NextResponse.json(
+      { error: "Invalid JSON body" },
       { status: 400 }
     );
   }
 
   // Handle the event
   switch (event.type) {
-    // ─── One-time purchase completed ─────────────────────────────────
+    // One-time purchase completed
     case "checkout.session.completed": {
-      const session = event.data.object as Stripe.Checkout.Session;
+      const session = event.data?.object || event.data;
 
       // Handle subscription checkout separately
       if (session.mode === "subscription") {
@@ -65,7 +75,7 @@ export async function POST(request: NextRequest) {
         try {
           allProductIds = JSON.parse(metadata.productIds);
         } catch {
-          console.error("[Stripe] Failed to parse productIds metadata");
+          console.error("[Payments] Failed to parse productIds metadata");
         }
       }
       // Legacy single-product fallback
@@ -76,19 +86,15 @@ export async function POST(request: NextRequest) {
       const productType = metadata.productType;
       const userId = metadata.userId;
 
-      // Get all line item names for the email
+      // Get product names from the event data (the payments service includes line items)
       let productNames: string[] = [];
-      try {
-        const lineItems = await getStripe().checkout.sessions.listLineItems(session.id, { limit: 20 });
-        productNames = lineItems.data.map((item) => item.description || "Quiz Pack");
-        console.log("[Stripe] Product names resolved:", productNames);
-      } catch (err: any) {
-        console.error("[Stripe] Failed to fetch line items:", err.message);
+      if (session.line_items?.data) {
+        productNames = session.line_items.data.map((item: any) => item.description || "Quiz Pack");
       }
       const productName = productNames.length > 0 ? productNames.join(", ") : "Quiz Pack";
       const amountTotal = session.amount_total ? (session.amount_total / 100).toFixed(2) : "0.00";
 
-      console.log("[Stripe] Checkout completed:", { productIds: allProductIds, productType, email: customerEmail, amount: amountTotal });
+      console.log("[Payments] Checkout completed:", { productIds: allProductIds, productType, email: customerEmail, amount: amountTotal });
 
       if (allProductIds.length > 0 && customerEmail) {
         try {
@@ -111,9 +117,9 @@ export async function POST(request: NextRequest) {
             );
 
             if (!response.ok) {
-              console.error("[Stripe] Failed to create purchase record for product:", pid, response.status);
+              console.error("[Payments] Failed to create purchase record for product:", pid, response.status);
             } else {
-              console.log("[Stripe] Purchase record created for:", customerEmail, "product:", pid);
+              console.log("[Payments] Purchase record created for:", customerEmail, "product:", pid);
             }
           }
 
@@ -159,7 +165,7 @@ export async function POST(request: NextRequest) {
               .map((p: any) => p.mainImage)
               .filter(Boolean) as string[];
           } catch (imgErr: any) {
-            console.error("[Stripe] Failed to fetch product images for admin email:", imgErr.message);
+            console.error("[Payments] Failed to fetch product images for admin email:", imgErr.message);
           }
 
           // Send admin notification
@@ -179,86 +185,91 @@ export async function POST(request: NextRequest) {
             }
           );
         } catch (error) {
-          console.error("[Stripe] Error processing purchase:", error);
+          console.error("[Payments] Error processing purchase:", error);
         }
       } else if (!customerEmail) {
-        console.error("[Stripe] No customer email found for session:", session.id);
+        console.error("[Payments] No customer email found for session:", session.id);
       } else {
-        console.error("[Stripe] No product IDs found in metadata for session:", session.id);
+        console.error("[Payments] No product IDs found in metadata for session:", session.id);
       }
 
-      console.log(`[Stripe] Payment completed for session: ${session.id}`);
+      console.log(`[Payments] Payment completed for session: ${session.id}`);
       break;
     }
 
-    // ─── Subscription lifecycle events ───────────────────────────────
+    // Subscription lifecycle events
     case "customer.subscription.created":
     case "customer.subscription.updated": {
-      const subscription = event.data.object as Stripe.Subscription;
+      const subscription = event.data?.object || event.data;
       await updateUserSubscription(subscription);
       break;
     }
 
     case "customer.subscription.deleted": {
-      const subscription = event.data.object as Stripe.Subscription;
+      const subscription = event.data?.object || event.data;
       await cancelUserSubscription(subscription);
       break;
     }
 
     case "invoice.payment_failed": {
-      const invoice = event.data.object as Stripe.Invoice;
+      const invoice = event.data?.object || event.data;
       const failedSubId = invoice.parent?.subscription_details?.subscription;
       if (failedSubId) {
-        console.log(`[Stripe] Subscription payment failed for: ${invoice.customer_email}`);
-        // Stripe will retry, and eventually cancel. We handle the deletion event above.
+        console.log(`[Payments] Subscription payment failed for: ${invoice.customer_email}`);
+        // The payments service will retry, and eventually cancel. We handle the deletion event above.
       }
       break;
     }
 
     case "payment_intent.succeeded": {
-      const paymentIntent = event.data.object as Stripe.PaymentIntent;
-      console.log(`[Stripe] PaymentIntent succeeded: ${paymentIntent.id}`);
+      const paymentIntent = event.data?.object || event.data;
+      console.log(`[Payments] PaymentIntent succeeded: ${paymentIntent.id}`);
       break;
     }
 
     case "payment_intent.payment_failed": {
-      const paymentIntent = event.data.object as Stripe.PaymentIntent;
-      console.log(`[Stripe] Payment failed: ${paymentIntent.id}`);
+      const paymentIntent = event.data?.object || event.data;
+      console.log(`[Payments] Payment failed: ${paymentIntent.id}`);
       break;
     }
 
     default:
-      console.log(`[Stripe] Unhandled event type: ${event.type}`);
+      console.log(`[Payments] Unhandled event type: ${event.type}`);
   }
 
   return NextResponse.json({ received: true });
 }
 
-// ─── Subscription helpers ─────────────────────────────────────────────────
+// Subscription helpers
 
 /**
  * Extract the current_period_end from a subscription.
- * In Stripe API v2026-02-25 (clover), this moved from subscription-level to item-level.
+ * Supports both the subscription-level field and the item-level field
+ * (which moved in newer Stripe API versions).
  */
-function getPeriodEnd(subscription: Stripe.Subscription): number {
+function getPeriodEnd(subscription: any): number {
+  // Item-level (newer API)
   const itemEnd = subscription.items?.data?.[0]?.current_period_end;
   if (itemEnd) return itemEnd;
+  // Subscription-level (older API / payments service normalised)
+  if (subscription.current_period_end) return subscription.current_period_end;
   // Fallback: use cancel_at or billing_cycle_anchor + 30 days
   return subscription.cancel_at || (subscription.billing_cycle_anchor + 30 * 24 * 60 * 60);
 }
 
-async function handleSubscriptionCheckout(session: Stripe.Checkout.Session) {
+async function handleSubscriptionCheckout(session: any) {
   const userId = session.metadata?.userId;
-  const subscriptionId = session.subscription as string;
+  const subscriptionId = session.subscription;
 
   if (!userId || !subscriptionId) {
-    console.error("[Stripe] Subscription checkout missing userId or subscriptionId");
+    console.error("[Payments] Subscription checkout missing userId or subscriptionId");
     return;
   }
 
-  // Fetch the subscription to get period details
-  const subscription = await getStripe().subscriptions.retrieve(subscriptionId);
-  const periodEnd = getPeriodEnd(subscription);
+  // The payments service should include subscription details in the event.
+  // Use period_end from the session if available, otherwise use a sensible default.
+  const periodEnd = session.subscription_period_end
+    || Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60;
 
   await (prisma.user as any).update({
     where: { id: userId },
@@ -269,18 +280,20 @@ async function handleSubscriptionCheckout(session: Stripe.Checkout.Session) {
     },
   });
 
-  console.log(`[Stripe] Subscription activated for user ${userId}, expires: ${new Date(periodEnd * 1000).toISOString()}`);
+  console.log(`[Payments] Subscription activated for user ${userId}, expires: ${new Date(periodEnd * 1000).toISOString()}`);
 }
 
-async function updateUserSubscription(subscription: Stripe.Subscription) {
-  const customerId = subscription.customer as string;
+async function updateUserSubscription(subscription: any) {
+  const customerId = typeof subscription.customer === 'string'
+    ? subscription.customer
+    : subscription.customer?.id;
 
   const user = await prisma.user.findFirst({
     where: { stripeCustomerId: customerId },
   });
 
   if (!user) {
-    console.error(`[Stripe] No user found for Stripe customer: ${customerId}`);
+    console.error(`[Payments] No user found for customer: ${customerId}`);
     return;
   }
 
@@ -299,18 +312,20 @@ async function updateUserSubscription(subscription: Stripe.Subscription) {
     },
   });
 
-  console.log(`[Stripe] Subscription updated for ${user.email}: ${status}, expires: ${new Date(periodEnd * 1000).toISOString()}`);
+  console.log(`[Payments] Subscription updated for ${user.email}: ${status}, expires: ${new Date(periodEnd * 1000).toISOString()}`);
 }
 
-async function cancelUserSubscription(subscription: Stripe.Subscription) {
-  const customerId = subscription.customer as string;
+async function cancelUserSubscription(subscription: any) {
+  const customerId = typeof subscription.customer === 'string'
+    ? subscription.customer
+    : subscription.customer?.id;
 
   const user = await prisma.user.findFirst({
     where: { stripeCustomerId: customerId },
   });
 
   if (!user) {
-    console.error(`[Stripe] No user found for Stripe customer: ${customerId}`);
+    console.error(`[Payments] No user found for customer: ${customerId}`);
     return;
   }
 
@@ -325,5 +340,5 @@ async function cancelUserSubscription(subscription: Stripe.Subscription) {
     },
   });
 
-  console.log(`[Stripe] Subscription cancelled for ${user.email}, access until: ${new Date(periodEnd * 1000).toISOString()}`);
+  console.log(`[Payments] Subscription cancelled for ${user.email}, access until: ${new Date(periodEnd * 1000).toISOString()}`);
 }
