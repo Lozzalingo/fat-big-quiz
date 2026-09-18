@@ -78,7 +78,6 @@ const nextConfig = {
     '@lozzalingo/ops',
     '@lozzalingo/orders',
     '@lozzalingo/settings',
-    '@lozzalingo/storage',
     '@lozzalingo/subscribers',
   ],
   eslint: {

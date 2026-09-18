@@ -24,7 +24,6 @@
     "@lozzalingo/ops": "*",
     "@lozzalingo/orders": "*",
     "@lozzalingo/settings": "*",
-    "@lozzalingo/storage": "*",
     "@lozzalingo/subscribers": "*",
     "@prisma/client": "^5.10.2",
     "@stripe/stripe-js": "^8.6.1",
