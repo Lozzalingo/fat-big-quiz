@@ -18,7 +18,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@lozzalingo/storage/client": ["./packages/storage/client/index"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "utils/insertDemoData.js"],
