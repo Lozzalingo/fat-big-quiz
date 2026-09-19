@@ -63,6 +63,11 @@ const nextConfig = {
     if (dev) {
       config.cache = false;
     }
+    // Resolve @lozzalingo/storage/client subpath (file: protocol breaks exports map in Node 20)
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@lozzalingo/storage/client': path.resolve(__dirname, 'packages/storage/client/index.js'),
+    };
     return config;
   },
   transpilePackages: [
