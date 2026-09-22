@@ -28,7 +28,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Path is required" }, { status: 400 });
     }
 
-    revalidatePath(path, "page");
+    // Revalidate both page and layout to clear all cached data (including fetch cache)
+    revalidatePath(path, "layout");
     console.log("[Revalidate] Revalidated path:", path);
 
     return NextResponse.json({ revalidated: true, path });
