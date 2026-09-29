@@ -64,7 +64,7 @@ export async function verifySSOToken(token: string): Promise<SSOPayload | null> 
     const sigInput = encoder.encode(`${headerB64}.${payloadB64}`);
     const signature = base64UrlDecode(signatureB64);
 
-    const valid = await crypto.subtle.verify('HMAC', key, signature, sigInput);
+    const valid = await crypto.subtle.verify('HMAC', key, signature.buffer as ArrayBuffer, sigInput);
     if (!valid) return null;
 
     // Decode payload
