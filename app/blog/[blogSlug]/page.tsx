@@ -152,7 +152,7 @@ export default async function BlogPostPage({ params }: { params: { blogSlug: str
         <div className="absolute bottom-0 left-0 w-full p-8 md:p-16 text-white">
           <div className="max-w-4xl mx-auto">
             {post.category && (
-              <Link href={`/category/${post.category.name.toLowerCase()}`} className="inline-block">
+              <Link href="/blog" className="inline-block">
                 <span className="bg-primary text-white px-4 py-1.5 rounded-full text-sm font-semibold mb-4 hover:bg-primary-dark transition-colors inline-block">
                   {post.category.name}
                 </span>
