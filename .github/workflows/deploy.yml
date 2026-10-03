@@ -14,6 +14,10 @@ on:
           - 'false'
           - 'true'
 
+concurrency:
+  group: deploy-fat-big-quiz
+  cancel-in-progress: false
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest

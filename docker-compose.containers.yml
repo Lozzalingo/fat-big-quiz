@@ -1,0 +1,302 @@
+# Fat Big Quiz - Containerised Architecture
+# 10 containers: 1 frontend (Next.js) + 9 module backends (Express)
+# Build context is always the FBQ root so Dockerfiles can COPY server/ and packages/
+
+x-common: &common
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
+  networks:
+    - fbq_network
+  restart: unless-stopped
+
+services:
+  # ── Frontend (Next.js) ──────────────────────────────────────────────────────
+  frontend:
+    <<: *common
+    image: fbq-frontend:latest
+    build:
+      context: .
+      dockerfile: containers/frontend/Dockerfile
+    container_name: fbq_frontend
+    ports:
+      - "7005:7005"
+    environment:
+      - NODE_ENV=production
+      - PORT=7005
+      - NEXT_PUBLIC_API_BASE_URL=https://fatbigquiz.com
+      - NEXT_PUBLIC_BASE_URL=https://fatbigquiz.com
+      - NEXT_PUBLIC_DO_SPACES_CDN_ENDPOINT=https://aitshirts-laurence-dot-computer.sfo3.cdn.digitaloceanspaces.com
+      - NEXT_PUBLIC_DO_SPACES_FOLDER=fat-big-quiz
+      - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY}
+      - NEXTAUTH_URL=https://fatbigquiz.com
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - DATABASE_URL=${DATABASE_URL}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+      - AUTH_SERVICE_URL=${AUTH_SERVICE_URL}
+      - AUTH_JWT_SECRET=${AUTH_JWT_SECRET}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7005/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # ── Shop Module ─────────────────────────────────────────────────────────────
+  shop:
+    <<: *common
+    image: fbq-shop:latest
+    build:
+      context: .
+      dockerfile: containers/shop/Dockerfile
+    container_name: fbq_shop
+    ports:
+      - "7050:7050"
+    environment:
+      - PORT=7050
+      - DATABASE_URL=${DATABASE_URL}
+      - CORS_ORIGIN=https://fatbigquiz.com,https://www.fatbigquiz.com
+      - ADMIN_API_KEY=${ADMIN_API_KEY}
+      - FRONTEND_URL=https://fatbigquiz.com
+      - STORAGE_SERVICE_URL=${STORAGE_SERVICE_URL}
+      - STORAGE_API_KEY=${STORAGE_API_KEY}
+      - PAYMENTS_SERVICE_URL=${PAYMENTS_SERVICE_URL}
+      - PAYMENTS_API_KEY=${PAYMENTS_API_KEY}
+      - PAYMENTS_CALLBACK_KEY=${PAYMENTS_CALLBACK_KEY}
+      - AUTH_SERVICE_URL=${AUTH_SERVICE_URL}
+      - AUTH_JWT_SECRET=${AUTH_JWT_SECRET}
+      - DO_SPACES_REGION=sfo3
+      - DO_SPACES_BUCKET=aitshirts-laurence-dot-computer
+      - DO_SPACES_KEY=${DO_SPACES_KEY}
+      - DO_SPACES_SECRET=${DO_SPACES_SECRET}
+      - DO_SPACES_FOLDER=fat-big-quiz
+      - DO_SPACES_ENDPOINT=https://sfo3.digitaloceanspaces.com
+      - DO_SPACES_CDN_ENDPOINT=https://aitshirts-laurence-dot-computer.sfo3.cdn.digitaloceanspaces.com
+      - DOWNLOAD_SECRET=${DOWNLOAD_SECRET}
+      - EMAIL_SERVICE_URL=${EMAIL_SERVICE_URL}
+      - EMAIL_SERVICE_API_KEY=${EMAIL_SERVICE_API_KEY}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7050/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ── Quiz Pack Module ────────────────────────────────────────────────────────
+  quiz-pack:
+    <<: *common
+    image: fbq-quiz-pack:latest
+    build:
+      context: .
+      dockerfile: containers/quiz-pack/Dockerfile
+    container_name: fbq_quiz_pack
+    ports:
+      - "7051:7051"
+    environment:
+      - PORT=7051
+      - CORS_ORIGIN=https://fatbigquiz.com,https://www.fatbigquiz.com
+      - PAYMENTS_SERVICE_URL=${PAYMENTS_SERVICE_URL}
+      - PAYMENTS_API_KEY=${PAYMENTS_API_KEY}
+      - AUTH_SERVICE_URL=${AUTH_SERVICE_URL}
+      - AUTH_JWT_SECRET=${AUTH_JWT_SECRET}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7051/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ── Blog Module ─────────────────────────────────────────────────────────────
+  blog:
+    <<: *common
+    image: fbq-blog:latest
+    build:
+      context: .
+      dockerfile: containers/blog/Dockerfile
+    container_name: fbq_blog
+    ports:
+      - "7052:7052"
+    environment:
+      - PORT=7052
+      - DATABASE_URL=${DATABASE_URL}
+      - CORS_ORIGIN=https://fatbigquiz.com,https://www.fatbigquiz.com
+      - ADMIN_API_KEY=${ADMIN_API_KEY}
+      - FRONTEND_URL=https://fatbigquiz.com
+      - STORAGE_SERVICE_URL=${STORAGE_SERVICE_URL}
+      - STORAGE_API_KEY=${STORAGE_API_KEY}
+      - AUTH_SERVICE_URL=${AUTH_SERVICE_URL}
+      - AUTH_JWT_SECRET=${AUTH_JWT_SECRET}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7052/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ── Quiz Database Module ────────────────────────────────────────────────────
+  quiz-db:
+    <<: *common
+    image: fbq-quiz-db:latest
+    build:
+      context: .
+      dockerfile: containers/quiz-db/Dockerfile
+    container_name: fbq_quiz_db
+    ports:
+      - "7053:7053"
+    environment:
+      - PORT=7053
+      - DATABASE_URL=${DATABASE_URL}
+      - CORS_ORIGIN=https://fatbigquiz.com,https://www.fatbigquiz.com
+      - ADMIN_API_KEY=${ADMIN_API_KEY}
+      - AUTH_SERVICE_URL=${AUTH_SERVICE_URL}
+      - AUTH_JWT_SECRET=${AUTH_JWT_SECRET}
+      - STORAGE_SERVICE_URL=${STORAGE_SERVICE_URL}
+      - STORAGE_API_KEY=${STORAGE_API_KEY}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7053/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ── Hire Module ─────────────────────────────────────────────────────────────
+  hire:
+    <<: *common
+    image: fbq-hire:latest
+    build:
+      context: .
+      dockerfile: containers/hire/Dockerfile
+    container_name: fbq_hire
+    ports:
+      - "7054:7054"
+    environment:
+      - PORT=7054
+      - CORS_ORIGIN=https://fatbigquiz.com,https://www.fatbigquiz.com
+      - EMAIL_SERVICE_URL=${EMAIL_SERVICE_URL}
+      - EMAIL_SERVICE_API_KEY=${EMAIL_SERVICE_API_KEY}
+      - AUTH_SERVICE_URL=${AUTH_SERVICE_URL}
+      - AUTH_JWT_SECRET=${AUTH_JWT_SECRET}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7054/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ── Events Module ───────────────────────────────────────────────────────────
+  events:
+    <<: *common
+    image: fbq-events:latest
+    build:
+      context: .
+      dockerfile: containers/events/Dockerfile
+    container_name: fbq_events
+    ports:
+      - "7055:7055"
+    environment:
+      - PORT=7055
+      - DATABASE_URL=${DATABASE_URL}
+      - CORS_ORIGIN=https://fatbigquiz.com,https://www.fatbigquiz.com
+      - ADMIN_API_KEY=${ADMIN_API_KEY}
+      - EMAIL_SERVICE_URL=${EMAIL_SERVICE_URL}
+      - EMAIL_SERVICE_API_KEY=${EMAIL_SERVICE_API_KEY}
+      - AUTH_SERVICE_URL=${AUTH_SERVICE_URL}
+      - AUTH_JWT_SECRET=${AUTH_JWT_SECRET}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7055/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ── Quiz App Module (Socket.io) ────────────────────────────────────────────
+  quiz-app:
+    <<: *common
+    image: fbq-quiz-app:latest
+    build:
+      context: .
+      dockerfile: containers/quiz-app/Dockerfile
+    container_name: fbq_quiz_app
+    ports:
+      - "7056:7056"
+    environment:
+      - PORT=7056
+      - CORS_ORIGIN=https://fatbigquiz.com,https://www.fatbigquiz.com
+      - AUTH_SERVICE_URL=${AUTH_SERVICE_URL}
+      - AUTH_JWT_SECRET=${AUTH_JWT_SECRET}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7056/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ── Sales Module ────────────────────────────────────────────────────────────
+  sales:
+    <<: *common
+    image: fbq-sales:latest
+    build:
+      context: .
+      dockerfile: containers/sales/Dockerfile
+    container_name: fbq_sales
+    ports:
+      - "7057:7057"
+    environment:
+      - PORT=7057
+      - DATABASE_URL=${DATABASE_URL}
+      - CORS_ORIGIN=https://fatbigquiz.com,https://www.fatbigquiz.com
+      - ADMIN_API_KEY=${ADMIN_API_KEY}
+      - PAYMENTS_SERVICE_URL=${PAYMENTS_SERVICE_URL}
+      - PAYMENTS_API_KEY=${PAYMENTS_API_KEY}
+      - GOOGLE_MERCHANT_ID=5708205694
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/server/config/google-merchant-credentials.json
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7057/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ── Admin Module ────────────────────────────────────────────────────────────
+  admin:
+    <<: *common
+    image: fbq-admin:latest
+    build:
+      context: .
+      dockerfile: containers/admin/Dockerfile
+    container_name: fbq_admin
+    ports:
+      - "7058:7058"
+    environment:
+      - PORT=7058
+      - DATABASE_URL=${DATABASE_URL}
+      - CORS_ORIGIN=https://fatbigquiz.com,https://www.fatbigquiz.com
+      - ADMIN_API_KEY=${ADMIN_API_KEY}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - ADMIN_SECRET=${ADMIN_SECRET}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - FRONTEND_URL=https://fatbigquiz.com
+      - STORAGE_SERVICE_URL=${STORAGE_SERVICE_URL}
+      - STORAGE_API_KEY=${STORAGE_API_KEY}
+      - EMAIL_SERVICE_URL=${EMAIL_SERVICE_URL}
+      - EMAIL_SERVICE_API_KEY=${EMAIL_SERVICE_API_KEY}
+      - AUTH_SERVICE_URL=${AUTH_SERVICE_URL}
+      - AUTH_JWT_SECRET=${AUTH_JWT_SECRET}
+      - ANALYTICS_SERVICE_URL=${ANALYTICS_SERVICE_URL}
+      - DO_SPACES_REGION=sfo3
+      - DO_SPACES_BUCKET=aitshirts-laurence-dot-computer
+      - DO_SPACES_KEY=${DO_SPACES_KEY}
+      - DO_SPACES_SECRET=${DO_SPACES_SECRET}
+      - DO_SPACES_FOLDER=fat-big-quiz
+      - DO_SPACES_ENDPOINT=https://sfo3.digitaloceanspaces.com
+      - DO_SPACES_CDN_ENDPOINT=https://aitshirts-laurence-dot-computer.sfo3.cdn.digitaloceanspaces.com
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7058/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+networks:
+  fbq_network:
+    driver: bridge

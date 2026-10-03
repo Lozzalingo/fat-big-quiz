@@ -1,0 +1,17 @@
+{
+  "name": "fbq-quiz-app",
+  "version": "1.0.0",
+  "description": "Fat Big Quiz - Quiz App module (game sessions, Socket.io)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.3",
+    "cors": "^2.8.5",
+    "compression": "^1.7.5",
+    "dotenv": "^16.5.0",
+    "socket.io": "^4.8.3",
+    "axios": "^1.19.0"
+  }
+}

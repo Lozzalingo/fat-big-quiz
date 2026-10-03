@@ -19,43 +19,16 @@ const { attachGameHandlers } = require("@lozzalingo/game-engine/server");
 
 const prisma = new PrismaClient();
 
-// Site-specific route imports
-const productsRouter = require("./routes/products");
-const productImagesRouter = require("./routes/productImages");
-const categoryRouter = require("./routes/category");
-const searchRouter = require("./routes/search");
-const mainImageRouter = require("./routes/mainImages");
-const backendImageRouter = require("./routes/backendImages");
-const userRouter = require("./routes/users");
-const { publicRouter: userPublicRouter } = require("./routes/users");
-const orderRouter = require("./routes/customer_orders");
-const slugRouter = require("./routes/slugs");
-const orderProductRouter = require('./routes/customer_order_product');
-const wishlistRouter = require('./routes/wishlist');
-const subscriberRoutes = require('./routes/subscribers');
-const blogRouter = require('./routes/blog');
-const tagRouter = require('./routes/tags');
-const commentRouter = require('./routes/comments');
-const imageListRouter = require('./routes/image_list');
-const youtubeRoutes = require('./routes/youtube');
-const discountCodesRouter = require('./routes/discount-codes');
-const settingsRouter = require('./routes/settings');
-const visitorRouter = require("./routes/visitors");
-const purchasesRouter = require('./routes/purchases');
-const quizFormatsRouter = require('./routes/quizFormats');
-const quizDatabaseRouter = require('./routes/quizDatabase');
-const homepageCardsRouter = require('./routes/homepageCards');
-const globalDownloadFilesRouter = require('./routes/globalDownloadFiles');
-let merchantRouter;
-try {
-  merchantRouter = require('./routes/merchant');
-} catch (err) {
-  console.warn("[Merchant] Failed to load merchant routes:", err.message);
-  merchantRouter = null;
-}
-const indexingRouter = require('./routes/indexing');
-const campaignsRouter = require('./routes/campaigns');
-const salesRouter = require('./routes/sales');
+// Site-specific module imports
+const { registerRoutes: registerShop } = require('./modules/shop');
+const { registerRoutes: registerBlog } = require('./modules/blog');
+const { registerRoutes: registerQuizDatabase } = require('./modules/quiz-database');
+const { registerRoutes: registerSales } = require('./modules/sales');
+const { registerRoutes: registerAdmin } = require('./modules/admin');
+const { registerRoutes: registerQuizPack } = require('./modules/quiz-pack');
+const { registerRoutes: registerHire } = require('./modules/hire');
+const { registerRoutes: registerEvents } = require('./modules/events');
+const { registerRoutes: registerQuizApp } = require('./modules/quiz-app');
 const {
   sendEmail,
   sendPurchaseConfirmationEmail,
@@ -104,7 +77,22 @@ app.use(ADMIN_PROTECTED_CORE_PATHS, (req, res, next) => {
 // orders, merchandise), sets up middleware, CORS, admin auth, health check,
 // and wires cross-package hooks (bookings -> outreach + calendar).
 
-const lz = new Lozzalingo(app, prisma);
+const lz = new Lozzalingo(app, prisma, {
+  features: {
+    email: false,
+    analytics: false,
+    storage: false,
+    subscribers: false,
+    orders: false,
+    merchandise: false,
+    ops: false,
+    logging: false,
+    campaigns: false,
+    outreach: false,
+    ads: false,
+    ticker: false,
+  },
+});
 
 // ─── Game Engine ────────────────────────────────────────────────────────────────
 
@@ -221,6 +209,9 @@ app.get("/api/recent-sales", async (req, res) => {
     console.log("[Ticker] Returned", allSales.length, "recent sales (purchases:", purchaseSales.length, ", subscriptions:", subscriptionSales.length, ", etsy:", etsySalesMapped.length, ")");
     res.json({ sales: allSales });
   } catch (err) {
+      console.log('[App] Error fetching recent sales', { error: err });
+      console.log('[App] Error fetching recent sales', { error: err.message });
+      console.log('[App] Error fetching recent sales', { error: err });
     console.error("[Ticker] Error fetching recent sales:", err);
     res.status(500).json({ error: "Internal server error" });
   }
@@ -378,6 +369,9 @@ app.get("/api/sales-summary", async (req, res) => {
     console.log(`[Ticker] Sales summary: ${summary.length} product lines`);
     res.json(summary);
   } catch (err) {
+      console.log('[App] Error fetching sales summary', { error: err });
+      console.log('[App] Error fetching sales summary', { error: err.message });
+      console.log('[App] Error fetching sales summary', { error: err });
     console.error("[Ticker] Error fetching sales summary:", err);
     res.status(500).json({ error: "Internal server error" });
   }
@@ -393,69 +387,21 @@ function cachePublic(maxAge = 300) {
   };
 }
 
-// ─── Site-Specific Routes ───────────────────────────────────────────────────────
-// Public read routes (storefront needs these unauthenticated)
-app.use("/api/products", cachePublic(300), productsRouter);
-app.use("/api/products", lz.adminMiddleware, productsRouter.adminRouter);
-app.use("/api/categories", cachePublic(300), categoryRouter);
-app.use("/api/search", cachePublic(60), searchRouter);
-app.use("/api/slugs", cachePublic(300), slugRouter);
-app.use('/api/blog', cachePublic(300), blogRouter);
-app.use('/api/blog', lz.adminMiddleware, blogRouter.adminRouter);
-app.use('/api/tags', tagRouter);
-app.use('/api/comments', commentRouter);
-app.use('/api/subscribers', subscriberRoutes);
-app.use('/api/quiz-formats', quizFormatsRouter);
-app.use('/api/youtube', youtubeRoutes);
+// ─── Site-Specific Routes (registered via modules) ─────────────────────────────
+const moduleOptions = {
+  adminMiddleware: lz.adminMiddleware,
+  cachePublic,
+};
 
-// Sales tracking (webhook + checkout creation - no admin auth)
-app.use('/api/sales', salesRouter);
-app.use('/api/sales', lz.adminMiddleware, salesRouter.adminRouter);
-
-// Authenticated user routes (require login but not admin)
-app.use("/api/wishlist", wishlistRouter);
-app.use('/api/purchases', purchasesRouter);
-
-// Public user routes (accessible to any visitor, no admin auth)
-app.use("/api/users", userPublicRouter);
-
-// Admin-only routes (require admin auth)
-app.use("/api/users", lz.adminMiddleware, userRouter);
-app.use("/api/images", lz.adminMiddleware, productImagesRouter);
-app.use("/api/main-image", lz.adminMiddleware, mainImageRouter);
-app.use("/api/backendimages", lz.adminMiddleware, backendImageRouter);
-app.use("/api/orders", lz.adminMiddleware, orderRouter);
-app.use('/api/order-product', lz.adminMiddleware, orderProductRouter);
-app.use("/api/list-images", lz.adminMiddleware, imageListRouter);
-app.use('/api/discount-codes', lz.adminMiddleware, discountCodesRouter);
-app.use('/api/settings', lz.adminMiddleware, settingsRouter);
-// Visitor tracking POSTs are public (frontend calls these), analytics GETs are admin-only
-app.use('/api/visitors', (req, res, next) => {
-  const publicPosts = ['/track', '/update', '/event'];
-  if (req.method === 'POST' && publicPosts.includes(req.path)) {
-    return visitorRouter(req, res, next);
-  }
-  next();
-});
-app.use('/api/visitors', lz.adminMiddleware, visitorRouter);
-app.use('/api/quiz-database', lz.adminMiddleware, quizDatabaseRouter);
-// Public homepage cards endpoint (before admin middleware)
-const { getPublicHomepageCards } = require('./controllers/homepageCards');
-app.get('/api/homepage-cards/public', cachePublic(300), getPublicHomepageCards);
-app.use('/api/homepage-cards', lz.adminMiddleware, homepageCardsRouter);
-// Public endpoint for active global files (used by zip download route)
-const { getActiveGlobalFiles } = require('./controllers/globalDownloadFiles');
-app.get('/api/global-files/active', getActiveGlobalFiles);
-app.use('/api/global-files', lz.adminMiddleware, globalDownloadFilesRouter);
-app.use('/api/campaigns', lz.adminMiddleware, campaignsRouter);
-if (merchantRouter) {
-  app.use('/api/merchant', lz.adminMiddleware, merchantRouter);
-} else {
-  app.use('/api/merchant', (req, res) => {
-    res.status(503).json({ error: 'Google Merchant not configured', configured: false });
-  });
-}
-app.use('/api/indexing', lz.adminMiddleware, indexingRouter);
+registerShop(app, moduleOptions);
+registerBlog(app, moduleOptions);
+registerQuizDatabase(app, moduleOptions);
+registerSales(app, moduleOptions);
+registerAdmin(app, moduleOptions);
+registerQuizPack(app, moduleOptions);
+registerHire(app, moduleOptions);
+registerEvents(app, moduleOptions);
+registerQuizApp(app, moduleOptions);
 
 // ─── Quiz Database Scheduler ──────────────────────────────────────────────────
 const { initQuizScheduler } = require('./services/quizScheduler');
@@ -467,30 +413,92 @@ initQuizScheduler();
 // e-commerce Product model. Mounted at /ev/api so events-ui can use
 // apiBase = "${API_BASE}/ev".
 
-const { createExperienceRoutes } = require("@lozzalingo/experiences");
+// Event experience routes - proxy to centralised Events Service
+const EVENTS_SERVICE_URL = process.env.EVENTS_SERVICE_URL;
 
-// Proxy Prisma so the experiences controller hits EventProduct tables
-const eventPrisma = new Proxy(prisma, {
-  get(target, prop) {
-    if (prop === "product") return target.eventProduct;
-    if (prop === "package") return target.eventPackage;
-    if (prop === "productImage") return target.eventProductImage;
-    if (prop === "productSection") return target.eventProductSection;
-    // theme and productTheme stay on the shared models
-    return target[prop];
-  },
+if (EVENTS_SERVICE_URL) {
+  const eventsProxy = express.Router();
+  eventsProxy.all('/*', async (req, res) => {
+    try {
+      const url = new URL(req.path, EVENTS_SERVICE_URL);
+      for (const [key, value] of Object.entries(req.query)) {
+        url.searchParams.set(key, value);
+      }
+      const fetchOpts = {
+        method: req.method,
+        headers: {
+          'Content-Type': 'application/json',
+          ...(req.headers.authorization && { 'Authorization': req.headers.authorization }),
+          ...(req.headers['x-admin-key'] && { 'x-admin-key': req.headers['x-admin-key'] }),
+        },
+      };
+      if (req.method !== 'GET' && req.method !== 'HEAD' && req.body) {
+        fetchOpts.body = JSON.stringify(req.body);
+      }
+      const response = await fetch(url.toString(), fetchOpts);
+      const contentType = response.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        const data = await response.json();
+        return res.status(response.status).json(data);
+      }
+      const text = await response.text();
+      return res.status(response.status).send(text);
+    } catch (error) {
+      console.error('[Events] Proxy error:', error.message);
+      return res.status(502).json({ error: 'Failed to reach events service' });
+    }
+  });
+  app.use("/ev/api", eventsProxy);
+  console.log("[FBQ] Event experience routes proxied to", EVENTS_SERVICE_URL, "at /ev/api");
+} else {
+  console.warn("[FBQ] EVENTS_SERVICE_URL not configured, /ev/api routes disabled");
+}
+
+// Settings routes at /ev/api/app-settings - kept local (no service dependency)
+// Uses direct Prisma access for reading/writing settings
+const settingsRouter = express.Router();
+settingsRouter.get('/', async (req, res) => {
+  try {
+    const settings = await prisma.setting.findMany();
+    const result = {};
+    for (const s of settings) {
+      try { result[s.key] = JSON.parse(s.value); } catch { result[s.key] = s.value; }
+    }
+    return res.json(result);
+  } catch (error) {
+    console.error('[Settings] Error fetching:', error.message);
+    return res.status(500).json({ error: 'Failed to fetch settings' });
+  }
 });
-
-const eventRoutes = createExperienceRoutes(eventPrisma, {
-  authMiddleware: lz.adminMiddleware,
+settingsRouter.get('/:key', async (req, res) => {
+  try {
+    const setting = await prisma.setting.findUnique({ where: { key: req.params.key } });
+    if (!setting) return res.status(404).json({ error: 'Setting not found' });
+    let value;
+    try { value = JSON.parse(setting.value); } catch { value = setting.value; }
+    return res.json({ key: setting.key, value });
+  } catch (error) {
+    console.error('[Settings] Error fetching setting:', error.message);
+    return res.status(500).json({ error: 'Failed to fetch setting' });
+  }
 });
-app.use("/ev/api", eventRoutes);
-console.log("[FBQ] Event experience routes mounted at /ev/api (proxied to EventProduct tables)");
-
-// Mount settings routes at /ev/api/app-settings so events-ui can read/write booking config
-const { createSettingsRoutes } = require("@lozzalingo/settings/server");
-app.use("/ev/api/app-settings", createSettingsRoutes(prisma, { secretKey: process.env.NEXTAUTH_SECRET }));
-console.log("[FBQ] Settings routes mounted at /ev/api/app-settings");
+settingsRouter.put('/:key', async (req, res) => {
+  try {
+    const { value, category, description } = req.body;
+    const storedValue = typeof value === 'string' ? value : JSON.stringify(value);
+    const setting = await prisma.setting.upsert({
+      where: { key: req.params.key },
+      update: { value: storedValue, category: category || 'general', description },
+      create: { key: req.params.key, value: storedValue, category: category || 'general', description },
+    });
+    return res.json(setting);
+  } catch (error) {
+    console.error('[Settings] Error saving setting:', error.message);
+    return res.status(500).json({ error: 'Failed to save setting' });
+  }
+});
+app.use("/ev/api/app-settings", settingsRouter);
+console.log("[FBQ] Settings routes mounted at /ev/api/app-settings (local)");
 
 // ─── File Download Route ────────────────────────────────────────────────────────
 
@@ -552,6 +560,9 @@ app.get('/api/download/:purchaseId/:token', async (req, res) => {
         const parsed = JSON.parse(purchase.product.downloadFile);
         productFiles = Array.isArray(parsed) ? parsed : [purchase.product.downloadFile];
       } catch {
+      console.log('[App] Error during download file retrieval', { error: error });
+      console.log('[App] Error during download - file retrieval failed', { purchaseId: req.params.purchaseId, error: error.message });
+      console.log('[App] Error during download - invalid or expired token', { error: error, purchaseId: req.params.purchaseId });
         productFiles = [purchase.product.downloadFile];
       }
 
@@ -570,6 +581,9 @@ app.get('/api/download/:purchaseId/:token', async (req, res) => {
         const parsed = JSON.parse(purchase.product.downloadFile);
         files = Array.isArray(parsed) ? parsed : [purchase.product.downloadFile];
       } catch {
+      console.log('[App] Error streaming download file', { error: error });
+      console.log('[App] Error during download - stream error', { purchaseId: req.params.purchaseId, error: error.message });
+      console.log('[App] Error during download - file not found', { error: error, purchaseId: req.params.purchaseId });
         files = [purchase.product.downloadFile];
       }
 
@@ -587,6 +601,9 @@ app.get('/api/download/:purchaseId/:token', async (req, res) => {
     res.setHeader('Content-Disposition', `attachment; filename="${cleanName}"`);
     s3Response.Body.pipe(res);
   } catch (error) {
+      console.log('[App] Error processing download request', { error: error });
+      console.log('[App] Error during download - unexpected failure', { purchaseId: req.params.purchaseId, error: error.message });
+      console.log('[App] Error during download', { error: error, purchaseId: req.params.purchaseId });
     console.error('[Download] Error:', error.message);
     return res.status(500).json({ error: 'Error downloading file' });
   }
@@ -631,6 +648,9 @@ app.post('/api/send-purchase-email', emailRateLimit, async (req, res) => {
     if (success) return res.json({ success: true });
     return res.status(500).json({ error: 'Failed to send email' });
   } catch (error) {
+      console.log('[App] Error sending purchase email', { error: error });
+      console.log('[App] Error sending purchase email', { error: error.message });
+      console.log('[App] Error sending purchase email', { error: error });
     console.error('[Email] Send purchase email error:', error.message);
     return res.status(500).json({ error: error.message });
   }
@@ -644,6 +664,9 @@ app.post('/api/send-order-email', emailRateLimit, async (req, res) => {
     if (success) return res.json({ success: true });
     return res.status(500).json({ error: 'Failed to send email' });
   } catch (error) {
+      console.log('[App] Error sending order email', { error: error });
+      console.log('[App] Error sending order email', { error: error.message });
+      console.log('[App] Error sending order email', { error: error });
     console.error('[Email] Send order email error:', error.message);
     return res.status(500).json({ error: error.message });
   }
@@ -658,6 +681,9 @@ app.post('/api/send-admin-notification', emailRateLimit, async (req, res) => {
     console.log('[Email] Admin notification failed, but continuing');
     return res.json({ success: false, message: 'Failed to send admin notification' });
   } catch (error) {
+      console.log('[App] Error sending admin notification', { error: error });
+      console.log('[App] Error sending admin notification', { error: error.message });
+      console.log('[App] Error sending admin notification', { error: error });
     console.error('[Email] Admin notification error:', error.message);
     return res.json({ success: false, error: error.message });
   }
@@ -704,6 +730,9 @@ app.post('/api/test-email', lz.adminMiddleware, async (req, res) => {
     if (success) return res.json({ success: true, type, email });
     return res.status(500).json({ error: 'Failed to send email' });
   } catch (error) {
+      console.log('[App] Error sending test email', { error: error });
+      console.log('[App] Error sending test email', { error: error.message });
+      console.log('[App] Error sending test email', { error: error });
     console.error('[Email] Test email error:', error.message);
     return res.status(500).json({ error: error.message });
   }

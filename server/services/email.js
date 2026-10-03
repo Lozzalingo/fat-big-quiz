@@ -1,40 +1,113 @@
 /**
  * Email Service - Fat Big Quiz
- * Uses shared @lozzalingo/email package for base functionality
- * Project-specific templates defined here
+ * Calls the centralised Email Service via fetch().
+ * Project-specific HTML templates built locally until SVC.1 is done.
  */
 
-const { createEmailService, buildEmailTemplate } = require('@lozzalingo/email/server');
+const EMAIL_SERVICE_URL = process.env.EMAIL_SERVICE_URL;
+const EMAIL_SERVICE_API_KEY = process.env.EMAIL_SERVICE_API_KEY;
+const SITE_ID = 'fat-big-quiz';
+const WEBSITE_URL = process.env.FRONTEND_URL || 'http://localhost:3002';
 
-const emailService = createEmailService({
-  brandName: 'Fat Big Quiz',
-  style: { primary: '#7c3aed', headerBg: '#7c3aed' },
-});
+/**
+ * Send an email via the Email Service.
+ */
+async function sendEmail({ to, subject, html, text }) {
+  if (!EMAIL_SERVICE_URL) {
+    console.error('[Email] EMAIL_SERVICE_URL not configured');
+    return false;
+  }
+  try {
+    const res = await fetch(EMAIL_SERVICE_URL + '/api/email/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Email-Service-Key': EMAIL_SERVICE_API_KEY || '',
+      },
+      body: JSON.stringify({ site_id: SITE_ID, to, subject, html, text }),
+    });
+    if (!res.ok) {
+      const body = await res.text();
+      console.error('[Email] Service returned', res.status, body);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error('[Email] Failed to call Email Service:', error.message);
+    return false;
+  }
+}
 
-// Re-export shared methods
-const { sendEmail, sendWelcomeEmail: sharedWelcomeEmail, sendPasswordResetEmail: sharedPasswordResetEmail } = emailService;
+// Lightweight email template wrapper (kept locally until Email Service SVC.1)
+function buildEmailTemplate({ title, body, brandName, style }) {
+  const primary = style?.primary || '#7c3aed';
+  const headerBg = style?.headerBg || primary;
+  return `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+body{margin:0;padding:0;background:#f4f4f5;font-family:arial,helvetica,sans-serif}
+.container{max-width:600px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden}
+.header{background:${headerBg};color:#fff;padding:24px;text-align:center;font-size:22px;font-weight:bold}
+.body{padding:32px 24px;color:#333;line-height:1.6}
+.summary{background:#f9fafb;border-radius:6px;padding:16px 20px;margin:16px 0}
+.summary-row{display:flex;justify-content:space-between;padding:4px 0}
+.warning{background:#fef3c7;border-left:4px solid #f59e0b;padding:12px 16px;border-radius:4px;margin:16px 0}
+.footer{padding:16px 24px;text-align:center;color:#9a9a9a;font-size:12px;border-top:1px solid #e5e7eb}
+</style></head><body>
+<div class="container">
+<div class="header">${brandName || 'Fat Big Quiz'}</div>
+<div class="body">${body}</div>
+<div class="footer">&copy; ${new Date().getFullYear()} ${brandName || 'Fat Big Quiz'}</div>
+</div></body></html>`;
+}
 
 /**
  * Send welcome email (project-specific with quiz features)
  */
 async function sendWelcomeEmail(email) {
-  return sharedWelcomeEmail(email, {
-    features: [
-      'Printable quiz packs for any occasion',
-      'Instant digital downloads',
-      'Full-colour and low-ink options',
-      'Questions, answers, and score sheets included',
-    ],
-    ctaUrl: `${emailService.websiteUrl}/shop`,
-    ctaText: 'Browse Quiz Packs',
+  console.log('[Email] Sending welcome email to:', email);
+  const html = buildEmailTemplate({
+    title: 'Welcome to Fat Big Quiz!',
+    body: `
+      <h2>Welcome!</h2>
+      <p>Thanks for signing up to Fat Big Quiz. Here's what you can look forward to:</p>
+      <ul>
+        <li>Printable quiz packs for any occasion</li>
+        <li>Instant digital downloads</li>
+        <li>Full-colour and low-ink options</li>
+        <li>Questions, answers, and score sheets included</li>
+      </ul>
+      <p style="text-align: center;">
+        <a href="${WEBSITE_URL}/shop" style="display: inline-block; background: #7c3aed; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500;">Browse Quiz Packs</a>
+      </p>
+    `,
+    brandName: 'Fat Big Quiz',
+    style: { primary: '#7c3aed', headerBg: '#7c3aed' },
   });
+  const text = 'Welcome to Fat Big Quiz!\n\nThanks for signing up. Browse our quiz packs at ' + WEBSITE_URL + '/shop\n\nFat Big Quiz';
+  return sendEmail({ to: email, subject: 'Welcome to Fat Big Quiz!', html, text });
 }
 
 /**
  * Send password reset email
  */
 async function sendPasswordResetEmail(email, { resetUrl, expiresIn = '1 hour' }) {
-  return sharedPasswordResetEmail(email, { resetUrl, expiresIn });
+  console.log('[Email] Sending password reset email to:', email);
+  const html = buildEmailTemplate({
+    title: 'Reset Your Password',
+    body: `
+      <h2>Password Reset</h2>
+      <p>We received a request to reset your password. Click the button below to set a new one:</p>
+      <p style="text-align: center;">
+        <a href="${resetUrl}" style="display: inline-block; background: #7c3aed; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500;">Reset Password</a>
+      </p>
+      <p style="font-size: 12px; color: #6b7280;">This link expires in ${expiresIn}. If you didn't request this, ignore this email.</p>
+    `,
+    brandName: 'Fat Big Quiz',
+    style: { primary: '#7c3aed', headerBg: '#7c3aed' },
+  });
+  const text = `Reset your password: ${resetUrl}\n\nThis link expires in ${expiresIn}.\n\nFat Big Quiz`;
+  return sendEmail({ to: email, subject: 'Fat Big Quiz - Reset Your Password', html, text });
 }
 
 /**
@@ -207,7 +280,7 @@ async function sendAdminListNotification({ email, firstName, lastName, name, sou
 }
 
 module.exports = {
-  emailService,
+  buildEmailTemplate,
   sendEmail,
   sendPurchaseConfirmationEmail,
   sendOrderConfirmationEmail,
