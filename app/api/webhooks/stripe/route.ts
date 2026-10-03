@@ -20,6 +20,28 @@ function verifySignature(body: string, signature: string): boolean {
   return signature === expected;
 }
 
+/**
+ * Normalise a payments service callback into a consistent format.
+ *
+ * The payments service sends flat payloads like:
+ *   { event_type: "checkout.session.completed", session_id: "cs_...", customer_email: "...", metadata: {...} }
+ *
+ * We normalise this to:
+ *   { type: "checkout.session.completed", data: { ...flat fields } }
+ */
+function normaliseEvent(raw: any): { type: string; data: any } {
+  // If it already has a `type` field (Stripe-native format), use as-is
+  if (raw.type && raw.data) {
+    return { type: raw.type, data: raw.data.object || raw.data };
+  }
+
+  // Payments service flat callback format uses `event_type`
+  const type = raw.event_type || raw.type || 'unknown';
+  // Everything except event_type is the data
+  const { event_type: _et, ...data } = raw;
+  return { type, data };
+}
+
 export async function POST(request: NextRequest) {
   const body = await request.text();
   const signature = request.headers.get("x-pay-signature");
@@ -40,10 +62,9 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  let event: any;
+  let raw: any;
   try {
-    event = JSON.parse(body);
-    console.log("[Payments] Webhook event received:", event.type, event.id);
+    raw = JSON.parse(body);
   } catch (err: any) {
     console.error("[Payments] Failed to parse webhook body:", err.message);
     return NextResponse.json(
@@ -52,11 +73,16 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const { type: eventType, data: eventData } = normaliseEvent(raw);
+  console.log("[Payments] Webhook callback received:", eventType);
+
   // Handle the event
-  switch (event.type) {
+  switch (eventType) {
     // One-time purchase completed
     case "checkout.session.completed": {
-      const session = event.data?.object || event.data;
+      // The payments service sends flat fields: session_id, payment_intent_id,
+      // customer_email, amount_total, metadata, line_items, mode, etc.
+      const session = eventData;
 
       // Handle subscription checkout separately
       if (session.mode === "subscription") {
@@ -65,9 +91,12 @@ export async function POST(request: NextRequest) {
       }
 
       // One-time purchase flow
-      // Supports both single-product (legacy productId) and multi-item cart (productIds JSON array)
       const metadata = session.metadata || {};
       const customerEmail = session.customer_email || session.customer_details?.email;
+
+      // The payments service sends session_id (not id)
+      const sessionId = session.session_id || session.id;
+      const paymentIntentId = session.payment_intent_id || session.payment_intent;
 
       // Resolve all product IDs from metadata
       let allProductIds: string[] = [];
@@ -88,8 +117,9 @@ export async function POST(request: NextRequest) {
 
       // Get product names from the event data (the payments service includes line items)
       let productNames: string[] = [];
-      if (session.line_items?.data) {
-        productNames = session.line_items.data.map((item: any) => item.description || "Quiz Pack");
+      if (session.line_items) {
+        const items = Array.isArray(session.line_items) ? session.line_items : session.line_items?.data || [];
+        productNames = items.map((item: any) => item.description || "Quiz Pack");
       }
       const productName = productNames.length > 0 ? productNames.join(", ") : "Quiz Pack";
       const amountTotal = session.amount_total ? (session.amount_total / 100).toFixed(2) : "0.00";
@@ -109,8 +139,8 @@ export async function POST(request: NextRequest) {
                   productId: pid,
                   email: customerEmail,
                   userId: userId || null,
-                  stripeSessionId: session.id,
-                  stripePaymentId: session.payment_intent,
+                  stripeSessionId: sessionId,
+                  stripePaymentId: paymentIntentId,
                   status: "completed",
                 }),
               }
@@ -134,7 +164,7 @@ export async function POST(request: NextRequest) {
                   email: customerEmail,
                   productName,
                   price: amountTotal,
-                  sessionId: session.id,
+                  sessionId,
                 }),
               }
             );
@@ -179,7 +209,7 @@ export async function POST(request: NextRequest) {
                 productName,
                 price: amountTotal,
                 productType,
-                sessionId: session.id,
+                sessionId,
                 productImages,
               }),
             }
@@ -188,59 +218,78 @@ export async function POST(request: NextRequest) {
           console.error("[Payments] Error processing purchase:", error);
         }
       } else if (!customerEmail) {
-        console.error("[Payments] No customer email found for session:", session.id);
+        console.error("[Payments] No customer email found for session:", sessionId);
       } else {
-        console.error("[Payments] No product IDs found in metadata for session:", session.id);
+        console.error("[Payments] No product IDs found in metadata for session:", sessionId);
       }
 
-      console.log(`[Payments] Payment completed for session: ${session.id}`);
+      console.log(`[Payments] Payment completed for session: ${sessionId}`);
       break;
     }
 
     // Subscription lifecycle events
     case "customer.subscription.created":
     case "customer.subscription.updated": {
-      const subscription = event.data?.object || event.data;
+      // Payments service sends: subscription_id, customer_id, status,
+      // current_period_start, current_period_end, cancel_at_period_end, items, metadata
+      const subscription = normaliseSubscriptionData(eventData);
       await updateUserSubscription(subscription);
       break;
     }
 
     case "customer.subscription.deleted": {
-      const subscription = event.data?.object || event.data;
+      const subscription = normaliseSubscriptionData(eventData);
       await cancelUserSubscription(subscription);
       break;
     }
 
     case "invoice.payment_failed": {
-      const invoice = event.data?.object || event.data;
-      const failedSubId = invoice.parent?.subscription_details?.subscription;
-      if (failedSubId) {
-        console.log(`[Payments] Subscription payment failed for: ${invoice.customer_email}`);
+      const customerEmail = eventData.customer_email;
+      const subId = eventData.subscription_id;
+      if (subId) {
+        console.log(`[Payments] Subscription payment failed for: ${customerEmail}`);
         // The payments service will retry, and eventually cancel. We handle the deletion event above.
       }
       break;
     }
 
     case "payment_intent.succeeded": {
-      const paymentIntent = event.data?.object || event.data;
-      console.log(`[Payments] PaymentIntent succeeded: ${paymentIntent.id}`);
+      const intentId = eventData.payment_intent_id || eventData.id;
+      console.log(`[Payments] PaymentIntent succeeded: ${intentId}`);
       break;
     }
 
     case "payment_intent.payment_failed": {
-      const paymentIntent = event.data?.object || event.data;
-      console.log(`[Payments] Payment failed: ${paymentIntent.id}`);
+      const intentId = eventData.payment_intent_id || eventData.id;
+      console.log(`[Payments] Payment failed: ${intentId}`);
       break;
     }
 
     default:
-      console.log(`[Payments] Unhandled event type: ${event.type}`);
+      console.log(`[Payments] Unhandled event type: ${eventType}`);
   }
 
   return NextResponse.json({ received: true });
 }
 
 // Subscription helpers
+
+/**
+ * Normalise the payments service's flat subscription callback into the format
+ * our handlers expect (matching Stripe subscription object shape).
+ */
+function normaliseSubscriptionData(data: any): any {
+  return {
+    id: data.subscription_id || data.id,
+    customer: data.customer_id || data.customer,
+    status: data.status,
+    current_period_start: data.current_period_start,
+    current_period_end: data.current_period_end,
+    cancel_at_period_end: data.cancel_at_period_end,
+    items: data.items ? { data: data.items } : undefined,
+    metadata: data.metadata || {},
+  };
+}
 
 /**
  * Extract the current_period_end from a subscription.
@@ -258,17 +307,31 @@ function getPeriodEnd(subscription: any): number {
 }
 
 async function handleSubscriptionCheckout(session: any) {
-  const userId = session.metadata?.userId;
-  const subscriptionId = session.subscription;
+  const metadata = session.metadata || {};
+  const userId = metadata.userId;
+  const subscriptionId = session.subscription_id || session.subscription;
 
   if (!userId || !subscriptionId) {
     console.error("[Payments] Subscription checkout missing userId or subscriptionId");
     return;
   }
 
-  // The payments service should include subscription details in the event.
+  // Store the customer ID if provided
+  const customerId = session.customer_id || session.customer;
+  if (customerId) {
+    const existingUser = await prisma.user.findUnique({ where: { id: userId } });
+    if (existingUser && !existingUser.stripeCustomerId) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { stripeCustomerId: customerId },
+      });
+      console.log("[Payments] Stored customer ID from subscription checkout:", customerId);
+    }
+  }
+
   // Use period_end from the session if available, otherwise use a sensible default.
-  const periodEnd = session.subscription_period_end
+  const periodEnd = session.current_period_end
+    || session.subscription_period_end
     || Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60;
 
   await (prisma.user as any).update({

@@ -119,16 +119,15 @@ export async function POST(request: NextRequest) {
       return product.productType === "DIGITAL_DOWNLOAD";
     });
 
-    // Build line items using DB prices only
+    // Build line items in the format the payments service expects
     const lineItems = items.map((item) => {
       const product = productMap.get(item.id)!;
 
-      const productData: Record<string, any> = {
+      const lineItem: Record<string, any> = {
         name: product.title,
-        metadata: {
-          productId: product.id,
-          productType: product.productType || "DIGITAL_DOWNLOAD",
-        },
+        amount: Math.round(product.price * 100),
+        currency: "gbp",
+        quantity: item.amount,
       };
 
       // Add image if available (requires HTTPS URLs)
@@ -136,17 +135,10 @@ export async function POST(request: NextRequest) {
         ? getProductImageUrl(product.mainImage)
         : undefined;
       if (imageUrl && imageUrl.startsWith("https://")) {
-        productData.images = [imageUrl];
+        lineItem.images = [imageUrl];
       }
 
-      return {
-        price_data: {
-          currency: "gbp",
-          product_data: productData,
-          unit_amount: Math.round(product.price * 100),
-        },
-        quantity: item.amount,
-      };
+      return lineItem;
     });
 
     // For single product, use product-specific URLs. For cart, use generic ones.
@@ -174,9 +166,7 @@ export async function POST(request: NextRequest) {
         'X-Pay-Key': PAYMENTS_KEY,
       },
       body: JSON.stringify({
-        payment_method_types: ['card'],
         line_items: lineItems,
-        mode: 'payment',
         success_url: successUrl,
         cancel_url: cancelUrl,
         customer_email: email || undefined,

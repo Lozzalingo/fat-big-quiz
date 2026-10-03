@@ -45,17 +45,26 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify({
         customer_email: email,
-        customer_id: user?.stripeCustomerId || undefined,
-        user_id: userId,
-        product_name: 'Quiz Database Access',
-        product_description: 'Full access to the Fat Big Quiz question database with 59,000+ questions, quiz builder, lucky dip, and export tools.',
-        product_metadata: { type: 'quiz-database-subscription' },
-        unit_amount: 999,
-        currency: 'gbp',
-        interval: 'month',
+        line_items: [
+          {
+            price_data: {
+              currency: 'gbp',
+              product_data: {
+                name: 'Quiz Database Access',
+                description: 'Full access to the Fat Big Quiz question database with 59,000+ questions, quiz builder, lucky dip, and export tools.',
+              },
+              unit_amount: 999,
+              recurring: { interval: 'month' },
+            },
+            quantity: 1,
+          },
+        ],
         success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/quiz-database?subscribed=true`,
         cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/quiz-database?cancelled=true`,
-        metadata: { userId },
+        metadata: {
+          userId,
+          type: 'quiz-database-subscription',
+        },
       }),
     });
 
