@@ -157,6 +157,11 @@ jobs:
 
             # Restart services with new images (db stays up)
             echo "=== Starting new containers ==="
+            # Write ENV_FILE secret to droplet .env before starting container
+            if [ -n "$ENV_FILE_CONTENT" ]; then
+              printf '%s' "$ENV_FILE_CONTENT" > .env
+              echo "=== .env updated from GitHub secret ==="
+            fi
             docker compose up -d --no-build frontend api
 
             # Health check with retries

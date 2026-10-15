@@ -45,8 +45,11 @@ export default function PlayerGamePage() {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    const quizAppUrl = process.env.NEXT_PUBLIC_QUIZ_APP_URL
+      || process.env.NEXT_PUBLIC_API_BASE_URL
+      || "http://localhost:3001";
     const socket = io(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001"}/game`,
+      `${quizAppUrl}/game`,
       { transports: ["websocket"] }
     );
 

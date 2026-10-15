@@ -33,10 +33,13 @@ export default function HostPage() {
   const socketRef = useRef<Socket | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Connect socket
+  // Connect socket - prefer dedicated quiz-app container, fall back to main API
   useEffect(() => {
+    const quizAppUrl = process.env.NEXT_PUBLIC_QUIZ_APP_URL
+      || process.env.NEXT_PUBLIC_API_BASE_URL
+      || "http://localhost:3001";
     const socket = io(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001"}/game`,
+      `${quizAppUrl}/game`,
       { transports: ["websocket"] }
     );
 

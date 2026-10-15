@@ -34,6 +34,7 @@ COPY . .
 # Build-time environment variables for Next.js
 ENV NEXT_PUBLIC_API_BASE_URL=https://fatbigquiz.com
 ENV NEXT_PUBLIC_BASE_URL=https://fatbigquiz.com
+ENV NEXT_PUBLIC_QUIZ_APP_URL=https://fatbigquiz.com
 ENV NEXT_PUBLIC_DO_SPACES_CDN_ENDPOINT=https://aitshirts-laurence-dot-computer.sfo3.cdn.digitaloceanspaces.com
 ENV NEXT_PUBLIC_DO_SPACES_FOLDER=fat-big-quiz
 ENV NEXT_PUBLIC_GA_MEASUREMENT_ID=G-T6DDWDZHQ0

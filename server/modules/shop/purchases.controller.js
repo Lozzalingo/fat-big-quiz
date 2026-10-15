@@ -62,7 +62,12 @@ async function getPurchaseBySessionId(request, response) {
     const { sessionId } = request.params;
 
     const purchase = await prisma.purchase.findFirst({
-      where: { stripeSessionId: sessionId },
+      where: {
+        OR: [
+          { stripeSessionId: sessionId },
+          { sessionIdAlias: sessionId },
+        ],
+      },
       select: {
         id: true,
         email: true,

@@ -5,6 +5,42 @@ const { sendWelcomeEmail, sendEmail, sendAdminListNotification, buildEmailTempla
 const DOUBLE_OPT_IN = process.env.SUBSCRIBER_DOUBLE_OPT_IN === 'true';
 const WEBSITE_URL = process.env.NEXTAUTH_URL || process.env.FRONTEND_URL || 'http://localhost:3000';
 
+// CRM integration - sync new subscribers to the centralised CRM
+const CRM_URL = process.env.CRM_SERVICE_URL || 'https://crm.laurence.computer';
+const CRM_API_KEY = process.env.CRM_API_KEY || '';
+
+/**
+ * Push a new subscriber to the CRM service (fire and forget).
+ * Creates/updates a contact and adds them to the fbq-newsletter list.
+ */
+function syncSubscriberToCRM({ email, firstName, lastName, source }) {
+  if (!CRM_API_KEY) {
+    console.log("[Subscriber] CRM sync skipped - no CRM_API_KEY configured");
+    return;
+  }
+
+  fetch(`${CRM_URL}/api/crm/contacts`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': CRM_API_KEY,
+    },
+    body: JSON.stringify({
+      email,
+      first_name: firstName || '',
+      last_name: lastName || '',
+      source: source || 'fat-big-quiz',
+      list_id: 1,
+    }),
+  })
+    .then((res) => {
+      console.log(`[Subscriber] CRM sync for ${email}: ${res.status}`);
+    })
+    .catch((err) => {
+      console.error(`[Subscriber] CRM sync error for ${email}:`, err.message);
+    });
+}
+
 // Simple email validation
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -131,6 +167,9 @@ async function createSubscriber(request, response) {
         });
         console.log("[Subscriber] Reactivated:", normalisedEmail);
 
+        // Sync to CRM (fire and forget)
+        syncSubscriberToCRM({ email: normalisedEmail, firstName: existingSubscriber.firstName, lastName: existingSubscriber.lastName, source: source || existingSubscriber.source || 'subscriber' });
+
         // Notify admin of reactivation
         sendAdminListNotification({ email: normalisedEmail, firstName: existingSubscriber.firstName, lastName: existingSubscriber.lastName, source: source || existingSubscriber.source || 'subscriber' })
           .then((sent) => console.log("[Subscriber] Admin notification (reactivation) sent, success:", sent))
@@ -155,6 +194,9 @@ async function createSubscriber(request, response) {
     });
 
     console.log("[Subscriber] Created successfully:", normalisedEmail, "optIn:", !DOUBLE_OPT_IN ? 'immediate' : 'pending confirmation');
+
+    // Sync to CRM (fire and forget)
+    syncSubscriberToCRM({ email: normalisedEmail, firstName: firstName?.trim(), lastName: lastName?.trim(), source: source || 'subscriber' });
 
     if (DOUBLE_OPT_IN) {
       // Send confirmation email

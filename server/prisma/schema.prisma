@@ -77,9 +77,10 @@ model Purchase {
   userId          String?
   email           String    // For guest purchases
   productId       String
-  stripePaymentId String?
-  stripeSessionId String?
-  downloadToken   String?   @unique // Secure token for guest downloads
+  stripePaymentId  String?
+  stripeSessionId  String?
+  sessionIdAlias   String?  // Secondary session ID -- used when a purchase has two valid download links
+  downloadToken    String?  @unique // Secure token for guest downloads
   downloadCount   Int       @default(0)
   status          String    @default("pending") // pending, completed, refunded
   createdAt       DateTime  @default(now())

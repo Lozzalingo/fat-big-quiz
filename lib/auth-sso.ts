@@ -1,16 +1,53 @@
 /**
  * Lozzalingo SSO auth client for Next.js apps.
  *
- * Validates JWTs from auth.laurence.computer using HS256.
- * Works in Next.js middleware (Edge Runtime compatible).
+ * Mirrors the logic of auth_client.py (Python) exactly:
+ * 1. Check for auth_token in URL query param -> validate -> set cookie -> strip param -> redirect
+ * 2. Check for auth_token cookie -> validate -> authenticated
+ * 3. No valid token -> redirect to auth login
  *
- * Usage in middleware.ts:
- *   import { verifySSOToken, handleSSOAuth } from './lib/auth-sso';
+ * Works in Next.js middleware (Edge Runtime compatible).
  */
 
 const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'https://auth.laurence.computer';
 
-interface SSOPayload {
+/**
+ * Clean a redirect URL: strip stale auth_token params and force the correct
+ * public base URL. Behind Docker/nginx/Cloudflare, request.url often reports
+ * an internal host (0.0.0.0:3000, localhost:3000) instead of the real domain.
+ *
+ * Mirrors _clean_redirect_url() from Python auth_client.py.
+ */
+export function cleanRedirectUrl(rawUrl: string): string {
+  try {
+    const parsed = new URL(rawUrl);
+
+    // Strip stale auth_token param
+    parsed.searchParams.delete('auth_token');
+
+    // If we have a configured public base URL, replace the host/protocol
+    // to avoid leaking internal Docker hosts into the auth redirect
+    const publicBase = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXTAUTH_URL;
+    if (publicBase) {
+      const pub = new URL(publicBase);
+      parsed.protocol = pub.protocol;
+      parsed.host = pub.host;
+    } else {
+      // Fallback: force https:// for non-localhost domains
+      const localhostHosts = ['localhost', '127.0.0.1', '0.0.0.0'];
+      const hostname = parsed.hostname;
+      if (!localhostHosts.includes(hostname)) {
+        parsed.protocol = 'https:';
+      }
+    }
+
+    return parsed.toString();
+  } catch {
+    return rawUrl;
+  }
+}
+
+export interface SSOPayload {
   user_id: number;
   email: string;
   site_id: string | null;
@@ -36,6 +73,8 @@ function base64UrlDecode(str: string): Uint8Array {
 /**
  * Verify an HS256 JWT using the Web Crypto API (Edge Runtime compatible).
  * Returns the payload or null if invalid/expired.
+ *
+ * Equivalent to decode_jwt() in auth_client.py.
  */
 export async function verifySSOToken(token: string): Promise<SSOPayload | null> {
   const secret = process.env.AUTH_JWT_SECRET;
@@ -62,9 +101,14 @@ export async function verifySSOToken(token: string): Promise<SSOPayload | null> 
     );
 
     const sigInput = encoder.encode(`${headerB64}.${payloadB64}`);
-    const signature = base64UrlDecode(signatureB64);
+    const sigBytes = base64UrlDecode(signatureB64);
 
-    const valid = await crypto.subtle.verify('HMAC', key, signature.buffer as ArrayBuffer, sigInput);
+    // Copy into a fresh ArrayBuffer to avoid Edge runtime realm instanceof checks
+    // on the underlying buffer (confirmed bug in Edge sandbox).
+    const sigView = new Uint8Array(new ArrayBuffer(sigBytes.byteLength));
+    sigView.set(sigBytes);
+
+    const valid = await crypto.subtle.verify('HMAC', key, sigView, sigInput);
     if (!valid) return null;
 
     // Decode payload
@@ -82,34 +126,35 @@ export async function verifySSOToken(token: string): Promise<SSOPayload | null> 
 }
 
 /**
- * Handle SSO auth for admin routes in Next.js middleware.
+ * Equivalent to require_auth in auth_client.py.
  *
- * 1. Checks for auth_token query param (cross-domain SSO) - sets cookie and strips param
- * 2. Checks for auth_token cookie - validates JWT
+ * Call this from middleware on protected routes. It handles the full flow:
+ * 1. auth_token in URL? -> validate, set cookie, strip param, redirect (clean URL)
+ * 2. auth_token cookie? -> validate, return payload
+ * 3. Nothing? -> redirect to auth login
  *
- * Returns:
- * - { authenticated: true } if SSO token is valid
- * - { redirect: NextResponse } if a redirect is needed (cookie set from query param)
- * - { authenticated: false } if no valid SSO token found
+ * Returns either a NextResponse (redirect) or a payload (authenticated).
  */
-export async function handleSSOAuth(
+export async function requireAuth(
   request: import('next/server').NextRequest,
   NextResponse: typeof import('next/server').NextResponse
 ): Promise<
-  | { authenticated: true; email: string }
-  | { authenticated: false }
   | { redirect: import('next/server').NextResponse }
+  | { payload: SSOPayload }
 > {
   const url = request.nextUrl.clone();
 
-  // 1. Check for auth_token in query params (cross-domain redirect from auth service)
+  // 1. Check for token in query param (cross-domain SSO redirect from auth service)
   const tokenFromUrl = url.searchParams.get('auth_token');
   if (tokenFromUrl) {
     const payload = await verifySSOToken(tokenFromUrl);
-    if (payload && payload.is_super_admin) {
-      // Strip token from URL and set cookie
+    if (payload) {
+      // Strip auth_token from URL, set cookie, redirect to clean URL.
+      // Use cleanRedirectUrl to ensure we redirect to the public domain,
+      // not an internal Docker host.
       url.searchParams.delete('auth_token');
-      const response = NextResponse.redirect(url);
+      const cleanTarget = cleanRedirectUrl(url.toString());
+      const response = NextResponse.redirect(cleanTarget);
       response.cookies.set('auth_token', tokenFromUrl, {
         httpOnly: true,
         secure: true,
@@ -121,22 +166,21 @@ export async function handleSSOAuth(
     }
   }
 
-  // 2. Check for auth_token cookie
+  // 2. Check cookie
   const cookieToken = request.cookies.get('auth_token')?.value;
   if (cookieToken) {
     const payload = await verifySSOToken(cookieToken);
-    if (payload && payload.is_super_admin) {
-      return { authenticated: true, email: payload.email };
+    if (payload) {
+      return { payload };
     }
   }
 
-  // 3. No valid SSO token
-  return { authenticated: false };
-}
-
-/**
- * Build a redirect URL to the SSO login page.
- */
-export function ssoLoginRedirect(currentUrl: string): string {
-  return `${AUTH_SERVICE_URL}/login?redirect=${encodeURIComponent(currentUrl)}`;
+  // 3. No valid token - redirect to auth login
+  // Strip any stale auth_token from current URL before using as redirect target.
+  // Force the public base URL so that Docker/dev hosts (0.0.0.0, localhost:3000)
+  // do not leak into the redirect URL sent to the auth service.
+  url.searchParams.delete('auth_token');
+  const cleanUrl = cleanRedirectUrl(url.toString());
+  const loginUrl = `${AUTH_SERVICE_URL}/login?redirect=${encodeURIComponent(cleanUrl)}`;
+  return { redirect: NextResponse.redirect(loginUrl) };
 }

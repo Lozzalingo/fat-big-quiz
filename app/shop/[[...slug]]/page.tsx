@@ -27,6 +27,12 @@ const ShopPage = (slug: any) => {
     <div className="text-black bg-white">
       <div className=" max-w-screen-2xl mx-auto px-10 max-sm:px-5">
         <Breadcrumb />
+        <div className="mb-4 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+          Having any trouble with your download? Email us at{" "}
+          <a href="mailto:info@fatbigquiz.com" className="font-semibold underline hover:text-blue-900">
+            info@fatbigquiz.com
+          </a>
+        </div>
         <div className="grid grid-cols-[200px_1fr] gap-x-10 max-md:grid-cols-1 max-md:gap-y-5">
           <Filters />
           <div>
