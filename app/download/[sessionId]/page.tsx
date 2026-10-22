@@ -489,6 +489,14 @@ export default function DownloadPage() {
           </div>
         </div>
 
+        {/* Support */}
+        <div className="mb-4 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-700 text-center">
+          Having any trouble with your download? Email us at{" "}
+          <a href="mailto:info@fatbigquiz.com" className="font-semibold underline hover:text-blue-900">
+            info@fatbigquiz.com
+          </a>
+        </div>
+
         {/* What's Next */}
         <div className="bg-white rounded-xl shadow-lg p-6">
           <h3 className="font-bold text-text-primary mb-4">What's Next?</h3>
