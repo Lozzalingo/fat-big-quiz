@@ -149,12 +149,16 @@ export async function requireAuth(
   if (tokenFromUrl) {
     const payload = await verifySSOToken(tokenFromUrl);
     if (payload) {
-      // Strip auth_token from URL, set cookie, redirect to clean URL.
-      // Use cleanRedirectUrl to ensure we redirect to the public domain,
-      // not an internal Docker host.
+      // Strip auth_token from URL, set cookie, and redirect to clean URL.
+      // Use a 200 HTML response with meta-refresh instead of a 302 redirect
+      // because Cloudflare strips Set-Cookie headers from 302 responses.
       url.searchParams.delete('auth_token');
       const cleanTarget = cleanRedirectUrl(url.toString());
-      const response = NextResponse.redirect(cleanTarget);
+      const html = `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0;url=${cleanTarget}"><title>Logging you in...</title></head><body></body></html>`;
+      const response = new NextResponse(html, {
+        status: 200,
+        headers: { 'Content-Type': 'text/html' },
+      });
       response.cookies.set('auth_token', tokenFromUrl, {
         httpOnly: true,
         secure: true,
