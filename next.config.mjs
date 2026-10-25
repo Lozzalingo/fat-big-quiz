@@ -72,7 +72,6 @@ const nextConfig = {
   },
   transpilePackages: [
     '@lozzalingo/analytics',
-    '@lozzalingo/auth',
     '@lozzalingo/config',
     '@lozzalingo/email',
     '@lozzalingo/calendar',
