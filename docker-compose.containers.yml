@@ -35,6 +35,9 @@ services:
       - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
       - AUTH_SERVICE_URL=${AUTH_SERVICE_URL}
       - AUTH_JWT_SECRET=${AUTH_JWT_SECRET}
+      - BLOG_SERVICE_URL=${BLOG_SERVICE_URL}
+      - BLOG_API_KEY=${BLOG_API_KEY}
+      - BLOG_SITE_ID=${BLOG_SITE_ID}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:7005/"]
       interval: 30s
@@ -76,6 +79,9 @@ services:
       - EMAIL_SERVICE_URL=${EMAIL_SERVICE_URL}
       - EMAIL_SERVICE_API_KEY=${EMAIL_SERVICE_API_KEY}
       - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - BLOG_SERVICE_URL=${BLOG_SERVICE_URL}
+      - BLOG_API_KEY=${BLOG_API_KEY}
+      - BLOG_SITE_ID=${BLOG_SITE_ID}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:7050/health"]
       interval: 30s
@@ -127,6 +133,9 @@ services:
       - STORAGE_API_KEY=${STORAGE_API_KEY}
       - AUTH_SERVICE_URL=${AUTH_SERVICE_URL}
       - AUTH_JWT_SECRET=${AUTH_JWT_SECRET}
+      - BLOG_SERVICE_URL=${BLOG_SERVICE_URL}
+      - BLOG_API_KEY=${BLOG_API_KEY}
+      - BLOG_SITE_ID=${BLOG_SITE_ID}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:7052/health"]
       interval: 30s

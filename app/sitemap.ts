@@ -64,25 +64,67 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error('Error fetching products for sitemap:', error);
   }
 
-  // Fetch blog posts
+  // Fetch blog posts from blog service first, fallback to local API
   let blogPages: MetadataRoute.Sitemap = [];
+  const blogServiceUrl = process.env.BLOG_SERVICE_URL || '';
+  const blogApiKey = process.env.BLOG_API_KEY || '';
+  const blogSiteId = process.env.BLOG_SITE_ID || '2';
   try {
-    const blogRes = await fetch(`${API_BASE_URL}/api/blog`, {
-      next: { revalidate: 3600 },
-    });
-    if (blogRes.ok) {
-      const data = await blogRes.json();
-      // API returns { posts: [...] } structure
-      const posts: BlogPost[] = Array.isArray(data) ? data : (data.posts || []);
-      blogPages = posts
-        .filter((post) => post.published)
-        .map((post) => ({
-          url: `${BASE_URL}/blog/${post.slug}`,
-          lastModified: post.updatedAt ? new Date(post.updatedAt) : new Date(),
-          changeFrequency: 'monthly' as const,
-          priority: 0.6,
+    let posts: BlogPost[] = [];
+
+    // Try blog service first
+    if (blogServiceUrl && blogApiKey) {
+      let page = 1;
+      let allPosts: BlogPost[] = [];
+      while (true) {
+        const serviceRes = await fetch(
+          `${blogServiceUrl}/api/blog/articles?site_id=${blogSiteId}&status=published&page=${page}&per_page=100`,
+          {
+            headers: {
+              'X-API-Key': blogApiKey,
+              'User-Agent': 'FatBigQuiz-Sitemap/1.0',
+            },
+            next: { revalidate: 3600 },
+          }
+        );
+        if (!serviceRes.ok) break;
+        const serviceData = await serviceRes.json();
+        const batch = (serviceData.articles || []).map((a: Record<string, string>) => ({
+          slug: a.slug,
+          updatedAt: a.updated_at || a.created_at,
+          createdAt: a.published_at || a.created_at,
+          published: true,
         }));
+        allPosts = [...allPosts, ...batch];
+        if (!batch.length || allPosts.length >= (serviceData.total || 0)) break;
+        page++;
+      }
+      if (allPosts.length > 0) {
+        posts = allPosts;
+        console.log(`[BLOG] Sitemap: fetched ${posts.length} articles from blog service`);
+      }
     }
+
+    // Fallback to local API if blog service returned nothing
+    if (posts.length === 0) {
+      console.log('[BLOG] Sitemap: falling back to local API');
+      const blogRes = await fetch(`${API_BASE_URL}/api/blog?limit=500`, {
+        next: { revalidate: 3600 },
+      });
+      if (blogRes.ok) {
+        const data = await blogRes.json();
+        posts = Array.isArray(data) ? data : (data.posts || []);
+      }
+    }
+
+    blogPages = posts
+      .filter((post) => post.published)
+      .map((post) => ({
+        url: `${BASE_URL}/blog/${post.slug}`,
+        lastModified: post.updatedAt ? new Date(post.updatedAt) : new Date(),
+        changeFrequency: 'monthly' as const,
+        priority: 0.6,
+      }));
   } catch (error) {
     console.error('Error fetching blog posts for sitemap:', error);
   }

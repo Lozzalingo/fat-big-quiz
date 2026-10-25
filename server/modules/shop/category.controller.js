@@ -103,19 +103,29 @@ async function getCategory(request, response) {
 async function getAllCategories(request, response) {
   try {
     const { type } = request.query;
-    
-    // If type is provided, filter by it
+
+    // For BLOG categories, try the blog service first
+    if (type === 'BLOG') {
+      const blogService = require("../../lib/blogServiceClient");
+      const serviceCategories = await blogService.getCategories();
+      if (serviceCategories) {
+        return response.status(200).json(serviceCategories);
+      }
+      console.log("[BLOG] Blog service categories unavailable, falling back to local DB");
+    }
+
+    // Local DB fallback
     let whereClause = {};
     if (type) {
       whereClause = {
         type: type
       };
     }
-    
+
     const categories = await prisma.category.findMany({
       where: whereClause
     });
-    
+
     return response.status(200).json(categories);
   } catch (error) {
     console.error("[Category] Error fetching categories:", error);

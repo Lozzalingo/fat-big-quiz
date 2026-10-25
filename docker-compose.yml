@@ -25,6 +25,9 @@ services:
       - PAYMENTS_API_KEY=${PAYMENTS_API_KEY}
       - AUTH_SERVICE_URL=${AUTH_SERVICE_URL}
       - AUTH_JWT_SECRET=${AUTH_JWT_SECRET}
+      - BLOG_SERVICE_URL=${BLOG_SERVICE_URL}
+      - BLOG_API_KEY=${BLOG_API_KEY}
+      - BLOG_SITE_ID=${BLOG_SITE_ID}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/"]
       interval: 30s
@@ -81,6 +84,9 @@ services:
       - AUTH_JWT_SECRET=${AUTH_JWT_SECRET}
       - TICKER_API_KEY=${TICKER_API_KEY}
       - WEBHOOK_API_KEY=${WEBHOOK_API_KEY}
+      - BLOG_SERVICE_URL=${BLOG_SERVICE_URL}
+      - BLOG_API_KEY=${BLOG_API_KEY}
+      - BLOG_SITE_ID=${BLOG_SITE_ID}
       - GOOGLE_MERCHANT_ID=5708205694
       - GOOGLE_APPLICATION_CREDENTIALS=/app/config/google-merchant-credentials.json
       - DOWNLOAD_SECRET=${DOWNLOAD_SECRET}

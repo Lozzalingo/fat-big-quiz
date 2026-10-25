@@ -1,6 +1,7 @@
 const prisma = require("../../utils/prisma");
 const { deleteSpacesFile } = require("../../utils/fileManager");
 const { BLOG_POST_LIST_INCLUDES } = require("../../utils/prismaIncludes");
+const blogService = require("../../lib/blogServiceClient");
 
 async function getAllBlogPosts(request, response) {
   try {
@@ -9,23 +10,33 @@ async function getAllBlogPosts(request, response) {
     const categoryName = request.query.categoryName;
     const search = request.query.search;
     const published = request.query.published === 'true';
-    
-    // Base query options
+    const isAdmin = request.query.mode === "admin";
+
+    // Admin mode always reads from the local DB (drafts, unpublished, etc.)
+    if (!isAdmin) {
+      const serviceResult = await blogService.getArticles({ page, limit, categoryName, search });
+      if (serviceResult) {
+        return response.json(serviceResult);
+      }
+      console.log("[BLOG] Blog service unavailable, falling back to local DB");
+    }
+
+    // Local DB fallback (or admin mode)
     let queryOptions = {
       where: {
-        published: true, // By default, only show published posts
+        published: true,
       },
       skip: (page - 1) * limit,
       take: limit,
       orderBy: {
-        createdAt: 'desc', // Most recent posts first
+        createdAt: 'desc',
       },
       include: {
         author: {
           select: {
             firstName: true,
             avatar: true,
-            
+
           },
         },
         category: {
@@ -40,21 +51,17 @@ async function getAllBlogPosts(request, response) {
         },
       },
     };
-    
-    // Check if we're in admin mode
-    if (request.query.mode === "admin") {
-      // In admin mode, show all posts including unpublished
+
+    if (isAdmin) {
       queryOptions.where = {};
     }
-    
-    // Filter by category name if specified
+
     if (categoryName) {
       queryOptions.where.category = {
         name: categoryName
       };
     }
-    
-    // Filter by search if specified
+
     if (search) {
       queryOptions.where.OR = [
         { title: { contains: search} },
@@ -62,17 +69,16 @@ async function getAllBlogPosts(request, response) {
         { excerpt: { contains: search} }
       ];
     }
-    
-    // Override published filter if specifically requested
+
     if (request.query.published !== undefined) {
       queryOptions.where.published = published;
     }
-    
+
     const [posts, totalCount] = await Promise.all([
       prisma.blogPost.findMany(queryOptions),
       prisma.blogPost.count({ where: queryOptions.where }),
     ]);
-    
+
     return response.json({
       posts,
       pagination: {
@@ -144,6 +150,20 @@ async function _getBlogPost(where, request, response) {
 }
 
 async function getBlogPostBySlug(request, response) {
+  // Try blog service first
+  const serviceResult = await blogService.getArticleBySlug(request.params.slug);
+  if (serviceResult && serviceResult !== 'unavailable') {
+    return response.json(serviceResult);
+  }
+  if (serviceResult === null) {
+    // Blog service says it does not exist, but try local DB as fallback
+    // (covers posts not yet imported to the service)
+  }
+  if (serviceResult === 'unavailable') {
+    console.log("[BLOG] Blog service unavailable for slug, falling back to local DB");
+  }
+
+  // Local DB fallback
   const post = await _getBlogPost({ slug: request.params.slug }, request, response);
   if (post) return response.json(post);
 }
