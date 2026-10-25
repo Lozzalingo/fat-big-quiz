@@ -3,15 +3,15 @@ import { Breadcrumb, WishItem } from "@/components";
 import React from "react";
 import { useWishlistStore } from "../store/wishlistStore";
 import { nanoid } from "nanoid";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/utils/AuthProvider";
 import Link from "next/link";
 import { useGetUserByEmail } from "@/hooks/useGetUserByEmail";
 import { useWishlist } from "@/hooks/useWishlist";
 
 const WishlistPage = () => {
-  const { data: session } = useSession();
+  const { user: authUser } = useAuth();
   const { wishlist } = useWishlistStore();
-  const { user } = useGetUserByEmail(session?.user?.email || null);
+  const { user } = useGetUserByEmail(authUser?.email || null);
   useWishlist(user?.id || null);
 
   return (

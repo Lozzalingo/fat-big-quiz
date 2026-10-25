@@ -1,6 +1,6 @@
 "use client";
 import { isValidEmailAddressFormat } from "@/lib/utils";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/utils/AuthProvider";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -9,7 +9,7 @@ import toast from "react-hot-toast";
 const RegisterPage = () => {
   const [error, setError] = useState("");
   const router = useRouter();
-  const { status: sessionStatus } = useSession();
+  const { status: sessionStatus, register } = useAuth();
 
   useEffect(() => {
     if (sessionStatus === "authenticated") {
@@ -42,25 +42,15 @@ const RegisterPage = () => {
     }
 
     try {
-      const res = await fetch("/api/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-      });
+      const result = await register(email, password);
 
-      if (res.status === 400) {
-        toast.error("This email is already registered");
-        setError("This email is already registered");
-      }
-      if (res.status === 200) {
+      if (!result.success) {
+        toast.error(result.error || "Registration failed");
+        setError(result.error || "Registration failed");
+      } else {
         setError("");
         toast.success("Registration successful");
-        router.push("/login");
+        router.push("/");
       }
     } catch (error) {
       toast.error("Error, try again");

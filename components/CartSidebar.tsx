@@ -7,6 +7,8 @@ import { FaShoppingCart } from "react-icons/fa";
 import { useProductStore } from "@/app/store/store";
 import { getProductImageUrl } from "@/utils/cdn";
 
+const API = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 const CartSidebar = () => {
   const {
     products,
@@ -65,7 +67,7 @@ const CartSidebar = () => {
         productType: "DIGITAL_DOWNLOAD",
       }));
 
-      const response = await fetch("/api/checkout", {
+      const response = await fetch(`${API}/api/checkout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ items }),

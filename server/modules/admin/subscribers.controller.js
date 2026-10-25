@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const { sendWelcomeEmail, sendEmail, sendAdminListNotification, buildEmailTemplate } = require('../../services/email');
 
 const DOUBLE_OPT_IN = process.env.SUBSCRIBER_DOUBLE_OPT_IN === 'true';
-const WEBSITE_URL = process.env.NEXTAUTH_URL || process.env.FRONTEND_URL || 'http://localhost:3000';
+const WEBSITE_URL = process.env.NEXT_PUBLIC_BASE_URL || process.env.FRONTEND_URL || 'http://localhost:3000';
 
 // CRM integration - sync new subscribers to the centralised CRM
 const CRM_URL = process.env.CRM_SERVICE_URL || 'https://crm.laurence.computer';

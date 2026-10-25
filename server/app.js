@@ -29,6 +29,11 @@ const { registerRoutes: registerQuizPack } = require('./modules/quiz-pack');
 const { registerRoutes: registerHire } = require('./modules/hire');
 const { registerRoutes: registerEvents } = require('./modules/events');
 const { registerRoutes: registerQuizApp } = require('./modules/quiz-app');
+const { registerRoutes: registerAuth } = require('./modules/auth');
+const { registerRoutes: registerSubscribe } = require('./modules/subscribe');
+const { registerRoutes: registerCheckout } = require('./modules/checkout');
+const { registerRoutes: registerWebhooks } = require('./modules/webhooks');
+const { registerRoutes: registerClientLogs } = require('./modules/client-logs');
 const {
   sendEmail,
   sendPurchaseConfirmationEmail,
@@ -41,9 +46,11 @@ const {
 const { startHealthCheckScheduler } = require('./services/healthCheck');
 
 const compression = require("compression");
+const cookieParser = require("cookie-parser");
 
 const app = express();
 app.use(compression());
+app.use(cookieParser());
 const server = http.createServer(app);
 const allowedOrigins = [
   'https://fatbigquiz.com',
@@ -65,11 +72,21 @@ const ADMIN_PROTECTED_CORE_PATHS = ['/api/ops', '/api/logs', '/api/app-settings'
 app.use(ADMIN_PROTECTED_CORE_PATHS, (req, res, next) => {
   const adminKey = process.env.ADMIN_API_KEY;
   const provided = req.headers['x-admin-key'];
-  if (!adminKey || provided !== adminKey) {
-    return res.status(403).json({ error: 'Admin access required' });
+  // Accept static admin API key
+  if (adminKey && provided === adminKey) return next();
+  // Accept localhost shortcut in development
+  if (provided === 'localhost' && process.env.NODE_ENV !== 'production') return next();
+  // Accept valid JWT (from auth service or locally issued)
+  if (provided) {
+    const { verifyJWT } = require('./modules/auth');
+    if (verifyJWT(provided)) return next();
   }
-  next();
+  return res.status(403).json({ error: 'Admin access required' });
 });
+
+// ─── Raw body for webhook signature verification ────────────────────────────
+// Must be registered BEFORE Lozzalingo core adds express.json() globally
+app.use('/api/webhooks/stripe', express.raw({ type: 'application/json' }));
 
 // ─── Lozzalingo Core ──────────────────────────────────────────────────────────
 // Reads lozzalingo.yaml, registers all shared packages (config, logging, email,
@@ -393,6 +410,11 @@ const moduleOptions = {
   cachePublic,
 };
 
+registerAuth(app, moduleOptions);
+registerSubscribe(app, moduleOptions);
+registerCheckout(app, moduleOptions);
+registerWebhooks(app, moduleOptions);
+registerClientLogs(app, moduleOptions);
 registerShop(app, moduleOptions);
 registerBlog(app, moduleOptions);
 registerQuizDatabase(app, moduleOptions);
@@ -787,8 +809,12 @@ io.on("connection", (socket) => {
 
   // ── Settings auto-save via socket (admin-only) ─────────────────────────────
   socket.on("settings:save", async ({ key, value, category, description, adminSecret }) => {
-    // Verify admin credentials before allowing settings changes
-    if (!adminSecret || (adminSecret !== process.env.ADMIN_API_KEY && adminSecret !== process.env.NEXTAUTH_SECRET)) {
+    // Verify admin credentials: accept ADMIN_API_KEY, localhost shortcut, or valid JWT
+    const { verifyJWT } = require('./modules/auth');
+    const isAdminKey = adminSecret && adminSecret === process.env.ADMIN_API_KEY;
+    const isLocalhost = adminSecret === 'localhost' && process.env.NODE_ENV !== 'production';
+    const isValidJWT = adminSecret && verifyJWT(adminSecret);
+    if (!adminSecret || (!isAdminKey && !isLocalhost && !isValidJWT)) {
       console.log("[Socket] Unauthorised settings:save attempt for key:", key);
       socket.emit("settings:saved", { key, success: false, error: "Unauthorised" });
       return;

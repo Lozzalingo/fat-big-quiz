@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import React from "react";
 import toast from "react-hot-toast";
 import { FaXmark } from "react-icons/fa6";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/utils/AuthProvider";
 import { getProductImageUrl } from "@/utils/cdn";
 import Link from "next/link";
 import { useGetUserByEmail } from "@/hooks/useGetUserByEmail";
@@ -29,12 +29,12 @@ const WishItem = ({
   slug,
   stockAvailability,
 }: ProductInWishlist) => {
-  const { data: session } = useSession();
+  const { user: authUser } = useAuth();
   const { removeFromWishlist } = useWishlistStore();
   const { addToCart, calculateTotals, openSidebar } = useProductStore();
   const router = useRouter();
 
-  const { user } = useGetUserByEmail(session?.user?.email);
+  const { user } = useGetUserByEmail(authUser?.email);
   const userId = user?.id ?? null;
 
   const deleteItemFromWishlist = async (productId: string) => {

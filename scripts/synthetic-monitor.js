@@ -111,7 +111,7 @@ const tests = [
       // 200 = session created, 400 = validation error, both mean the route works
       // 404 = route not found (Nginx misconfigured), 500 = server crash
       if (res.status === 404) {
-        throw new Error("Checkout route returning 404 - Nginx may be routing to Express instead of Next.js");
+        throw new Error("Checkout route returning 404 - route may not be registered in Express");
       }
       if (res.status === 500) {
         const body = JSON.parse(res.body);

@@ -3,31 +3,20 @@ import { UserAvatar, UserProfileForm, uploadProfileImage } from "@/app/(dashboar
 import { isValidEmailAddressFormat } from "@/lib/utils";
 import React, { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/utils/AuthProvider";
 import { useRouter } from "next/navigation";
 
-declare module "next-auth" {
-  interface Session {
-    user: {
-      id?: string;
-      name?: string | null;
-      email?: string | null;
-      image?: string | null;
-    };
-  }
-}
-
 const UserProfilePage = () => {
-  const { data: session, status } = useSession();
+  const { user: authUser, status } = useAuth();
   const router = useRouter();
-  
+
   // Log session data to debug
   useEffect(() => {
-    console.log("Session status:", status);
-    console.log("Session data:", session);
-  }, [session, status]);
-  
-  const userEmail = session?.user?.email;
+    console.log("Auth status:", status);
+    console.log("Auth user:", authUser);
+  }, [authUser, status]);
+
+  const userEmail = authUser?.email;
   const [userId, setUserId] = useState<string | null>(null);
 
   const [userInput, setUserInput] = useState({

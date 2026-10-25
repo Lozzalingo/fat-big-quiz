@@ -1,6 +1,6 @@
 "use client";
 import { isValidEmailAddressFormat } from "@/lib/utils";
-import { signIn, useSession } from "next-auth/react";
+import { useAuth } from "@/utils/AuthProvider";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -9,7 +9,7 @@ import toast from "react-hot-toast";
 const LoginPage = () => {
   const router = useRouter();
   const [error, setError] = useState("");
-  const { status: sessionStatus } = useSession();
+  const { status: sessionStatus, login } = useAuth();
 
   useEffect(() => {
     if (sessionStatus === "authenticated") {
@@ -34,19 +34,15 @@ const LoginPage = () => {
       return;
     }
 
-    const res = await signIn("credentials", {
-      redirect: false,
-      email,
-      password,
-    });
+    const result = await login(email, password);
 
-    if (res?.error) {
-      setError("Invalid email or password");
-      toast.error("Invalid email or password");
-      if (res?.url) router.replace("/");
+    if (!result.success) {
+      setError(result.error || "Invalid email or password");
+      toast.error(result.error || "Invalid email or password");
     } else {
       setError("");
       toast.success("Successful login");
+      router.replace("/");
     }
   };
 

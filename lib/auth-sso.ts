@@ -27,7 +27,7 @@ export function cleanRedirectUrl(rawUrl: string): string {
 
     // If we have a configured public base URL, replace the host/protocol
     // to avoid leaking internal Docker hosts into the auth redirect
-    const publicBase = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXTAUTH_URL;
+    const publicBase = process.env.NEXT_PUBLIC_BASE_URL;
     if (publicBase) {
       const pub = new URL(publicBase);
       parsed.protocol = pub.protocol;

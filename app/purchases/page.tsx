@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/utils/AuthProvider";
 import Link from "next/link";
 import { FaDownload, FaSpinner } from "react-icons/fa";
 import { getProductImageUrl } from "@/utils/cdn";
@@ -24,21 +24,21 @@ interface Purchase {
 }
 
 export default function PurchasesPage() {
-  const { data: session, status } = useSession();
+  const { user: session, status } = useAuth();
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPurchases = async () => {
-      if (!session?.user?.email) {
+      if (!session?.email) {
         setLoading(false);
         return;
       }
 
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/purchases/email/${encodeURIComponent(session.user.email)}`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/purchases/email/${encodeURIComponent(session.email)}`
         );
 
         if (!response.ok) {

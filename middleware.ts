@@ -1,23 +1,37 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
-import { requireAuth, cleanRedirectUrl } from "./lib/auth-sso";
+import { requireAuth, verifySSOToken, cleanRedirectUrl } from "./lib/auth-sso";
+
+const SITE_ID = "fat-big-quiz";
+const COOKIE_NAME = `lza_user_${SITE_ID}`;
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (pathname.startsWith("/admin")) {
+    // 1. Check SSO token from auth.laurence.computer (super admin flow)
     const sso = await requireAuth(request, NextResponse);
-    if ("redirect" in sso) return sso.redirect;
-    if (sso.payload.is_super_admin) return NextResponse.next();
+    if ("redirect" in sso) {
+      // SSO handled it (either redirect to login or set cookie redirect)
+      // But only redirect if there is no local site cookie to check
+      const siteCookie = request.cookies.get(COOKIE_NAME)?.value;
+      if (!siteCookie) return sso.redirect;
+    }
+    if ("payload" in sso && sso.payload.is_super_admin) return NextResponse.next();
 
-    const token = await getToken({
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET,
-    });
-    if (token && token.role === "admin") return NextResponse.next();
+    // 2. Check site-scoped auth cookie (local admin flow)
+    const siteCookie = request.cookies.get(COOKIE_NAME)?.value;
+    if (siteCookie) {
+      const payload = await verifySSOToken(siteCookie);
+      if (payload) {
+        // Valid JWT in site cookie - check if user has admin role by
+        // allowing the request through (Express session endpoint
+        // provides the role, and the admin layout checks it)
+        return NextResponse.next();
+      }
+    }
 
-    // Use cleanRedirectUrl to avoid leaking internal hosts (0.0.0.0, localhost)
+    // 3. No valid auth - redirect to login
     const redirectTarget = cleanRedirectUrl(request.url);
     return NextResponse.redirect(
       `${process.env.AUTH_SERVICE_URL || "https://auth.laurence.computer"}/login?redirect=${encodeURIComponent(redirectTarget)}`

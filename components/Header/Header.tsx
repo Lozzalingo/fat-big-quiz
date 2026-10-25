@@ -9,22 +9,22 @@ import { FaBell } from "react-icons/fa6";
 
 import CartElement from "@/components/CartElement";
 import HeartElement from "@/components/HeartElement";
-import { signOut, useSession } from "next-auth/react";
+import { useAuth } from "@/utils/AuthProvider";
 import toast from "react-hot-toast";
 import { useWishlistStore } from "@/app/store/wishlistStore";
 import { useGetUserByEmail } from "@/hooks/useGetUserByEmail";
 import { useWishlist } from "@/hooks/useWishlist";
 
 const Header = () => {
-  const { data: session, status } = useSession();
+  const { user: authUser, logout } = useAuth();
   const pathname = usePathname();
   const { wishQuantity } = useWishlistStore();
 
-  const { user } = useGetUserByEmail(session?.user?.email);
+  const { user } = useGetUserByEmail(authUser?.email);
   useWishlist(user?.id ?? null);
 
   const handleLogout = () => {
-    setTimeout(() => signOut(), 1000);
+    setTimeout(() => logout(), 1000);
     toast.success("Logout successful!");
   };
 

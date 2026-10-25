@@ -1,44 +1,18 @@
-import { headers } from "next/headers";
-import { getServerSession } from "next-auth/next";
-import { redirect } from "next/navigation";
-import prisma from "@/utils/db";
+/**
+ * Dashboard layout - admin area wrapper.
+ *
+ * Auth is now handled by:
+ * 1. middleware.ts (SSO + site cookie check at the Edge)
+ * 2. The admin/layout.tsx client component (checks role via useAuth)
+ *
+ * This server layout simply renders children. The middleware already
+ * blocks unauthenticated users before they reach this point.
+ */
 
-export default async function Layout({
+export default function Layout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Auto-authenticate on localhost (matching BucketRace's local dev behaviour)
-  const headersList = headers();
-  const host = headersList.get("host") || "";
-  const isLocalhost = host.startsWith("localhost") || host.startsWith("127.0.0.1");
-
-  if (isLocalhost) {
-    console.log("[Admin] Localhost detected - bypassing auth");
-    return <>{children}</>;
-  }
-
-  // In production, require NextAuth session with admin role
-  const session = await getServerSession();
-
-  if (!session?.user?.email) {
-    redirect("/");
-  }
-
-  try {
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email.toLowerCase().trim() },
-      select: { role: true },
-    });
-
-    // Redirect non-admin users to homepage
-    if (!user || user.role === "user") {
-      redirect("/");
-    }
-  } catch (error) {
-    console.error("[Admin] Error checking user role:", error);
-    redirect("/");
-  }
-
   return <>{children}</>;
 }

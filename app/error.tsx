@@ -13,7 +13,7 @@ export default function Error({
     console.error("[ErrorBoundary] Route error caught:", error);
 
     // Report to client error logging endpoint
-    fetch("/api/logs/client", {
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/logs/client`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

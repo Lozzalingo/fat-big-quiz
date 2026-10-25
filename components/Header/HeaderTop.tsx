@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { signOut, useSession } from "next-auth/react";
+import { useAuth } from "@/utils/AuthProvider";
 import Link from "next/link";
 import Image from "next/image";
 import toast from "react-hot-toast";
@@ -33,7 +33,7 @@ import {
 } from "react-icons/fa";
 
 const EnhancedHeader = () => {
-  const { data: session }: any = useSession();
+  const { user, logout } = useAuth();
   const pathname = usePathname();
   const { wishQuantity } = useWishlistStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -41,12 +41,12 @@ const EnhancedHeader = () => {
 
   const isAdminPage = pathname?.startsWith("/admin") === true;
 
-  const { user } = useGetUserByEmail(session?.user?.email);
-  useWishlist(user?.id ?? null);
+  const { user: dbUser } = useGetUserByEmail(user?.email);
+  useWishlist(dbUser?.id ?? null);
 
-  const userId = user?.id ?? null;
-  const avatar = (user?.avatar as string | null) ?? null;
-  const role = (user?.role as string | null) ?? null;
+  const userId = dbUser?.id ?? null;
+  const avatar = (dbUser?.avatar as string | null) ?? null;
+  const role = (dbUser?.role as string | null) ?? user?.role ?? null;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -58,7 +58,7 @@ const EnhancedHeader = () => {
 
   const handleLogout = () => {
     setMobileMenuOpen(false);
-    setTimeout(() => signOut(), 800);
+    setTimeout(() => logout(), 800);
     toast.success("Logout successful!");
   };
 
@@ -125,7 +125,7 @@ const EnhancedHeader = () => {
 
             {/* Desktop Auth & Cart */}
             <div className="hidden lg:flex items-center gap-4">
-              {!session ? (
+              {!user ? (
                 <>
                   <Link
                     href="/login"
@@ -232,7 +232,7 @@ const EnhancedHeader = () => {
                 </a>
 
                 <div className="border-t border-white/10 mt-2 pt-2">
-                  {!session ? (
+                  {!user ? (
                     <>
                       <Link
                         href="/login"

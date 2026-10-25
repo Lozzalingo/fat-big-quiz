@@ -1,7 +1,7 @@
 "use client";
 
 import { useWishlistStore } from "@/app/store/wishlistStore";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/utils/AuthProvider";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { FaHeartCrack } from "react-icons/fa6";
@@ -15,17 +15,17 @@ interface AddToWishlistBtnProps {
 }
 
 const AddToWishlistBtn = ({ product, slug }: AddToWishlistBtnProps) => {
-  const { data: session, status } = useSession();
+  const { user } = useAuth();
   const { addToWishlist, removeFromWishlist, wishlist } = useWishlistStore();
   const [isProductInWishlist, setIsProductInWishlist] = useState<boolean>();
 
   const addToWishlistFun = async () => {
-    if (!session?.user?.email) {
+    if (!user?.email) {
       toast.error("You need to be logged in to add a product to the wishlist");
       return;
     }
     try {
-      const userRes = await fetch(`${getApiBaseUrl()}/api/users/email/${session.user.email}`, {
+      const userRes = await fetch(`${getApiBaseUrl()}/api/users/email/${user.email}`, {
         cache: "no-store",
       });
       const userData = await userRes.json();
@@ -53,9 +53,9 @@ const AddToWishlistBtn = ({ product, slug }: AddToWishlistBtnProps) => {
   };
 
   const removeFromWishlistFun = async () => {
-    if (!session?.user?.email) return;
+    if (!user?.email) return;
     try {
-      const userRes = await fetch(`${getApiBaseUrl()}/api/users/email/${session.user.email}`, {
+      const userRes = await fetch(`${getApiBaseUrl()}/api/users/email/${user.email}`, {
         cache: "no-store",
       });
       const userData = await userRes.json();
@@ -71,9 +71,9 @@ const AddToWishlistBtn = ({ product, slug }: AddToWishlistBtnProps) => {
   };
 
   const isInWishlist = async () => {
-    if (!session?.user?.email) return;
+    if (!user?.email) return;
     try {
-      const userRes = await fetch(`${getApiBaseUrl()}/api/users/email/${session.user.email}`, {
+      const userRes = await fetch(`${getApiBaseUrl()}/api/users/email/${user.email}`, {
         cache: "no-store",
       });
       const userData = await userRes.json();
@@ -89,7 +89,7 @@ const AddToWishlistBtn = ({ product, slug }: AddToWishlistBtnProps) => {
 
   useEffect(() => {
     isInWishlist();
-  }, [session?.user?.email, wishlist]);
+  }, [user?.email, wishlist]);
 
   return (
     <>

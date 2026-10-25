@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/utils/AuthProvider";
 import { FaDownload, FaCalendar, FaTicketAlt, FaShoppingCart, FaHeart, FaHeartBroken } from "react-icons/fa";
 import { useProductStore } from "@/app/store/store";
 import { useWishlistStore } from "@/app/store/wishlistStore";
@@ -38,7 +38,7 @@ export default function ProductPageClient({
   features,
   imageUrl,
 }: ProductPageClientProps) {
-  const { data: session } = useSession();
+  const { user: session } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isInWishlist, setIsInWishlist] = useState(false);
@@ -62,9 +62,9 @@ export default function ProductPageClient({
   // Check if product is in wishlist
   useEffect(() => {
     const checkWishlist = async () => {
-      if (session?.user?.email) {
+      if (session?.email) {
         try {
-          const userRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/email/${session.user.email}`);
+          const userRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/email/${session.email}`);
           const userData = await userRes.json();
           if (userData?.id) {
             const wishRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/wishlist/${userData.id}/${product.id}`);
@@ -77,7 +77,7 @@ export default function ProductPageClient({
       }
     };
     checkWishlist();
-  }, [session?.user?.email, product.id, wishlist]);
+  }, [session?.email, product.id, wishlist]);
 
   const handleAddToCart = () => {
     addToCart({
@@ -94,12 +94,12 @@ export default function ProductPageClient({
   };
 
   const handleAddToWishlist = async () => {
-    if (!session?.user?.email) {
+    if (!session?.email) {
       toast.error("Please sign in to add to wishlist");
       return;
     }
     try {
-      const userRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/email/${session.user.email}`);
+      const userRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/email/${session.email}`);
       const userData = await userRes.json();
 
       if (isInWishlist) {
@@ -137,7 +137,7 @@ export default function ProductPageClient({
     tracker.trackCheckoutStart(product.price);
 
     try {
-      const response = await fetch("/api/checkout", {
+      const response = await fetch(`${API_BASE}/api/checkout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -151,7 +151,7 @@ export default function ProductPageClient({
           imageUrl: imageUrl,
           description: product.description,
           // Pass user email if logged in (locks email in Stripe checkout)
-          email: session?.user?.email || undefined,
+          email: session?.email || undefined,
         }),
       });
 

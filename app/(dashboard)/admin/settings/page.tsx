@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/utils/AuthProvider";
 
 // Define the settings type for better type safety
 type SettingsType = {
@@ -23,8 +23,8 @@ type UserType = {
 };
 
 const SettingsPage = () => {
-  const { data: session } = useSession();
-  const userEmail = session?.user?.email;
+  const { user: authUser } = useAuth();
+  const userEmail = authUser?.email;
   
   const [userId, setUserId] = useState<string | null>(null);
   const [settings, setSettings] = useState<SettingsType | null>(null);

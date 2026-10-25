@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiList, FiShuffle, FiX, FiLock, FiLogIn } from "react-icons/fi";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/utils/AuthProvider";
 import QuestionCard from "./QuestionCard";
 import type { QuizQuestion as CardQuestion, FeedbackData } from "./QuestionCard";
 import FilterBar from "./FilterBar";
@@ -200,7 +200,7 @@ function BlurredQuestionCard({ index }: { index: number }) {
 // ─── Main Component ─────────────────────────────────────────────────────────
 
 export default function QuizDatabaseClient() {
-  const { data: session, status: sessionStatus } = useSession();
+  const { user, status: sessionStatus } = useAuth();
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [pagination, setPagination] = useState<Pagination>({
     page: 1,
@@ -243,7 +243,7 @@ export default function QuizDatabaseClient() {
 
     const checkAccess = async () => {
       try {
-        const res = await fetch("/api/subscribe/status");
+        const res = await fetch(`${API}/api/subscribe/status`, { credentials: "include" });
         const data = await res.json();
         setHasAccess(data.hasAccess);
         console.log("[QuizDB] Access check:", data);
@@ -433,7 +433,7 @@ export default function QuizDatabaseClient() {
   const handleSubscribe = async () => {
     setSubscribeLoading(true);
     try {
-      const res = await fetch("/api/subscribe", { method: "POST" });
+      const res = await fetch(`${API}/api/subscribe`, { method: "POST", credentials: "include" });
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
@@ -467,7 +467,7 @@ export default function QuizDatabaseClient() {
   };
 
   const hasActiveFilters = Object.values(filters).some((v) => v !== "");
-  const isLoggedIn = !!session?.user;
+  const isLoggedIn = !!user;
 
   // Split questions into visible and blurred
   const visibleQuestions = hasAccess ? questions : questions.slice(0, PREVIEW_LIMIT);

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/utils/AuthProvider";
 import CommentsSection from "@/components/CommentsSection";
 
 interface BlogPostClientProps {
@@ -9,12 +9,12 @@ interface BlogPostClientProps {
 }
 
 export default function BlogPostClient({ postId }: BlogPostClientProps) {
-  const { data: session, status } = useSession();
+  const { user, status } = useAuth();
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (status === "authenticated" && session?.user?.email) {
-      fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/email/${session?.user?.email}`)
+    if (status === "authenticated" && user?.email) {
+      fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/email/${user.email}`)
         .then((res) => res.json())
         .then((data) => {
           if (data.id) {
@@ -25,7 +25,7 @@ export default function BlogPostClient({ postId }: BlogPostClientProps) {
           console.error("Failed to fetch user ID", err);
         });
     }
-  }, [status, session?.user?.email]);
+  }, [status, user?.email]);
 
   if (status === "loading") {
     return (

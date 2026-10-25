@@ -3,6 +3,8 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { FaPaperPlane, FaMapMarkerAlt } from "react-icons/fa";
 
+const API = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 interface FormData {
   tier: "the-show" | "unplugged" | "";
   frequency: "weekly" | "monthly" | "yearly" | "";
@@ -138,7 +140,7 @@ export default function HireEnquiryForm() {
     console.log("[HireEnquiry] Submitting form:", form);
 
     try {
-      const res = await fetch("/api/hire-enquiry", {
+      const res = await fetch(`${API}/api/hire-enquiry`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),

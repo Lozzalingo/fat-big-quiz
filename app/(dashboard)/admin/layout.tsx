@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/utils/AuthProvider";
 import axios from "axios";
 import {
   FaBagShopping,
@@ -39,14 +39,14 @@ export default function FBQAdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { data: session } = useSession();
-  const userEmail = session?.user?.email;
+  const { user: authUser } = useAuth();
+  const userEmail = authUser?.email;
   const [settings, setSettings] = useState<SettingsType | null>(null);
   const [loading, setLoading] = useState(true);
   const [adminSecret, setAdminSecret] = useState("");
   const [socket, setSocket] = useState<Socket | null>(null);
 
-  // Resolve admin auth token (localhost shortcut or NextAuth JWT)
+  // Resolve admin auth token (localhost shortcut or session token from auth service)
   useEffect(() => {
     const isLocalhost =
       typeof window !== "undefined" &&
@@ -59,19 +59,20 @@ export default function FBQAdminLayout({
       return;
     }
 
-    console.log("[AdminLayout] Fetching auth token for production");
-    fetch("/api/auth/token")
+    // Fetch the session which includes the JWT token
+    console.log("[AdminLayout] Fetching auth session for production");
+    fetch(`${API_BASE}/api/auth/session`, { credentials: "include" })
       .then((res) => res.json())
       .then((data) => {
         if (data.token) {
           setAdminSecret(data.token);
-          console.log("[AdminLayout] Auth token received");
+          console.log("[AdminLayout] Auth token received from session");
         } else {
-          console.error("[AdminLayout] No token returned:", data.error);
+          console.error("[AdminLayout] No token in session");
         }
       })
       .catch((err) => {
-        console.error("[AdminLayout] Token fetch error:", err);
+        console.error("[AdminLayout] Session fetch error:", err);
       });
   }, []);
 

@@ -16,7 +16,7 @@ import { FaStar } from "react-icons/fa6";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import Link from "next/link";
 import axios from "axios";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/utils/AuthProvider";
 
 // Define types for our settings
 type SettingsType = {
@@ -31,8 +31,8 @@ type SettingsType = {
 };
 
 const DashboardSidebar = () => {
-  const { data: session } = useSession();
-  const userEmail = session?.user?.email;
+  const { user: authUser } = useAuth();
+  const userEmail = authUser?.email;
 
   const [isOpen, setIsOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);

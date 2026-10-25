@@ -11,6 +11,8 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import { getProductImageUrl } from "@/utils/cdn";
 
+const API = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 const CartPage = () => {
   const { products, removeFromCart, calculateTotals, total } =
     useProductStore();
@@ -122,7 +124,7 @@ const CartPage = () => {
                     setIsCheckingOut(true);
                     console.log("[Cart] Starting Stripe checkout for", products.length, "item(s)");
                     try {
-                      const response = await fetch("/api/checkout", {
+                      const response = await fetch(`${API}/api/checkout`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({

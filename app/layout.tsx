@@ -5,9 +5,8 @@ import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import { Footer } from "@/components";
 import CartSidebar from "@/components/CartSidebar";
-import SessionProvider from "@/utils/SessionProvider";
+import { AuthProvider } from "@/utils/AuthProvider";
 import Providers from "@/Providers";
-import { getServerSession } from "next-auth";
 import "svgmap/dist/svgMap.min.css";
 import { ScrollProvider } from "@/utils/ScrollContext";
 import EnhancedHeader from "@/components/Header/HeaderTop";
@@ -59,11 +58,9 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const session = await getServerSession();
-
   return (
     <html lang="en" data-theme="light" className={`${inter.variable} ${poppins.variable}`}>
       <head>
@@ -87,7 +84,7 @@ export default async function RootLayout({
         <Script src="https://monitor.laurence.computer/static/snippet/sm-error.js" data-site="fat-big-quiz" strategy="afterInteractive" />
         <Script src="https://monitor.laurence.computer/static/snippet/sm-session.js" data-site="fat-big-quiz" strategy="afterInteractive" />
         <Script src="https://monitor.laurence.computer/static/snippet/sm-logs.js" data-site="fat-big-quiz" strategy="afterInteractive" />
-        <SessionProvider session={session}>
+        <AuthProvider>
           <ScrollProvider>
             <ErrorLogger project="fat-big-quiz" />
             <VisitorTracker />
@@ -109,7 +106,7 @@ export default async function RootLayout({
             </main>
             <Footer />
           </ScrollProvider>
-        </SessionProvider>
+        </AuthProvider>
       </body>
     </html>
   );
