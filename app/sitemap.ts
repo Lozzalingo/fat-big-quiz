@@ -50,7 +50,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       next: { revalidate: 3600 }, // Cache for 1 hour
     });
     if (productsRes.ok) {
-      const products: Product[] = await productsRes.json();
+      const data = await productsRes.json();
+      // API returns { products: [...] } structure
+      const products: Product[] = Array.isArray(data) ? data : (data.products || []);
       productPages = products.map((product) => ({
         url: `${BASE_URL}/product/${product.slug}`,
         lastModified: product.updatedAt ? new Date(product.updatedAt) : new Date(),

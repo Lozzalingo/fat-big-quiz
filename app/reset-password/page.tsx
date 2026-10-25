@@ -1,13 +1,21 @@
 "use client";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import toast from "react-hot-toast";
 import { getApiBaseUrl } from "@/utils/api";
 
 const API_BASE = getApiBaseUrl();
 
 export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div className="min-h-[70vh] flex items-center justify-center"><p className="text-sm text-gray-500">Loading...</p></div>}>
+      <ResetPasswordInner />
+    </Suspense>
+  );
+}
+
+function ResetPasswordInner() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
 

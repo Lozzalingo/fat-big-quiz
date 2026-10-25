@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { FaCheck, FaTimes, FaTrophy, FaSpinner } from "react-icons/fa";
 import { io, Socket } from "socket.io-client";
@@ -25,6 +25,14 @@ type AnswerResult = {
 type LeaderboardEntry = { rank: number; name: string; score: number };
 
 export default function PlayerGamePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-950 flex items-center justify-center"><FaSpinner className="animate-spin text-3xl text-white" /></div>}>
+      <PlayerGameInner />
+    </Suspense>
+  );
+}
+
+function PlayerGameInner() {
   const params = useParams();
   const searchParams = useSearchParams();
   const gameCode = params?.gameCode as string;

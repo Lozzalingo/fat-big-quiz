@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useRef, ReactNode, useEffect, useState } from "react";
+import { createContext, useContext, useRef, ReactNode, useEffect, useState, useCallback, Suspense } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 
 type ScrollContextType = {
@@ -10,54 +10,76 @@ type ScrollContextType = {
 
 const ScrollContext = createContext<ScrollContextType | undefined>(undefined);
 
+/**
+ * Inner component that reads useSearchParams inside a Suspense boundary.
+ * This avoids the "useSearchParams() should be wrapped in a suspense boundary"
+ * error that breaks static prerendering of every page when ScrollProvider
+ * is mounted in the root layout.
+ */
+function ScrollParamsWatcher({
+  onScrollRequested,
+}: {
+  onScrollRequested: () => void;
+}) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (pathname === "/" && searchParams.get("scrollTo") === "products") {
+      onScrollRequested();
+    }
+  }, [pathname, searchParams, onScrollRequested]);
+
+  return null;
+}
+
 export const ScrollProvider = ({ children }: { children: ReactNode }) => {
   const productsSectionRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const [isNavigating, setIsNavigating] = useState(false);
 
   const scrollToProducts = () => {
     if (pathname !== "/") {
-      // Navigate to homepage with query param to trigger scroll
       setIsNavigating(true);
       router.push("/?scrollTo=products", { scroll: false });
     } else {
-      // Already on homepage, scroll directly
       productsSectionRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   };
 
-  // Handle scroll after navigation
+  const handleScrollRequested = useCallback(() => {
+    let scrollAttempts = 0;
+    const maxAttempts = 10;
+
+    const attemptScroll = () => {
+      if (productsSectionRef.current) {
+        setTimeout(() => {
+          productsSectionRef.current?.scrollIntoView({ behavior: "smooth" });
+          router.replace("/", { scroll: false });
+          setIsNavigating(false);
+        }, 100);
+      } else if (scrollAttempts < maxAttempts) {
+        scrollAttempts++;
+        setTimeout(attemptScroll, 100 * scrollAttempts);
+      }
+    };
+
+    setTimeout(attemptScroll, 200);
+  }, [router]);
+
+  // Also trigger scroll when navigating state changes
   useEffect(() => {
-    if ((pathname === "/" && searchParams.get("scrollTo") === "products") || isNavigating) {
-      // Use a more robust approach with multiple attempts
-      let scrollAttempts = 0;
-      const maxAttempts = 10;
-      
-      const attemptScroll = () => {
-        if (productsSectionRef.current) {
-          // Give the DOM a moment to fully render before scrolling
-          setTimeout(() => {
-            productsSectionRef.current?.scrollIntoView({ behavior: "smooth" });
-            // Clear query param and navigation state
-            router.replace("/", { scroll: false });
-            setIsNavigating(false);
-          }, 100);
-        } else if (scrollAttempts < maxAttempts) {
-          // Retry with increasing delays if the ref isn't ready
-          scrollAttempts++;
-          setTimeout(attemptScroll, 100 * scrollAttempts);
-        }
-      };
-      
-      // Start the attempt process with a slight delay after page transition
-      setTimeout(attemptScroll, 200);
+    if (isNavigating && pathname === "/") {
+      handleScrollRequested();
     }
-  }, [pathname, searchParams, router, isNavigating]);
+  }, [isNavigating, pathname, handleScrollRequested]);
 
   return (
     <ScrollContext.Provider value={{ scrollToProducts, productsSectionRef }}>
+      <Suspense fallback={null}>
+        <ScrollParamsWatcher onScrollRequested={handleScrollRequested} />
+      </Suspense>
       {children}
     </ScrollContext.Provider>
   );

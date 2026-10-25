@@ -1,12 +1,20 @@
 "use client";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { getApiBaseUrl } from "@/utils/api";
 
 const API_BASE = getApiBaseUrl();
 
 export default function ConfirmSubscriptionPage() {
+  return (
+    <Suspense fallback={<div className="min-h-[70vh] flex items-center justify-center"><p className="text-gray-500">Confirming...</p></div>}>
+      <ConfirmSubscriptionInner />
+    </Suspense>
+  );
+}
+
+function ConfirmSubscriptionInner() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
