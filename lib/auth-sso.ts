@@ -11,34 +11,29 @@
 
 const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'https://auth.laurence.computer';
 
+/** Hosts that are considered local dev (no https forcing). */
+const LOCALHOST_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0'];
+
 /**
- * Clean a redirect URL: strip stale auth_token params and force the correct
- * public base URL. Behind Docker/nginx/Cloudflare, request.url often reports
- * an internal host (0.0.0.0:3000, localhost:3000) instead of the real domain.
+ * Build the canonical external URL for a request.
  *
- * Mirrors _clean_redirect_url() from Python auth_client.py.
+ * Inside Docker, request.nextUrl reports the container hostname (e.g.
+ * "0.0.0.0:3000") instead of the real domain. We reconstruct the URL
+ * from the Host header (forwarded by Nginx) and force https:// for
+ * non-localhost domains (behind Cloudflare, the scheme is always http).
+ *
+ * Matches _clean_redirect_url in auth_client.py and buildExternalUrl
+ * in ai-blog-builder.
  */
-export function cleanRedirectUrl(rawUrl: string): string {
-  try {
-    const parsed = new URL(rawUrl);
-
-    // Strip stale auth_token param
-    parsed.searchParams.delete('auth_token');
-
-    // Always force https and strip non-standard ports for production domains.
-    // Behind Docker/nginx/Cloudflare, request.url often reports internal
-    // hosts (0.0.0.0:3000) or ports. NEXT_PUBLIC_BASE_URL may also contain
-    // dev values baked in at build time, so we cannot trust it blindly.
-    const localhostHosts = ['localhost', '127.0.0.1', '0.0.0.0'];
-    if (!localhostHosts.includes(parsed.hostname)) {
-      parsed.protocol = 'https:';
-      parsed.port = '';
-    }
-
-    return parsed.toString();
-  } catch {
-    return rawUrl;
-  }
+function buildExternalUrl(
+  request: import('next/server').NextRequest
+): string {
+  const host = request.headers.get('host') || request.nextUrl.host;
+  const pathname = request.nextUrl.pathname;
+  const search = request.nextUrl.search;
+  const isLocal = LOCALHOST_HOSTS.some(h => host.startsWith(h));
+  const protocol = isLocal ? 'http' : 'https';
+  return `${protocol}://${host}${pathname}${search}`;
 }
 
 export interface SSOPayload {
@@ -201,49 +196,68 @@ export async function requireAuth(
   | { redirect: import('next/server').NextResponse }
   | { payload: SSOPayload }
 > {
-  const url = request.nextUrl.clone();
-
   // 1. Check for token in query param (cross-domain SSO redirect from auth service)
-  const tokenFromUrl = url.searchParams.get('auth_token');
+  const tokenFromUrl = request.nextUrl.searchParams.get('auth_token');
   if (tokenFromUrl) {
+    console.log('[Auth-SSO] Step 1: auth_token found in URL for', request.nextUrl.pathname, '- validating');
     const payload = await verifySSOToken(tokenFromUrl);
     if (payload) {
-      // Strip auth_token from URL, set cookie, and redirect to clean URL.
-      // Use a 200 HTML response with meta-refresh instead of a 302 redirect
-      // because Cloudflare strips Set-Cookie headers from 302 responses.
-      url.searchParams.delete('auth_token');
-      const cleanTarget = cleanRedirectUrl(url.toString());
-      const html = `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0;url=${cleanTarget}"><title>Logging you in...</title></head><body></body></html>`;
+      // Build the clean external URL (strips auth_token, fixes host + protocol)
+      const extUrl = new URL(buildExternalUrl(request));
+      extUrl.searchParams.delete('auth_token');
+      const cleanUrl = extUrl.toString();
+      console.log('[Auth-SSO] Step 1: URL token valid - setting cookie + meta-refresh to', cleanUrl);
+
+      // CRITICAL: Use 200 + meta-refresh instead of 302.
+      // Cloudflare strips Set-Cookie from 302 responses.
+      const html = `<!DOCTYPE html>
+<html>
+<head><meta http-equiv="refresh" content="0;url=${cleanUrl}"></head>
+<body>Redirecting...</body>
+</html>`;
+
       // CRITICAL: Cache-Control: no-store prevents Cloudflare from caching this
       // response. If Cloudflare caches the meta-refresh page it strips Set-Cookie,
       // the auth_token cookie is never set, and the user loops forever at login.
       const response = new NextResponse(html, {
         status: 200,
         headers: {
-          'Content-Type': 'text/html',
+          'Content-Type': 'text/html; charset=utf-8',
           'Cache-Control': 'no-store, no-cache, must-revalidate',
-          'Set-Cookie': `auth_token=${tokenFromUrl}; Path=/; Max-Age=900; HttpOnly; Secure; SameSite=Lax`,
         },
+      });
+      response.cookies.set('auth_token', tokenFromUrl, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'lax',
+        maxAge: 900,
+        path: '/',
       });
       return { redirect: response };
     }
+    console.warn('[Auth-SSO] Step 1: URL token INVALID - falling through to cookie check');
   }
 
   // 2. Check cookie
   const cookieToken = request.cookies.get('auth_token')?.value;
   if (cookieToken) {
+    console.log('[Auth-SSO] Step 2: auth_token cookie found - validating');
     const payload = await verifySSOToken(cookieToken);
     if (payload) {
+      console.log('[Auth-SSO] Step 2: cookie valid - authenticated as', payload.email);
       return { payload };
     }
+    console.warn('[Auth-SSO] Step 2: cookie INVALID - will redirect to login');
+  } else {
+    console.log('[Auth-SSO] Step 2: no auth_token cookie present');
   }
 
-  // 3. No valid token - redirect to auth login
-  // Strip any stale auth_token from current URL before using as redirect target.
-  // Force the public base URL so that Docker/dev hosts (0.0.0.0, localhost:3000)
-  // do not leak into the redirect URL sent to the auth service.
-  url.searchParams.delete('auth_token');
-  const cleanUrl = cleanRedirectUrl(url.toString());
+  // 3. No valid token: redirect to auth login
+  // Build external URL with auth_token stripped, correct host + https
+  const extUrl = new URL(buildExternalUrl(request));
+  extUrl.searchParams.delete('auth_token');
+  const cleanUrl = extUrl.toString();
   const loginUrl = `${AUTH_SERVICE_URL}/login?redirect=${encodeURIComponent(cleanUrl)}`;
+  console.log('[Auth-SSO] Step 3: no valid token - redirecting to login:', loginUrl);
   return { redirect: NextResponse.redirect(loginUrl) };
 }
