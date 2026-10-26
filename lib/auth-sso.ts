@@ -70,56 +70,126 @@ function base64UrlDecode(str: string): Uint8Array {
   return bytes;
 }
 
+// ---------------------------------------------------------------------------
+// RS256 public key cache (fetched from JWKS endpoint)
+// ---------------------------------------------------------------------------
+
+let _rs256CryptoKey: CryptoKey | null = null;
+let _rs256LastFetch = 0;
+const RS256_CACHE_TTL = 3600 * 1000; // Re-fetch public key every hour
+
+async function _fetchRS256PublicKey(): Promise<CryptoKey | null> {
+  const now = Date.now();
+  if (_rs256CryptoKey && (now - _rs256LastFetch) < RS256_CACHE_TTL) {
+    return _rs256CryptoKey;
+  }
+
+  try {
+    const resp = await fetch(`${AUTH_SERVICE_URL}/.well-known/jwks.json`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!resp.ok) {
+      console.error('[Auth-SSO] JWKS fetch failed:', resp.status);
+      return _rs256CryptoKey;
+    }
+    const jwks = await resp.json();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const keys: any[] = jwks.keys || [];
+    if (!keys.length) {
+      console.error('[Auth-SSO] JWKS response has no keys');
+      return _rs256CryptoKey;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const jwk = keys.find((k: any) => k.alg === 'RS256') || keys[0];
+
+    _rs256CryptoKey = await crypto.subtle.importKey(
+      'jwk',
+      { kty: jwk.kty, n: jwk.n, e: jwk.e, alg: 'RS256', ext: true },
+      { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+      false,
+      ['verify'],
+    );
+    _rs256LastFetch = now;
+    console.log('[Auth-SSO] RS256 public key fetched and cached');
+    return _rs256CryptoKey;
+  } catch (err) {
+    console.error('[Auth-SSO] Failed to fetch JWKS:', err);
+    return _rs256CryptoKey;
+  }
+}
+
 /**
- * Verify an HS256 JWT using the Web Crypto API (Edge Runtime compatible).
+ * Helper: copy raw signature bytes into a fresh ArrayBuffer view.
+ * Edge Runtime sandbox uses realm-specific instanceof checks on ArrayBuffer.
+ */
+function _toSigView(sigBytes: Uint8Array): Uint8Array {
+  const view = new Uint8Array(new ArrayBuffer(sigBytes.byteLength));
+  view.set(sigBytes);
+  return view;
+}
+
+/**
+ * Verify a JWT (RS256 or HS256) using the Web Crypto API (Edge Runtime compatible).
  * Returns the payload or null if invalid/expired.
  *
- * Equivalent to decode_jwt() in auth_client.py.
+ * Verification order (mirrors auth_client.py):
+ * 1. RS256 using the public key from the auth service JWKS endpoint
+ * 2. HS256 using AUTH_JWT_SECRET (migration fallback)
  */
 export async function verifySSOToken(token: string): Promise<SSOPayload | null> {
-  const secret = process.env.AUTH_JWT_SECRET;
-  if (!secret) return null;
-
   try {
     const parts = token.split('.');
     if (parts.length !== 3) return null;
 
     const [headerB64, payloadB64, signatureB64] = parts;
 
-    // Verify header
     const header = JSON.parse(new TextDecoder().decode(base64UrlDecode(headerB64)));
-    if (header.alg !== 'HS256') return null;
+    const alg = header.alg;
 
-    // Verify signature using Web Crypto API
-    const encoder = new TextEncoder();
-    const key = await crypto.subtle.importKey(
-      'raw',
-      encoder.encode(secret),
-      { name: 'HMAC', hash: 'SHA-256' },
-      false,
-      ['verify']
-    );
-
-    const sigInput = encoder.encode(`${headerB64}.${payloadB64}`);
-    const sigBytes = base64UrlDecode(signatureB64);
-
-    // Copy into a fresh ArrayBuffer to avoid Edge runtime realm instanceof checks
-    // on the underlying buffer (confirmed bug in Edge sandbox).
-    const sigView = new Uint8Array(new ArrayBuffer(sigBytes.byteLength));
-    sigView.set(sigBytes);
-
-    const valid = await crypto.subtle.verify('HMAC', key, sigView, sigInput);
-    if (!valid) return null;
-
-    // Decode payload
     const payload: SSOPayload = JSON.parse(
       new TextDecoder().decode(base64UrlDecode(payloadB64))
     );
 
-    // Check expiry
     if (payload.exp && Date.now() / 1000 > payload.exp) return null;
 
-    return payload;
+    const encoder = new TextEncoder();
+    const sigInput = encoder.encode(`${headerB64}.${payloadB64}`);
+    const sigView = _toSigView(base64UrlDecode(signatureB64));
+
+    // RS256 verification (primary)
+    if (alg === 'RS256') {
+      const pubKey = await _fetchRS256PublicKey();
+      if (!pubKey) return null;
+      let valid = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', pubKey, sigView, sigInput);
+      if (!valid) {
+        _rs256LastFetch = 0;
+        const newKey = await _fetchRS256PublicKey();
+        if (newKey) {
+          valid = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', newKey, sigView, sigInput);
+        }
+        if (!valid) return null;
+      }
+      return payload;
+    }
+
+    // HS256 verification (legacy fallback)
+    if (alg === 'HS256') {
+      const secret = process.env.AUTH_JWT_SECRET;
+      if (!secret) return null;
+      const key = await crypto.subtle.importKey(
+        'raw',
+        encoder.encode(secret),
+        { name: 'HMAC', hash: 'SHA-256' },
+        false,
+        ['verify'],
+      );
+      const valid = await crypto.subtle.verify('HMAC', key, sigView, sigInput);
+      if (!valid) return null;
+      return payload;
+    }
+
+    return null;
   } catch {
     return null;
   }
