@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { requireAuth, verifySSOToken, cleanRedirectUrl } from "./lib/auth-sso";
+import { requireAuth, verifySSOToken, buildExternalUrl } from "./lib/auth-sso";
 
 const SITE_ID = "fat-big-quiz";
 const COOKIE_NAME = `lza_user_${SITE_ID}`;
@@ -32,7 +32,11 @@ export async function middleware(request: NextRequest) {
     }
 
     // 3. No valid auth - redirect to login
-    const redirectTarget = cleanRedirectUrl(request.url);
+    // Use buildExternalUrl to get the correct external URL (fixes host/port/protocol
+    // when running behind Nginx/Cloudflare in Docker)
+    const extUrl = new URL(buildExternalUrl(request));
+    extUrl.searchParams.delete('auth_token');
+    const redirectTarget = extUrl.toString();
     return NextResponse.redirect(
       `${process.env.AUTH_SERVICE_URL || "https://auth.laurence.computer"}/login?redirect=${encodeURIComponent(redirectTarget)}`
     );

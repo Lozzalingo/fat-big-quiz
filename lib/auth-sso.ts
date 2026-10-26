@@ -25,7 +25,7 @@ const LOCALHOST_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0'];
  * Matches _clean_redirect_url in auth_client.py and buildExternalUrl
  * in ai-blog-builder.
  */
-function buildExternalUrl(
+export function buildExternalUrl(
   request: import('next/server').NextRequest
 ): string {
   const host = request.headers.get('host') || request.nextUrl.host;
