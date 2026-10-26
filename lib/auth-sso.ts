@@ -94,15 +94,13 @@ async function _fetchRS256PublicKey(): Promise<CryptoKey | null> {
       return _rs256CryptoKey;
     }
     const jwks = await resp.json();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const keys: any[] = jwks.keys || [];
+    const keys = (jwks.keys || []) as Record<string, string>[];
     if (!keys.length) {
       console.error('[Auth-SSO] JWKS response has no keys');
       return _rs256CryptoKey;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const jwk = keys.find((k: any) => k.alg === 'RS256') || keys[0];
+    const jwk = keys.find((k) => k.alg === 'RS256') || keys[0];
 
     _rs256CryptoKey = await crypto.subtle.importKey(
       'jwk',
