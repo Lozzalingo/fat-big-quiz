@@ -223,9 +223,15 @@ export async function requireAuth(
       url.searchParams.delete('auth_token');
       const cleanTarget = cleanRedirectUrl(url.toString());
       const html = `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0;url=${cleanTarget}"><title>Logging you in...</title></head><body></body></html>`;
+      // CRITICAL: Cache-Control: no-store prevents Cloudflare from caching this
+      // response. If Cloudflare caches the meta-refresh page it strips Set-Cookie,
+      // the auth_token cookie is never set, and the user loops forever at login.
       const response = new NextResponse(html, {
         status: 200,
-        headers: { 'Content-Type': 'text/html' },
+        headers: {
+          'Content-Type': 'text/html',
+          'Cache-Control': 'no-store, no-cache, must-revalidate',
+        },
       });
       response.cookies.set('auth_token', tokenFromUrl, {
         httpOnly: true,
