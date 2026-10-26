@@ -120,16 +120,6 @@ async function _fetchRS256PublicKey(): Promise<CryptoKey | null> {
 }
 
 /**
- * Helper: copy raw signature bytes into a fresh ArrayBuffer view.
- * Edge Runtime sandbox uses realm-specific instanceof checks on ArrayBuffer.
- */
-function _toSigView(sigBytes: Uint8Array): Uint8Array {
-  const view = new Uint8Array(new ArrayBuffer(sigBytes.byteLength));
-  view.set(sigBytes);
-  return view;
-}
-
-/**
  * Verify a JWT (RS256 or HS256) using the Web Crypto API (Edge Runtime compatible).
  * Returns the payload or null if invalid/expired.
  *
@@ -155,7 +145,14 @@ export async function verifySSOToken(token: string): Promise<SSOPayload | null> 
 
     const encoder = new TextEncoder();
     const sigInput = encoder.encode(`${headerB64}.${payloadB64}`);
-    const sigView = _toSigView(base64UrlDecode(signatureB64));
+
+    // Copy signature into a fresh ArrayBuffer view. Edge Runtime sandbox uses
+    // realm-specific instanceof checks on ArrayBuffer, so raw Uint8Arrays from
+    // base64UrlDecode fail. new Uint8Array(new ArrayBuffer(...)) creates a
+    // Uint8Array<ArrayBuffer> which satisfies both tsc and the runtime.
+    const sigBytes = base64UrlDecode(signatureB64);
+    const sigView = new Uint8Array(new ArrayBuffer(sigBytes.byteLength));
+    sigView.set(sigBytes);
 
     // RS256 verification (primary)
     if (alg === 'RS256') {
