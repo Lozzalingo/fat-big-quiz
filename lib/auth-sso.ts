@@ -33,11 +33,12 @@ export function cleanRedirectUrl(rawUrl: string): string {
       parsed.protocol = pub.protocol;
       parsed.host = pub.host;
     } else {
-      // Fallback: force https:// for non-localhost domains
+      // Fallback: force https:// and strip internal ports for non-localhost domains
       const localhostHosts = ['localhost', '127.0.0.1', '0.0.0.0'];
       const hostname = parsed.hostname;
       if (!localhostHosts.includes(hostname)) {
         parsed.protocol = 'https:';
+        parsed.port = '';
       }
     }
 

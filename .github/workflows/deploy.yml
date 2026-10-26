@@ -214,8 +214,8 @@ jobs:
               PRODUCT_COUNT=$(echo "$PRODUCTS" | python3 -c "import sys,json; d=json.load(sys.stdin); print(len(d.get('products',d) if isinstance(d,dict) else d))" 2>/dev/null || echo "0")
               echo "Shop products: $PRODUCT_COUNT"
 
-              # Smoke test: checkout API is reachable (Next.js route, not Express)
-              CHECKOUT=$(curl -sf -o /dev/null -w '%{http_code}' -X POST -H 'Content-Type: application/json' -d '{}' http://localhost:3000/api/checkout 2>/dev/null || echo "FAIL")
+              # Smoke test: checkout API is reachable (Express route)
+              CHECKOUT=$(curl -sf -o /dev/null -w '%{http_code}' -X POST -H 'Content-Type: application/json' -d '{}' http://localhost:3001/api/checkout 2>/dev/null || echo "FAIL")
               echo "Checkout API: $CHECKOUT (400 expected - no items)"
 
               SMOKE_PASS=true
