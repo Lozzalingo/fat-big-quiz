@@ -222,14 +222,8 @@ export async function requireAuth(
         headers: {
           'Content-Type': 'text/html',
           'Cache-Control': 'no-store, no-cache, must-revalidate',
+          'Set-Cookie': `auth_token=${tokenFromUrl}; Path=/; Max-Age=900; HttpOnly; Secure; SameSite=Lax`,
         },
-      });
-      response.cookies.set('auth_token', tokenFromUrl, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'lax',
-        maxAge: 900,
-        path: '/',
       });
       return { redirect: response };
     }
