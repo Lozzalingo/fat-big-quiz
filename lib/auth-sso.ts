@@ -25,21 +25,14 @@ export function cleanRedirectUrl(rawUrl: string): string {
     // Strip stale auth_token param
     parsed.searchParams.delete('auth_token');
 
-    // If we have a configured public base URL, replace the host/protocol
-    // to avoid leaking internal Docker hosts into the auth redirect
-    const publicBase = process.env.NEXT_PUBLIC_BASE_URL;
-    if (publicBase) {
-      const pub = new URL(publicBase);
-      parsed.protocol = pub.protocol;
-      parsed.host = pub.host;
-    } else {
-      // Fallback: force https:// and strip internal ports for non-localhost domains
-      const localhostHosts = ['localhost', '127.0.0.1', '0.0.0.0'];
-      const hostname = parsed.hostname;
-      if (!localhostHosts.includes(hostname)) {
-        parsed.protocol = 'https:';
-        parsed.port = '';
-      }
+    // Always force https and strip non-standard ports for production domains.
+    // Behind Docker/nginx/Cloudflare, request.url often reports internal
+    // hosts (0.0.0.0:3000) or ports. NEXT_PUBLIC_BASE_URL may also contain
+    // dev values baked in at build time, so we cannot trust it blindly.
+    const localhostHosts = ['localhost', '127.0.0.1', '0.0.0.0'];
+    if (!localhostHosts.includes(parsed.hostname)) {
+      parsed.protocol = 'https:';
+      parsed.port = '';
     }
 
     return parsed.toString();
