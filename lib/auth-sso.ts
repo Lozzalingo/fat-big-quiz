@@ -50,7 +50,7 @@ function base64UrlDecode(str: string): Uint8Array {
  *
  * Matches _clean_redirect_url in auth_client.py.
  */
-export function buildExternalUrl(
+function buildExternalUrl(
   request: import('next/server').NextRequest
 ): string {
   const host = request.headers.get('host') || request.nextUrl.host;
@@ -253,8 +253,14 @@ export async function requireAuth(
         headers: {
           'Content-Type': 'text/html; charset=utf-8',
           'Cache-Control': 'no-store, no-cache, must-revalidate',
-          'Set-Cookie': `auth_token=${tokenFromUrl}; Path=/; Max-Age=900; HttpOnly; Secure; SameSite=Lax`,
         },
+      });
+      response.cookies.set('auth_token', tokenFromUrl, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'lax',
+        maxAge: 900,
+        path: '/',
       });
       return { redirect: response };
     }
