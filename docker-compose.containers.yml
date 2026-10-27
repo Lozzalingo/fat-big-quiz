@@ -121,6 +121,9 @@ services:
       context: .
       dockerfile: containers/blog/Dockerfile
     container_name: fbq_blog
+    networks:
+      - fbq_network
+      - fatbigquiz_network
     ports:
       - "7052:7052"
     environment:
@@ -311,3 +314,6 @@ services:
 networks:
   fbq_network:
     driver: bridge
+  fatbigquiz_network:
+    external: true
+    name: fat-big-quiz_fatbigquiz_network
