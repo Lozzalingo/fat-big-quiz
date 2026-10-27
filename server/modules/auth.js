@@ -60,6 +60,101 @@ function verifyJWT(token) {
   } catch { return null; }
 }
 
+// ─── RS256 Public Key Cache (JWKS) ──────────────────────────────────────────
+let _rs256PublicKey = null;
+let _rs256LastFetch = 0;
+const RS256_CACHE_TTL = 3600 * 1000; // 1 hour
+
+async function _fetchRS256PublicKey() {
+  const now = Date.now();
+  if (_rs256PublicKey && (now - _rs256LastFetch) < RS256_CACHE_TTL) {
+    return _rs256PublicKey;
+  }
+  try {
+    const resp = await fetch(`${AUTH_SERVICE_URL}/.well-known/jwks.json`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!resp.ok) {
+      console.error('[Auth] JWKS fetch failed:', resp.status);
+      return _rs256PublicKey;
+    }
+    const jwks = await resp.json();
+    const keys = jwks.keys || [];
+    if (!keys.length) {
+      console.error('[Auth] JWKS response has no keys');
+      return _rs256PublicKey;
+    }
+    const jwk = keys.find(k => k.alg === 'RS256') || keys[0];
+    _rs256PublicKey = crypto.createPublicKey({ key: jwk, format: 'jwk' });
+    _rs256LastFetch = now;
+    console.log('[Auth] RS256 public key fetched and cached');
+    return _rs256PublicKey;
+  } catch (err) {
+    console.error('[Auth] Failed to fetch JWKS:', err.message);
+    return _rs256PublicKey;
+  }
+}
+
+/**
+ * Verify an RS256 JWT using the auth service's public key.
+ * Returns the decoded payload or null.
+ */
+async function verifyRS256(token) {
+  if (!token) return null;
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+
+    const [headerB64, payloadB64, signatureB64] = parts;
+    const header = JSON.parse(Buffer.from(headerB64, 'base64url').toString('utf8'));
+    if (header.alg !== 'RS256') return null;
+
+    const payload = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf8'));
+    if (payload.exp && Date.now() / 1000 > payload.exp) return null;
+
+    const pubKey = await _fetchRS256PublicKey();
+    if (!pubKey) {
+      console.warn('[Auth] RS256 token but no public key available');
+      return null;
+    }
+
+    const sigInput = `${headerB64}.${payloadB64}`;
+    const signature = Buffer.from(signatureB64, 'base64url');
+    const valid = crypto.verify(
+      'sha256',
+      Buffer.from(sigInput),
+      { key: pubKey, padding: crypto.constants.RSA_PKCS1_PADDING },
+      signature
+    );
+
+    if (valid) {
+      console.log('[Auth] RS256 token valid for:', payload.email);
+      return payload;
+    }
+
+    // Key might have rotated, retry with fresh key
+    _rs256LastFetch = 0;
+    const newKey = await _fetchRS256PublicKey();
+    if (newKey) {
+      const retryValid = crypto.verify(
+        'sha256',
+        Buffer.from(sigInput),
+        { key: newKey, padding: crypto.constants.RSA_PKCS1_PADDING },
+        signature
+      );
+      if (retryValid) {
+        console.log('[Auth] RS256 token valid (after key refresh) for:', payload.email);
+        return payload;
+      }
+    }
+
+    return null;
+  } catch (err) {
+    console.error('[Auth] RS256 verification error:', err.message);
+    return null;
+  }
+}
+
 // ─── Auth Service Client ──────────────────────────────────────────────────────
 
 async function authServiceRequest(endpoint, { method = 'POST', body, token } = {}) {
@@ -311,18 +406,23 @@ function registerRoutes(app, options = {}) {
   // GET /api/auth/session
   app.get('/api/auth/session', async (req, res) => {
     try {
-      const token = req.cookies?.[COOKIE_NAME];
+      // Check per-site cookie first, then SSO cookie (auth_token from auth.laurence.computer)
+      const siteToken = req.cookies?.[COOKIE_NAME];
+      const ssoToken = req.cookies?.['auth_token'];
+      const token = siteToken || ssoToken;
 
       if (!token) {
         return res.json({ user: null, status: 'unauthenticated' });
       }
 
-      if (!JWT_SECRET) {
-        console.error('[Auth] AUTH_JWT_SECRET not configured');
-        return res.json({ user: null, status: 'unauthenticated' });
+      // Try HS256 first, then RS256 for SSO tokens
+      let payload = null;
+      if (JWT_SECRET) {
+        payload = verifyJWT(token);
       }
-
-      const payload = verifyJWT(token);
+      if (!payload) {
+        payload = await verifyRS256(token);
+      }
 
       if (!payload) {
         console.log('[Auth] Session JWT invalid or expired');
@@ -409,4 +509,4 @@ function registerRoutes(app, options = {}) {
   console.log('[FBQ] Auth module registered (auth.laurence.computer + local fallback)');
 }
 
-module.exports = { registerRoutes, verifyJWT, COOKIE_NAME };
+module.exports = { registerRoutes, verifyJWT, verifyRS256, COOKIE_NAME };
