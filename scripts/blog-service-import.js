@@ -10,7 +10,7 @@
  */
 
 const BLOG_SERVICE_URL = 'https://blog.laurence.computer';
-const BLOG_API_KEY = 'ce42859ad09c531f6eb7024f904bffd060dc7751ec9f0914fb699680c5be6322';
+const BLOG_API_KEY = process.env.BLOG_API_KEY || '';
 const FBQ_API_URL = 'https://fatbigquiz.com';
 const CDN_BASE = 'https://aitshirts-laurence-dot-computer.sfo3.cdn.digitaloceanspaces.com/fat-big-quiz/blog';
 
