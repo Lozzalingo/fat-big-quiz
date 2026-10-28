@@ -69,25 +69,37 @@ app.set('io', io);
 // Core mounts ops, logging, settings, and storage routes without admin auth.
 // We add an admin key check middleware BEFORE core initialises so it runs first.
 const ADMIN_PROTECTED_CORE_PATHS = ['/api/ops', '/api/logs', '/api/app-settings', '/api/storage'];
+const SITE_ID = process.env.AUTH_SITE_ID || 'fat-big-quiz';
+const SITE_COOKIE = `lza_user_${SITE_ID}`;
 app.use(ADMIN_PROTECTED_CORE_PATHS, async (req, res, next) => {
   const adminKey = process.env.ADMIN_API_KEY;
   const provided = req.headers['x-admin-key'];
-  // Accept static admin API key
+  // Accept static admin API key (server-to-server only, never sent from browser)
   if (adminKey && provided === adminKey) return next();
   // Accept localhost shortcut in development
   if (provided === 'localhost' && process.env.NODE_ENV !== 'production') return next();
-  // Accept valid JWT (from auth service or locally issued, HS256 or RS256)
+  // Accept valid JWT from header (from auth service or locally issued, HS256 or RS256)
   if (provided) {
     const { verifyJWT } = require('./modules/auth');
     if (verifyJWT(provided)) return next();
   }
-  // Also accept SSO auth_token cookie (RS256 from auth.laurence.computer)
+  // Accept SSO auth_token cookie (RS256 from auth.laurence.computer)
   const ssoToken = req.cookies?.['auth_token'];
   if (ssoToken) {
     const { verifyRS256 } = require('./modules/auth');
     if (verifyRS256) {
       const payload = await verifyRS256(ssoToken);
       if (payload && payload.is_super_admin) return next();
+    }
+  }
+  // Accept site-specific cookie (lza_user_{siteId}) for non-.laurence.computer domains
+  const siteCookieToken = req.cookies?.[SITE_COOKIE];
+  if (siteCookieToken) {
+    const { verifyJWT, verifyRS256 } = require('./modules/auth');
+    let payload = verifyJWT(siteCookieToken);
+    if (!payload && verifyRS256) payload = await verifyRS256(siteCookieToken);
+    if (payload && (payload.is_super_admin || payload.role === 'admin' || payload.role === 'superadmin')) {
+      return next();
     }
   }
   return res.status(403).json({ error: 'Admin access required' });
@@ -846,6 +858,9 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => console.log("[Socket] User disconnected"));
 });
+
+// ─── API Docs Integration ────────────────────────────────────────────────────────
+app.use(require('./modules/docs'));
 
 // ─── Error Handling ─────────────────────────────────────────────────────────────
 
