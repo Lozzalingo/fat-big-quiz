@@ -120,9 +120,10 @@ async function _fetchRS256PublicKey(): Promise<CryptoKey | null> {
  */
 export async function verifySSOToken(token: string): Promise<SSOPayload | null> {
   try {
+    console.log('[Auth-SSO] verifySSOToken called, token length:', token.length, 'first 20 chars:', token.substring(0, 20), 'has dots:', token.includes('.'));
     const parts = token.split('.');
     if (parts.length !== 3) {
-      console.warn('[Auth-SSO] Malformed token: expected 3 parts, got', parts.length);
+      console.warn('[Auth-SSO] Malformed token: expected 3 parts, got', parts.length, 'token preview:', token.substring(0, 50));
       return null;
     }
 
@@ -153,11 +154,13 @@ export async function verifySSOToken(token: string): Promise<SSOPayload | null> 
 
     // RS256 verification (primary)
     if (alg === 'RS256') {
+      console.log('[Auth-SSO] RS256 token detected for', payload.email, '- fetching public key');
       const pubKey = await _fetchRS256PublicKey();
       if (!pubKey) {
         console.warn('[Auth-SSO] RS256 token but no public key available');
         return null;
       }
+      console.log('[Auth-SSO] Public key available, verifying RS256 signature');
       let valid = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', pubKey, sigView, sigInput);
       if (!valid) {
         _rs256LastFetch = 0;
