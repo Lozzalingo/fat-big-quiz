@@ -7,6 +7,7 @@
     "start": "node server.js"
   },
   "dependencies": {
+    "@lozzalingo/blog-client": "file:./packages/blog-client",
     "express": "^4.18.3",
     "cors": "^2.8.5",
     "compression": "^1.7.5",

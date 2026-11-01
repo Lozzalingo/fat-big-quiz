@@ -16,6 +16,7 @@
     "@lozzalingo/ads": "*",
     "@lozzalingo/analytics": "*",
     "@lozzalingo/auth": "*",
+    "@lozzalingo/blog-client": "*",
     "@lozzalingo/bookings": "*",
     "@lozzalingo/calendar": "*",
     "@lozzalingo/config": "*",

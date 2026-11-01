@@ -118,8 +118,8 @@ services:
     <<: *common
     image: fbq-blog:latest
     build:
-      context: .
-      dockerfile: containers/blog/Dockerfile
+      context: ..
+      dockerfile: fat-big-quiz/containers/blog/Dockerfile
     container_name: fbq_blog
     networks:
       - fbq_network
