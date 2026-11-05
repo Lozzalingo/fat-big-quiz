@@ -8,8 +8,11 @@ import { FaRocket, FaDownload } from "react-icons/fa";
 export default async function Home() {
   // Fetch blog posts and homepage cards in parallel
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+  // Hard cap on SSR fetches: a slow upstream (e.g. a hanging blog service)
+  // must degrade a section, never block the whole homepage render.
+  const SSR_FETCH_TIMEOUT_MS = 4000;
   const [blogData, cardsData] = await Promise.all([
-    fetch(`${API_BASE}/api/blog?limit=3`, { cache: "no-store" })
+    fetch(`${API_BASE}/api/blog?limit=3`, { cache: "no-store", signal: AbortSignal.timeout(SSR_FETCH_TIMEOUT_MS) })
       .then((res) => {
         if (!res.ok) {
           console.error(`[Homepage] Blog fetch failed: ${res.status} ${res.statusText} (${API_BASE}/api/blog?limit=3)`);
@@ -21,7 +24,7 @@ export default async function Home() {
         console.error("[Homepage] Blog fetch error:", err.message);
         return { posts: [] };
       }),
-    fetch(`${API_BASE}/api/homepage-cards/public`, { cache: "no-store" })
+    fetch(`${API_BASE}/api/homepage-cards/public`, { cache: "no-store", signal: AbortSignal.timeout(SSR_FETCH_TIMEOUT_MS) })
       .then((res) => {
         if (!res.ok) {
           console.error(`[Homepage] Cards fetch failed: ${res.status} ${res.statusText} (${API_BASE}/api/homepage-cards/public)`);

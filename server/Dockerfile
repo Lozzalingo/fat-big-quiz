@@ -28,6 +28,9 @@ RUN npm install --omit=dev
 # Copy server source
 COPY server/ .
 
+# Copy the synthetic monitor (lives at repo root, run via cron with docker exec)
+COPY scripts/synthetic-monitor.js ./scripts/synthetic-monitor.js
+
 # Generate Prisma client
 RUN npx prisma generate
 

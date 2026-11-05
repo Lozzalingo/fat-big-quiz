@@ -12,6 +12,11 @@ const { BlogClient } = require('@lozzalingo/blog-client');
 
 const client = new BlogClient({
   userAgent: 'FatBigQuiz/1.0',
+  // FBQ has a full local MySQL fallback (all posts), so fail fast when the
+  // central blog service hangs. The default 8s timeout made every uncached
+  // blog request (and therefore homepage SSR) block for 8+ seconds whenever
+  // blog.laurence.computer was slow.
+  timeoutMs: 2500,
 });
 
 /**

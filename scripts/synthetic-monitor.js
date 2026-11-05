@@ -94,6 +94,38 @@ const tests = [
     },
   },
   {
+    name: "Events listing has products",
+    priority: "P0",
+    run: async () => {
+      // Hits the public events API exactly as the /events page does.
+      // Catches the "0 events showing" failure mode: nginx misrouting,
+      // fbq_events container down, DB network splits, or empty data.
+      const res = await httpGet(`${SITE_URL}/ev/api/products`);
+      assertStatus(res, 200);
+      let products;
+      try {
+        products = JSON.parse(res.body);
+      } catch (err) {
+        throw new Error(`Events API returned non-JSON (${res.body.slice(0, 80)}...)`);
+      }
+      if (!Array.isArray(products)) {
+        throw new Error(`Events API did not return an array: ${JSON.stringify(products).slice(0, 120)}`);
+      }
+      if (products.length === 0) {
+        throw new Error("Events API returned 0 events - the /events page is showing no events");
+      }
+      log("INFO", `Events API returned ${products.length} event products`);
+    },
+  },
+  {
+    name: "Events page loads",
+    priority: "P0",
+    run: async () => {
+      const res = await httpGet(`${SITE_URL}/events`);
+      assertStatus(res, 200);
+    },
+  },
+  {
     name: "Checkout creates Stripe session",
     priority: "P0",
     run: async () => {
@@ -366,15 +398,12 @@ const tests = [
     name: "Auth system healthy",
     priority: "P1",
     run: async () => {
-      const res = await httpGet(`${SITE_URL}/api/auth/health`);
+      // Auth moved to Express (auth.laurence.computer SSO with local fallback).
+      // /api/auth/session returns 200 with { user: null } when unauthenticated,
+      // so a 200 proves nginx routing + the Express auth module are alive.
+      const res = await httpGet(`${SITE_URL}/api/auth/session`);
       assertStatus(res, 200);
-      const data = JSON.parse(res.body);
-      if (data.status === "unhealthy") {
-        throw new Error(`Auth unhealthy: ${data.error || "unknown"}`);
-      }
-      if (data.status === "degraded") {
-        throw new Error("Auth degraded - missing env vars");
-      }
+      JSON.parse(res.body); // must be valid JSON, not an error page
     },
   },
   {
@@ -392,14 +421,12 @@ const tests = [
 
   // P2 - Daily checks
   {
-    name: "Env vars configured",
+    name: "Next.js health endpoint",
     priority: "P2",
     run: async () => {
-      // Hit the ops health endpoint to check the server is configured
-      if (!ADMIN_KEY) return; // Skip if no admin key available
-      const res = await httpGet(`${API_URL}/api/ops/health`, {
-        "x-admin-key": ADMIN_KEY,
-      });
+      // The old /api/ops/health (Lozzalingo core ops feature) is no longer
+      // registered. The Next.js app exposes /api/health instead.
+      const res = await httpGet(`${SITE_URL}/api/health`);
       assertStatus(res, 200);
     },
   },
