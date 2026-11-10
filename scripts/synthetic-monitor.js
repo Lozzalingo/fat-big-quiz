@@ -126,28 +126,31 @@ const tests = [
     },
   },
   {
-    name: "Checkout creates Stripe session",
+    name: "Checkout route reachable",
     priority: "P0",
     run: async () => {
-      // Get a real product ID from the API
-      const productsRes = await httpGet(`${API_URL}/api/products`);
-      const products = JSON.parse(productsRes.body);
-      const productList = products.products || products;
-      const product = productList[0];
-
-      // Try to create a checkout session (should work or return a Stripe error, not 404/500)
+      // Validate the checkout route is alive by sending an empty cart.
+      // This should return 400 ("No items provided"), proving Express is
+      // routing correctly without creating a real Stripe checkout session.
+      // Previously this test sent a real product ID which created an actual
+      // checkout session every 15 minutes, flooding the payments DB with
+      // orphaned pending transactions.
       const res = await httpPost(`${SITE_URL}/api/checkout`, {
-        items: [{ id: product.id, amount: 1 }],
+        items: [],
       });
 
-      // 200 = session created, 400 = validation error, both mean the route works
-      // 404 = route not found (Nginx misconfigured), 500 = server crash
+      // 400 = validation rejected empty cart (route is alive and working)
+      // 404 = route not found (Nginx misconfigured or Express not registering)
+      // 500 = server crash
       if (res.status === 404) {
         throw new Error("Checkout route returning 404 - route may not be registered in Express");
       }
       if (res.status === 500) {
         const body = JSON.parse(res.body);
         throw new Error(`Checkout 500: ${body.error || "Unknown server error"}`);
+      }
+      if (res.status !== 400) {
+        throw new Error(`Expected 400 for empty cart, got ${res.status}`);
       }
     },
   },
