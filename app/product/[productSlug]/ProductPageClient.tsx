@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/utils/AuthProvider";
+import { API_BASE } from "@/utils/api";
 import { FaDownload, FaCalendar, FaTicketAlt, FaShoppingCart, FaHeart, FaHeartBroken } from "react-icons/fa";
 import { useProductStore } from "@/app/store/store";
 import { useWishlistStore } from "@/app/store/wishlistStore";
