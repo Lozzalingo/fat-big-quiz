@@ -89,9 +89,37 @@ function registerRoutes(app) {
         return res.status(400).json({ error: 'One or more products not found' });
       }
 
+      // Validate discount code if provided
+      const discountCode = body.discountCode ? body.discountCode.toUpperCase().trim() : null;
+      let discountRecord = null;
+
+      if (discountCode) {
+        discountRecord = await prisma.discountCode.findUnique({
+          where: { code: discountCode },
+          include: { applicableProducts: { select: { productId: true } } },
+        });
+
+        if (!discountRecord || !discountRecord.isActive) {
+          console.log('[Checkout] Invalid or inactive discount code:', discountCode);
+          return res.status(400).json({ error: 'Invalid or inactive discount code' });
+        }
+
+        const now = new Date();
+        if (discountRecord.startDate && now < discountRecord.startDate) {
+          return res.status(400).json({ error: 'Discount code is not yet valid' });
+        }
+        if (discountRecord.endDate && now > discountRecord.endDate) {
+          return res.status(400).json({ error: 'Discount code has expired' });
+        }
+        if (discountRecord.maxRedemptions && discountRecord.currentRedemptions >= discountRecord.maxRedemptions) {
+          return res.status(400).json({ error: 'Discount code has reached its redemption limit' });
+        }
+      }
+
       console.log('[Checkout] Request:', {
         itemCount: items.length,
         email: email ? 'provided' : 'guest',
+        discountCode: discountCode || 'none',
       });
 
       // Look up userId if email provided
@@ -130,6 +158,58 @@ function registerRoutes(app) {
         return lineItem;
       });
 
+      // Apply discount code to line items
+      if (discountRecord) {
+        const applicableIds = discountRecord.applicableProducts.map((ap) => ap.productId);
+        const hasRestrictions = applicableIds.length > 0;
+
+        // Calculate subtotal for applicable items
+        let applicableSubtotal = 0;
+        lineItems.forEach((item, idx) => {
+          const product = productMap.get(items[idx].id);
+          if (!hasRestrictions || applicableIds.includes(product.id)) {
+            applicableSubtotal += item.amount * item.quantity;
+          }
+        });
+
+        // Check minimum purchase requirement (in pence)
+        if (discountRecord.minPurchase && applicableSubtotal < discountRecord.minPurchase * 100) {
+          return res.status(400).json({
+            error: `Minimum spend of £${discountRecord.minPurchase} required for this code`,
+          });
+        }
+
+        // Calculate discount in pence
+        let discountPence = 0;
+        if (discountRecord.discountType === 'PERCENTAGE') {
+          discountPence = Math.round((applicableSubtotal * discountRecord.discountValue) / 100);
+        } else {
+          discountPence = Math.min(Math.round(discountRecord.discountValue * 100), applicableSubtotal);
+        }
+
+        if (discountPence > 0) {
+          // Distribute discount across applicable line items proportionally
+          let remainingDiscount = discountPence;
+          lineItems.forEach((item, idx) => {
+            const product = productMap.get(items[idx].id);
+            if (!hasRestrictions || applicableIds.includes(product.id)) {
+              const itemTotal = item.amount * item.quantity;
+              const proportion = itemTotal / applicableSubtotal;
+              const itemDiscount = Math.min(Math.round(discountPence * proportion), remainingDiscount);
+              item.amount = Math.max(item.amount - Math.round(itemDiscount / item.quantity), 0);
+              remainingDiscount -= itemDiscount;
+            }
+          });
+
+          console.log('[Checkout] Discount applied:', {
+            code: discountCode,
+            type: discountRecord.discountType,
+            value: discountRecord.discountValue,
+            discountPence,
+          });
+        }
+      }
+
       // For single product, use product-specific URLs. For cart, use generic ones.
       const isSingleProduct = items.length === 1;
       const firstItem = items[0];
@@ -164,6 +244,7 @@ function registerRoutes(app) {
             productSlugs: JSON.stringify(productSlugs),
             productType: firstProduct.productType || 'DIGITAL_DOWNLOAD',
             userId: userId || '',
+            discountCode: discountCode || '',
             // Legacy single-product fields for backward compatibility
             ...(isSingleProduct && {
               productId: firstItem.id,

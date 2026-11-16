@@ -14,9 +14,20 @@ import { getProductImageUrl } from "@/utils/cdn";
 const API = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const CartPage = () => {
-  const { products, removeFromCart, calculateTotals, total } =
-    useProductStore();
+  const {
+    products,
+    removeFromCart,
+    calculateTotals,
+    total,
+    discount,
+    discountedTotal,
+    applyDiscount,
+    removeDiscount,
+  } = useProductStore();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [discountInput, setDiscountInput] = useState("");
+  const [discountError, setDiscountError] = useState<string | null>(null);
+  const [isApplyingDiscount, setIsApplyingDiscount] = useState(false);
 
   const handleRemoveItem = (id: string) => {
     removeFromCart(id);
@@ -26,6 +37,55 @@ const CartPage = () => {
 
   const getImageSrc = (imageName: string | undefined) => {
     return getProductImageUrl(imageName);
+  };
+
+  const handleApplyDiscount = async () => {
+    if (!discountInput.trim()) return;
+    setIsApplyingDiscount(true);
+    setDiscountError(null);
+
+    try {
+      const response = await fetch(`${API}/api/discount-codes/validate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: discountInput.trim(),
+          subtotal: total,
+          productIds: products.map((p) => p.id),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setDiscountError(data.error || "Invalid discount code");
+        console.log("[Cart] Discount code rejected:", discountInput, data.error);
+        return;
+      }
+
+      applyDiscount({
+        code: data.code,
+        discountType: data.discountType,
+        discountValue: data.discountValue,
+        discountAmount: data.discountAmount,
+      });
+      setDiscountInput("");
+      toast.success("Discount code applied!");
+      console.log("[Cart] Discount code applied:", data.code, data.discountAmount);
+    } catch (err) {
+      console.error("[Cart] Discount validation error:", err);
+      setDiscountError("Failed to validate code. Please try again.");
+    } finally {
+      setIsApplyingDiscount(false);
+    }
+  };
+
+  const handleRemoveDiscount = () => {
+    removeDiscount();
+    setDiscountInput("");
+    setDiscountError(null);
+    toast.success("Discount code removed");
+    console.log("[Cart] Discount code removed");
   };
 
   return (
@@ -109,12 +169,61 @@ const CartPage = () => {
                     <span className="text-gray-600">Subtotal</span>
                     <span className="font-medium">£{total.toFixed(2)}</span>
                   </div>
+
+                  {discount && (
+                    <div className="flex justify-between text-green-600">
+                      <span className="flex items-center gap-2">
+                        Discount ({discount.code})
+                        <button
+                          onClick={handleRemoveDiscount}
+                          className="text-xs text-red-500 hover:text-red-700 underline"
+                        >
+                          Remove
+                        </button>
+                      </span>
+                      <span>-£{discount.discountAmount.toFixed(2)}</span>
+                    </div>
+                  )}
                 </div>
+
+                {/* Discount Code Input */}
+                {!discount && (
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    <label className="block text-xs font-medium uppercase tracking-wide mb-2 text-gray-600">
+                      Discount Code
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={discountInput}
+                        onChange={(e) => {
+                          setDiscountInput(e.target.value.toUpperCase());
+                          setDiscountError(null);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleApplyDiscount();
+                        }}
+                        placeholder="Enter code"
+                        className="flex-1 border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-black"
+                      />
+                      <button
+                        onClick={handleApplyDiscount}
+                        disabled={isApplyingDiscount || !discountInput.trim()}
+                        className="bg-black text-white text-xs font-medium uppercase tracking-wide px-4 py-2 hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isApplyingDiscount ? "..." : "Apply"}
+                      </button>
+                    </div>
+                    {discountError && (
+                      <p className="text-red-500 text-xs mt-1">{discountError}</p>
+                    )}
+                  </div>
+                )}
 
                 <div className="border-t border-gray-200 mt-4 pt-4">
                   <div className="flex justify-between text-sm font-medium">
                     <span>Total</span>
-                    <span>£{total.toFixed(2)}</span>
+                    <span>£{(discount ? discountedTotal : total).toFixed(2)}</span>
                   </div>
                 </div>
 
@@ -136,6 +245,7 @@ const CartPage = () => {
                             amount: p.amount,
                             productType: "DIGITAL_DOWNLOAD",
                           })),
+                          discountCode: discount?.code || undefined,
                         }),
                       });
                       if (!response.ok) {

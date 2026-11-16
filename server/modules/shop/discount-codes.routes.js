@@ -1,20 +1,17 @@
 const express = require('express');
 const router = express.Router();
+const publicRouter = express.Router();
 const discountCodesController = require('./discount-codes.controller');
 
-// Get all discount codes
+// Public route (no admin auth required)
+publicRouter.post('/validate', discountCodesController.validateDiscountCode);
+
+// Admin routes (require admin middleware)
 router.get('/', discountCodesController.getAllDiscountCodes);
-
-// Get a single discount code by ID
 router.get('/:id', discountCodesController.getDiscountCodeById);
-
-// Create a new discount code
 router.post('/', discountCodesController.createDiscountCode);
-
-// Update a discount code
 router.put('/:id', discountCodesController.updateDiscountCode);
-
-// Delete a discount code
 router.delete('/:id', discountCodesController.deleteDiscountCode);
 
 module.exports = router;
+module.exports.publicRouter = publicRouter;

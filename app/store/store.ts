@@ -10,11 +10,20 @@ export type ProductInCart = {
   slug?: string;
 };
 
+export type AppliedDiscount = {
+  code: string;
+  discountType: 'PERCENTAGE' | 'FIXED';
+  discountValue: number;
+  discountAmount: number;
+};
+
 export type State = {
   products: ProductInCart[];
   allQuantity: number;
   total: number;
   sidebarOpen: boolean;
+  discount: AppliedDiscount | null;
+  discountedTotal: number;
 };
 
 export type Actions = {
@@ -25,6 +34,8 @@ export type Actions = {
   clearCart: () => void;
   openSidebar: () => void;
   closeSidebar: () => void;
+  applyDiscount: (discount: AppliedDiscount) => void;
+  removeDiscount: () => void;
 };
 
 export const useProductStore = create<State & Actions>()(
@@ -34,6 +45,8 @@ export const useProductStore = create<State & Actions>()(
       allQuantity: 0,
       total: 0,
       sidebarOpen: false,
+      discount: null,
+      discountedTotal: 0,
       openSidebar: () => set({ sidebarOpen: true }),
       closeSidebar: () => set({ sidebarOpen: false }),
       addToCart: (newProduct) => {
@@ -54,14 +67,13 @@ export const useProductStore = create<State & Actions>()(
         });
       },
       clearCart: () => {
-        set((state: any) => {
-          
-          return {
-            products: [],
-            allQuantity: 0,
-            total: 0,
-          };
-        });
+        set(() => ({
+          products: [],
+          allQuantity: 0,
+          total: 0,
+          discount: null,
+          discountedTotal: 0,
+        }));
       },
       removeFromCart: (id) => {
         set((state) => {
@@ -81,12 +93,41 @@ export const useProductStore = create<State & Actions>()(
             total += item.amount * item.price;
           });
 
+          // Recalculate discount amount based on new total
+          let discountedTotal = total;
+          let updatedDiscount = state.discount;
+          if (updatedDiscount) {
+            let discountAmount = 0;
+            if (updatedDiscount.discountType === 'PERCENTAGE') {
+              discountAmount = Math.round((total * updatedDiscount.discountValue) / 100 * 100) / 100;
+            } else {
+              discountAmount = Math.min(updatedDiscount.discountValue, total);
+            }
+            updatedDiscount = { ...updatedDiscount, discountAmount };
+            discountedTotal = Math.max(total - discountAmount, 0);
+          }
+
           return {
             products: state.products,
             allQuantity: amount,
             total: total,
+            discount: updatedDiscount,
+            discountedTotal,
           };
         });
+      },
+      applyDiscount: (discount) => {
+        set((state) => {
+          const total = state.total;
+          const discountedTotal = Math.max(total - discount.discountAmount, 0);
+          return { discount, discountedTotal };
+        });
+      },
+      removeDiscount: () => {
+        set((state) => ({
+          discount: null,
+          discountedTotal: state.total,
+        }));
       },
       updateCartAmount: (id, amount) => {
         set((state) => {

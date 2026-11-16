@@ -146,10 +146,92 @@ const deleteDiscountCode = async (req, res) => {
   }
 };
 
+// Validate and apply a discount code (public endpoint, no admin required)
+const validateDiscountCode = async (req, res) => {
+  const { code, subtotal, productIds } = req.body;
+
+  if (!code) {
+    return res.status(400).json({ error: 'Discount code is required' });
+  }
+
+  try {
+    const discountCode = await prisma.discountCode.findUnique({
+      where: { code: code.toUpperCase().trim() },
+      include: {
+        applicableProducts: { select: { productId: true } },
+      },
+    });
+
+    if (!discountCode) {
+      return res.status(404).json({ error: 'Invalid discount code' });
+    }
+
+    // Check if active
+    if (!discountCode.isActive) {
+      return res.status(400).json({ error: 'This discount code is no longer active' });
+    }
+
+    // Check date range
+    const now = new Date();
+    if (discountCode.startDate && now < discountCode.startDate) {
+      return res.status(400).json({ error: 'This discount code is not yet valid' });
+    }
+    if (discountCode.endDate && now > discountCode.endDate) {
+      return res.status(400).json({ error: 'This discount code has expired' });
+    }
+
+    // Check max redemptions
+    if (discountCode.maxRedemptions && discountCode.currentRedemptions >= discountCode.maxRedemptions) {
+      return res.status(400).json({ error: 'This discount code has reached its redemption limit' });
+    }
+
+    // Check minimum purchase
+    if (discountCode.minPurchase && subtotal && subtotal < discountCode.minPurchase) {
+      return res.status(400).json({
+        error: `Minimum spend of £${discountCode.minPurchase} required for this code`,
+      });
+    }
+
+    // Check product-specific restrictions
+    if (discountCode.applicableProducts.length > 0 && productIds && productIds.length > 0) {
+      const applicableIds = discountCode.applicableProducts.map((ap) => ap.productId);
+      const hasApplicable = productIds.some((id) => applicableIds.includes(id));
+      if (!hasApplicable) {
+        return res.status(400).json({ error: 'This discount code does not apply to the items in your cart' });
+      }
+    }
+
+    // Calculate discount amount if subtotal provided
+    let discountAmount = 0;
+    if (subtotal) {
+      if (discountCode.discountType === 'PERCENTAGE') {
+        discountAmount = Math.round((subtotal * discountCode.discountValue) / 100 * 100) / 100;
+      } else {
+        discountAmount = Math.min(discountCode.discountValue, subtotal);
+      }
+    }
+
+    console.log('[DiscountCodes] Code validated:', code, { type: discountCode.discountType, value: discountCode.discountValue });
+
+    res.status(200).json({
+      valid: true,
+      code: discountCode.code,
+      discountType: discountCode.discountType,
+      discountValue: discountCode.discountValue,
+      discountAmount,
+      minPurchase: discountCode.minPurchase,
+    });
+  } catch (error) {
+    console.error('[DiscountCodes] Error validating discount code:', error);
+    res.status(500).json({ error: 'Failed to validate discount code' });
+  }
+};
+
 module.exports = {
   getAllDiscountCodes,
   getDiscountCodeById,
   createDiscountCode,
   updateDiscountCode,
   deleteDiscountCode,
+  validateDiscountCode,
 };

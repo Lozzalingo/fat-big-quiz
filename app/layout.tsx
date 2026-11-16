@@ -10,7 +10,6 @@ import Providers from "@/Providers";
 import "svgmap/dist/svgMap.min.css";
 import { ScrollProvider } from "@/utils/ScrollContext";
 import EnhancedHeader from "@/components/Header/HeaderTop";
-import VisitorTracker from "@/components/VisitorTracker";
 import SubscribePopup from "@lozzalingo/analytics/client/SubscribePopup";
 import ErrorLogger from "@lozzalingo/logging/client";
 
@@ -87,7 +86,6 @@ export default function RootLayout({
         <AuthProvider>
           <ScrollProvider>
             <ErrorLogger project="fat-big-quiz" />
-            <VisitorTracker />
             <SubscribePopup
               apiBaseUrl={process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001"}
               delayMs={45000}

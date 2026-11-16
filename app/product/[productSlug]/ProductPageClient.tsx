@@ -7,10 +7,10 @@ import { useProductStore } from "@/app/store/store";
 import { useWishlistStore } from "@/app/store/wishlistStore";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { createEcommerceTracker } from "@lozzalingo/analytics/client";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
-const tracker = createEcommerceTracker(API_BASE);
+// E-commerce tracking via centralised lza.js (window.lza)
+declare global {
+  interface Window { lza?: { trackEvent: (name: string, data?: Record<string, unknown>) => void; trackConversion: (data: Record<string, unknown>) => void }; }
+}
 
 interface Product {
   id: string;
@@ -55,7 +55,7 @@ export default function ProductPageClient({
   useEffect(() => {
     if (!hasTracked.current) {
       hasTracked.current = true;
-      tracker.trackProductView(product.id, productSlug);
+      window.lza?.trackEvent('product_view', { product_id: product.id, product_name: productSlug, price: product.price });
     }
   }, [product.id, productSlug]);
 
@@ -89,7 +89,7 @@ export default function ProductPageClient({
     });
     calculateTotals();
     openSidebar();
-    tracker.trackAddToCart(product.id);
+    window.lza?.trackEvent('add_to_cart', { product_id: product.id, product_name: product.title });
     console.log("[Cart] Product added to cart:", product.title);
   };
 
@@ -134,7 +134,7 @@ export default function ProductPageClient({
   const handleCheckout = async () => {
     setIsLoading(true);
     setError(null);
-    tracker.trackCheckoutStart(product.price);
+    window.lza?.trackEvent('checkout_start', { product_id: product.id, cart_value: product.price });
 
     try {
       const response = await fetch(`${API_BASE}/api/checkout`, {

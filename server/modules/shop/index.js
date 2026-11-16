@@ -24,6 +24,9 @@ function registerRoutes(app, { adminMiddleware, cachePublic }) {
   // Payments callback (server-to-server, no auth)
   app.use('/api/payments', paymentsCallbackRouter);
 
+  // Public discount code validation (no auth required)
+  app.use('/api/discount-codes', discountCodesRouter.publicRouter);
+
   // Admin-only routes
   app.use('/api/images', adminMiddleware, productImagesRouter);
   app.use('/api/discount-codes', adminMiddleware, discountCodesRouter);

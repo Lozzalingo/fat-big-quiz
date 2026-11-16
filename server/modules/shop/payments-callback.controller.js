@@ -195,6 +195,20 @@ async function handleCheckoutCompleted(payload) {
       productImages,
     });
 
+    // Increment discount code redemptions if one was used
+    const usedDiscountCode = metadata.discountCode;
+    if (usedDiscountCode) {
+      try {
+        await prisma.discountCode.updateMany({
+          where: { code: usedDiscountCode },
+          data: { currentRedemptions: { increment: 1 } },
+        });
+        console.log('[Payments Callback] Discount code redeemed:', usedDiscountCode);
+      } catch (dcErr) {
+        console.error('[Payments Callback] Failed to increment discount code redemptions:', dcErr.message);
+      }
+    }
+
     console.log(`[Payments Callback] Checkout fully processed for session: ${sessionId}`);
   } catch (error) {
     console.error('[Payments Callback] Error processing checkout:', error);
