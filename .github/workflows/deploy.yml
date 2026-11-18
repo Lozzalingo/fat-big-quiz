@@ -162,6 +162,8 @@ jobs:
               printf '%s' "$ENV_FILE_CONTENT" > .env
               echo "=== .env updated from GitHub secret ==="
             fi
+            # Patch env vars not yet in the GitHub secret
+            grep -q EVENTS_SERVICE_URL .env 2>/dev/null || echo 'EVENTS_SERVICE_URL=https://event-manager.laurence.computer/api' >> .env
             docker compose up -d --no-build frontend api
 
             # Health check with retries
