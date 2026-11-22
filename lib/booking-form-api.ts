@@ -1,13 +1,13 @@
 import type { BookingFormApi, BookingPayload, NormalizedProduct, NormalizedLocation, CalEvent } from "@lozzalingo/booking-form/types";
 import { bookingToCalEvent, type BookingCalendarSource } from "@lozzalingo/booking-form/lib/booking-calendar";
-import { API_BASE } from "@/utils/api";
+// Events Manager compat API, proxied via the /em/api Next.js rewrite so
+// requests stay on this domain. Override for local development if needed.
+const API_BASE = process.env.NEXT_PUBLIC_EVENTS_API_BASE || "/em";
 
 /**
  * Fat Big Quiz implementation of the BookingFormApi interface.
- * Connects the shared BookingForm component to FBQ's API endpoints.
- *
- * FBQ uses the /ev/api path for event products (to avoid clash with
- * the e-commerce Product model).
+ * Connects the shared BookingForm component to the centralised
+ * Events Manager compat endpoints (same shapes as the old local API).
  */
 export function createFBQBookingApi(): BookingFormApi {
   return {
@@ -27,8 +27,7 @@ export function createFBQBookingApi(): BookingFormApi {
     },
 
     fetchProducts: async () => {
-      // FBQ event products live under /ev/api/products
-      const res = await fetch(`${API_BASE}/ev/api/products`);
+      const res = await fetch(`${API_BASE}/api/products`);
       if (!res.ok) throw new Error("Failed to fetch products");
       const data = await res.json();
       // Filter to active products with PRIVATE packages

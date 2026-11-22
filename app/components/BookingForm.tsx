@@ -16,7 +16,9 @@ export type { BookingConfig, BookingAddOn, BookingFormSection, TaskSectionTypeCo
 
 const CDN = process.env.NEXT_PUBLIC_DO_SPACES_CDN_ENDPOINT || "";
 const FOLDER = process.env.NEXT_PUBLIC_DO_SPACES_FOLDER || "fat-big-quiz";
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+// SharedCalendar fetches `${calendarApiBaseUrl}/api/calendar/time-slots/...`,
+// now served by the Events Manager compat layer via the /em rewrite.
+const API_BASE = process.env.NEXT_PUBLIC_EVENTS_API_BASE || "/em";
 
 function getImageUrl(filename?: string | null): string {
   if (!filename) return "";

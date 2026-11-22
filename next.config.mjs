@@ -57,6 +57,17 @@ const nextConfig = {
       },
     ];
   },
+  async rewrites() {
+    // Events Manager compat API: the embedded booking form calls /em/api/*
+    // on this domain and Next proxies to the centralised service.
+    return [
+      {
+        source: '/em/api/:path*',
+        destination:
+          'https://event-manager.laurence.computer/api/compat/:path*?site=fat-big-quiz',
+      },
+    ];
+  },
   // Set to workspace root so standalone traces node_modules from the monorepo
   outputFileTracingRoot: path.join(__dirname, '../'),
   webpack: (config, { dev }) => {
