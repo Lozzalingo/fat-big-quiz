@@ -54,17 +54,17 @@ export default function BookingForm({
 }: BookingFormProps) {
   const api = useMemo(() => createFBQBookingApi(), []);
 
-  // Flag-gated schema-driven form (OFF by default). Enabled via
-  // NEXT_PUBLIC_USE_SCHEMA_FORM=1 or a ?schemaForm=1 query parameter.
+  // Schema-driven form is the DEFAULT. Opt out via
+  // NEXT_PUBLIC_USE_SCHEMA_FORM=0 or a ?schemaForm=0 query parameter.
   // Query param is read in an effect so SSR output stays deterministic.
-  const envFlag = process.env.NEXT_PUBLIC_USE_SCHEMA_FORM === "1";
-  const [queryFlag, setQueryFlag] = useState(false);
+  const envOptOut = process.env.NEXT_PUBLIC_USE_SCHEMA_FORM === "0";
+  const [queryOptOut, setQueryOptOut] = useState(false);
   useEffect(() => {
-    if (typeof window !== "undefined" && window.location.search.includes("schemaForm=1")) {
-      setQueryFlag(true);
+    if (typeof window !== "undefined" && window.location.search.includes("schemaForm=0")) {
+      setQueryOptOut(true);
     }
   }, []);
-  const useSchemaForm = envFlag || queryFlag;
+  const useSchemaForm = !envOptOut && !queryOptOut;
 
   const { schema, error: schemaError } = useFormSchema(API_BASE, { enabled: useSchemaForm });
 
