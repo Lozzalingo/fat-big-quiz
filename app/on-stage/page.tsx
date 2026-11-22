@@ -25,7 +25,7 @@ import {
   FaCheckCircle,
 } from "react-icons/fa";
 import { HeroSection, FAQSection } from "@/components/landing";
-import BookingForm from "@/app/components/BookingForm";
+import BookingCta from "@/app/components/BookingCta";
 
 export const metadata: Metadata = {
   title: "Fat Big Quiz On Stage - Live Theatrical Quiz Experience | Fat Big Quiz",
@@ -541,9 +541,7 @@ export default function OnStagePage() {
             </div>
 
             {/* Right column - form */}
-            <BookingForm
-              preselectedProductSlug="fat-big-quiz-on-stage"
-            />
+            <BookingCta productSlug="on-stage-fat-big-quiz" />
           </div>
         </div>
       </div>
