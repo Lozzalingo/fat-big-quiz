@@ -5,8 +5,9 @@
  * Provides FBQ-specific configuration (API adapter, image URLs, contact email, etc.).
  */
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import SharedBookingForm from "@lozzalingo/booking-form";
+import SchemaForm, { useFormSchema } from "@lozzalingo/booking-form/schema";
 import { DEFAULT_BOOKING_CONFIG } from "@lozzalingo/booking-form/defaults";
 import { createFBQBookingApi } from "@/lib/booking-form-api";
 
@@ -52,6 +53,40 @@ export default function BookingForm({
   showEventSelector = true,
 }: BookingFormProps) {
   const api = useMemo(() => createFBQBookingApi(), []);
+
+  // Flag-gated schema-driven form (OFF by default). Enabled via
+  // NEXT_PUBLIC_USE_SCHEMA_FORM=1 or a ?schemaForm=1 query parameter.
+  // Query param is read in an effect so SSR output stays deterministic.
+  const envFlag = process.env.NEXT_PUBLIC_USE_SCHEMA_FORM === "1";
+  const [queryFlag, setQueryFlag] = useState(false);
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.location.search.includes("schemaForm=1")) {
+      setQueryFlag(true);
+    }
+  }, []);
+  const useSchemaForm = envFlag || queryFlag;
+
+  const { schema, error: schemaError } = useFormSchema(API_BASE, { enabled: useSchemaForm });
+
+  // On schema fetch error, fall back to the legacy shared form.
+  if (useSchemaForm && !schemaError) {
+    if (!schema) {
+      // Still loading the schema; avoid flashing the legacy form.
+      return <div className="py-12 text-center text-text-secondary">Loading booking form...</div>;
+    }
+    return (
+      <SchemaForm
+        api={api}
+        apiBaseUrl={API_BASE}
+        getImageUrl={getImageUrl}
+        contactEmail="info@fatbigquiz.com"
+        calendarApiBaseUrl={API_BASE}
+        preselectedProductSlug={preselectedProductSlug}
+        preselectedLocationSlug={preselectedLocationSlug}
+        schema={schema}
+      />
+    );
+  }
 
   return (
     <SharedBookingForm
